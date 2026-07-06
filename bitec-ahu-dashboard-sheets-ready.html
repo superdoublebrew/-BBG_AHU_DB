@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BITEC AHU Master Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{
+    --exh-1: #a855f7; --exh-2: #6d28d9;
+    --con-1: #22d3ee; --con-2: #0e7490;
+    --text:       #f3f6fb;
+    --text-muted: #93a0b8;
+    --text-faint: #59657f;
+    --glass:        rgba(255,255,255,0.035);
+    --glass-border: rgba(255,255,255,0.10);
+    --amber: #f2b84f;
+    --green: #34d399;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    min-height:100vh; position:relative;
+    background:
+      radial-gradient(circle at 6% 4%,  rgba(168,85,247,0.13), transparent 38%),
+      radial-gradient(circle at 96% 10%, rgba(34,211,238,0.12), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(52,211,153,0.05), transparent 45%),
+      linear-gradient(180deg, #05070d 0%, #030408 100%);
+    background-attachment:fixed;
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    padding:22px;
+  }
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:999;
+    opacity:0.03; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  ::-webkit-scrollbar{height:6px; width:6px;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18); border-radius:10px;}
+
+  .glass{
+    background:var(--glass); border:1px solid var(--glass-border); border-radius:20px;
+    backdrop-filter: blur(26px) saturate(150%); -webkit-backdrop-filter: blur(26px) saturate(150%);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.42);
+  }
+  .mono{font-family:'JetBrains Mono', monospace;}
+
+  /* ===== Header ===== */
+  .topbar{ padding:18px 26px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:18px; margin-bottom:14px; }
+  .brand{display:flex; align-items:center; gap:14px;}
+  .brand-mark{
+    width:44px; height:44px; border-radius:13px; flex-shrink:0;
+    background:conic-gradient(from 200deg, var(--con-1), var(--exh-1), var(--con-1));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:17px; color:#0a0612;
+    box-shadow:0 8px 22px rgba(168,85,247,0.35);
+  }
+  .brand h1{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:19px;
+    background:linear-gradient(90deg, #ffffff 10%, #b7c3dd 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .brand .sub{ display:flex; align-items:center; gap:8px; font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); margin-top:5px; }
+  .brand .sub .warn{
+    color:var(--amber); background:rgba(242,184,79,0.1); border:1px solid rgba(242,184,79,0.3);
+    padding:2px 9px; border-radius:20px; text-transform:none; letter-spacing:0; font-size:10px;
+  }
+  .metric-row{display:flex; gap:0;}
+  .metric{ padding:2px 20px; text-align:center; border-right:1px solid rgba(255,255,255,0.08); }
+  .metric:last-child{ border-right:none; }
+  .metric .lbl{font-size:9px; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-faint);}
+  .metric .val{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px;}
+
+  /* ===== Section title ===== */
+  .section-title{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px;
+    letter-spacing:1px; text-transform:uppercase; color:var(--text-faint);
+    margin:22px 4px 10px;
+  }
+
+  /* ===== Insight cards row ===== */
+  .insight-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; }
+  @media (max-width:1100px){ .insight-grid{grid-template-columns:repeat(2,1fr);} }
+  .insight-card{ padding:18px; }
+  .insight-card h4{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:11.5px;
+    color:var(--text-muted); text-transform:uppercase; letter-spacing:0.7px; margin-bottom:14px;
+  }
+
+  .donut-wrap{ display:flex; align-items:center; gap:14px; }
+  .donut{ width:76px; height:76px; border-radius:50%; flex-shrink:0; position:relative; }
+  .donut-hole{ position:absolute; inset:13px; border-radius:50%; background:#0a0a14; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+  .donut-hole .n{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; }
+  .donut-hole .l{ font-size:7.5px; color:var(--text-faint); text-transform:uppercase; }
+  .donut-legend{ font-size:11px; display:flex; flex-direction:column; gap:6px; }
+  .donut-legend .li{ display:flex; align-items:center; gap:6px; color:var(--text-muted); }
+  .donut-legend b{ color:var(--text); font-family:'JetBrains Mono',monospace; }
+  .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+  .bar-list{ display:flex; flex-direction:column; gap:9px; }
+  .bar-row .top{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-muted); margin-bottom:3px; }
+  .bar-row .top b{ color:var(--text); font-family:'JetBrains Mono',monospace; }
+  .bar-track{ height:6px; border-radius:4px; background:rgba(255,255,255,0.06); overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:4px; }
+
+  .compare-row{ display:flex; gap:10px; }
+  .compare-col{ flex:1; padding:10px; border-radius:12px; background:rgba(255,255,255,0.03); text-align:center; }
+  .compare-col .cl{ font-size:9.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.6px; }
+  .compare-col .cv{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; margin-top:4px; }
+  .compare-col .cs{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--text-muted); margin-top:3px; }
+
+  /* ===== Phase tabs ===== */
+  .phase-tabs{ display:flex; gap:8px; padding:0 4px 14px; }
+  .phase-tab{
+    padding:10px 24px; border-radius:12px; cursor:pointer;
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px;
+    color:var(--text-muted); border:1px solid var(--glass-border);
+    background:rgba(255,255,255,0.02); transition: all 0.18s ease;
+  }
+  .phase-tab:hover{ color:var(--text); }
+  .phase-tab.active{ color:#0a0612; background:linear-gradient(120deg, var(--con-1), var(--exh-1)); border-color:transparent; }
+
+  .canvas-card{ padding:22px; }
+  .card-title{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;
+    color:var(--text); display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;
+  }
+  .card-title .tag{ font-size:9.5px; letter-spacing:1.1px; text-transform:uppercase; color:var(--text-faint);
+    padding:4px 12px; border:1px solid var(--glass-border); border-radius:20px; }
+
+  /* ===== Zone column board ===== */
+  .board{ display:flex; gap:14px; align-items:flex-start; overflow-x:auto; padding-bottom:10px; }
+  .zone-col{ flex:0 0 148px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.14); }
+  .zc-head{ padding:12px 12px 10px; text-align:center; }
+  .zone-col.exhibition .zc-head{ background:linear-gradient(150deg, var(--exh-1) 0%, var(--exh-2) 100%); }
+  .zone-col.convention .zc-head{ background:linear-gradient(150deg, var(--con-1) 0%, var(--con-2) 100%); }
+  .zc-head .zname{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,0.25); }
+  .zc-head .zmeta{ font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.85); margin-top:4px; }
+  .zc-body{ background: rgba(255,255,255,0.035); padding:9px; display:flex; flex-direction:column; gap:6px; }
+  .ahu-pill{ padding:7px 9px; border-radius:9px; background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text); cursor:default; transition: background 0.15s ease; }
+  .ahu-pill:hover{ background: rgba(255,255,255,0.11); }
+  .zone-col.exhibition .ahu-pill{ border-color: rgba(168,85,247,0.35); }
+  .zone-col.convention .ahu-pill{ border-color: rgba(34,211,238,0.35); }
+  .ahu-pill .pid{ font-weight:700; }
+  .ahu-pill .pspec{ display:block; font-size:9px; color:var(--text-faint); margin-top:2px; font-family:'Inter',sans-serif; }
+  .zc-foot{ padding:8px 12px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); background:rgba(0,0,0,0.2); }
+
+  .legend-row{ display:flex; gap:16px; margin-bottom:16px; }
+  .legend-item{display:flex; align-items:center; gap:7px; font-size:11px; color:var(--text-muted);}
+  .legend-swatch{width:16px; height:10px; border-radius:4px; display:inline-block;}
+
+  /* ===== Zone summary table ===== */
+  .summary-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
+  .summary-table th{ text-align:left; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:10px;
+    letter-spacing:0.6px; text-transform:uppercase; color:var(--text-faint); padding:10px; border-bottom:1px solid var(--glass-border); }
+  .summary-table td{ padding:10px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .pill{ font-size:9.5px; font-weight:600; padding:3px 11px; border-radius:20px; }
+  .pill.exhibition{ background:rgba(168,85,247,0.16); color:#e3c8ff; }
+  .pill.convention{ background:rgba(34,211,238,0.16); color:#bdf3fc; }
+
+  /* ===== Coming soon / live status placeholder ===== */
+  .coming-soon{
+    border:1.5px dashed rgba(255,255,255,0.16); border-radius:18px; padding:22px;
+    background:rgba(255,255,255,0.015);
+  }
+  .cs-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:14px; }
+  @media (max-width:1100px){ .cs-grid{grid-template-columns:repeat(2,1fr);} }
+  .cs-item{ padding:16px; border-radius:14px; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); text-align:center; }
+  .cs-item .ci-icon{ font-size:20px; opacity:0.4; }
+  .cs-item .ci-label{ font-size:10.5px; color:var(--text-faint); margin-top:8px; }
+  .cs-note{ font-size:11px; color:var(--text-muted); line-height:1.7; margin-top:4px; }
+  .cs-note b{ color:var(--amber); }
+
+  /* ===== Notes ===== */
+  .notes-card ul{ padding-left:18px; font-size:11.5px; color:var(--text-muted); line-height:1.9; }
+  .notes-card li b{ color:var(--text); }
+
+  .footnote{text-align:center; font-size:10.5px; color:var(--text-faint); margin-top:16px;}
+
+  .data-banner{
+    display:none; align-items:center; gap:10px;
+    padding:10px 18px; border-radius:12px; margin-bottom:12px; font-size:11.5px;
+  }
+  .data-banner.show{ display:flex; }
+  .data-banner.warn{ background:rgba(242,184,79,0.1); border:1px solid rgba(242,184,79,0.35); color:var(--amber); }
+  .data-banner.ok{ background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.35); color:var(--green); }
+  .data-banner b{ font-weight:700; }
+  .data-banner code{ background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:5px; }
+</style>
+</head>
+<body>
+
+<div class="data-banner" id="data-banner"></div>
+
+<div class="topbar glass">
+  <div class="brand">
+    <div class="brand-mark">B</div>
+    <div>
+      <h1>BITEC AHU Master Dashboard</h1>
+      <div class="sub">ข้อมูลจริงจาก Master List <span class="warn">ยังไม่เชื่อมสถานะ on/off</span></div>
+    </div>
+  </div>
+  <div class="metric-row">
+    <div class="metric"><div class="lbl">Total AHU</div><div class="val" id="m-total">--</div></div>
+    <div class="metric"><div class="lbl">Zones</div><div class="val" id="m-zones">--</div></div>
+    <div class="metric"><div class="lbl">Total TR</div><div class="val" id="m-ton">--</div></div>
+    <div class="metric"><div class="lbl">Total kW</div><div class="val" id="m-kw">--</div></div>
+  </div>
+</div>
+
+<div class="section-title">ภาพรวมข้อมูลจริง (Master Data Insights)</div>
+<div class="insight-grid">
+  <div class="insight-card glass">
+    <h4>Exhibition vs Convention</h4>
+    <div class="donut-wrap">
+      <div class="donut" id="donut-group"><div class="donut-hole"><div class="n" id="donut-group-n">--</div><div class="l">Units</div></div></div>
+      <div class="donut-legend" id="donut-group-legend"></div>
+    </div>
+  </div>
+
+  <div class="insight-card glass">
+    <h4>สัดส่วนยี่ห้อ (Brand)</h4>
+    <div class="bar-list" id="brand-bars"></div>
+  </div>
+
+  <div class="insight-card glass">
+    <h4>Phase 1 vs Phase 2</h4>
+    <div class="compare-row" id="phase-compare"></div>
+  </div>
+
+  <div class="insight-card glass">
+    <h4>Top 5 โซน (ตาม TR)</h4>
+    <div class="bar-list" id="top-zone-bars"></div>
+  </div>
+</div>
+
+<div class="section-title">ผังพื้น &amp; รายชื่อ AHU</div>
+<div class="phase-tabs">
+  <div class="phase-tab active" data-phase="p1">Phase 1</div>
+  <div class="phase-tab" data-phase="p2">Phase 2</div>
+</div>
+
+<div class="canvas-card glass">
+  <div class="card-title"><span id="canvas-title">Floor Plan — Phase 1</span><span class="tag">รายชื่อ AHU ครบทุกตัว</span></div>
+  <div class="legend-row">
+    <div class="legend-item"><span class="legend-swatch" style="background:linear-gradient(120deg, var(--exh-1), var(--exh-2));"></span> Exhibition</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:linear-gradient(120deg, var(--con-1), var(--con-2));"></span> Convention</div>
+  </div>
+  <div class="board" id="board"></div>
+</div>
+
+<div class="canvas-card glass" style="margin-top:14px;">
+  <div class="card-title"><span>สรุปตามโซน (คำนวณจากข้อมูลจริง)</span><span class="tag" id="summary-phase-tag">Phase 1</span></div>
+  <table class="summary-table">
+    <thead><tr><th>Location</th><th>ประเภท</th><th>จำนวน AHU</th><th>รวม TR</th><th>รวม kW</th></tr></thead>
+    <tbody id="summary-body"></tbody>
+  </table>
+</div>
+
+<div class="section-title">สถานะระบบเรียลไทม์ (รอเชื่อมข้อมูลจริง)</div>
+<div class="canvas-card coming-soon">
+  <div class="cs-note">ส่วนนี้จะแสดง <b>Running / Standby / Stopped / Alarm</b> ของแต่ละ AHU แบบเรียลไทม์ เมื่อเชื่อมต่อ <b>live_status</b> จาก Google Sheets เรียบร้อยแล้ว (ตามแผนที่วางไว้) ตอนนี้ยังไม่แสดงตัวเลขเพราะไม่อยากให้ข้อมูลปลอมทำให้เข้าใจผิด</div>
+  <div class="cs-grid">
+    <div class="cs-item"><div class="ci-icon">◔</div><div class="ci-label">Running / Standby / Stopped</div></div>
+    <div class="cs-item"><div class="ci-icon">⚠</div><div class="ci-label">System Alarms</div></div>
+    <div class="cs-item"><div class="ci-icon">⏱</div><div class="ci-label">Last Updated Timestamp</div></div>
+    <div class="cs-item"><div class="ci-icon">📈</div><div class="ci-label">Energy Trend รายวัน</div></div>
+  </div>
+</div>
+
+<div class="section-title">Notes</div>
+<div class="canvas-card glass notes-card">
+  <ul>
+    <li><b>ข้อมูล:</b> master list จริงจาก Brew (103 หน่วย, อัปเดตล่าสุดตามไฟล์ที่ส่งมา)</li>
+    <li><b>ผังพื้น:</b> จัดกลุ่มตามโซนจริง เรียงลำดับตามไฟล์ผังคร่าวๆ ที่ให้มา ยังไม่ใช่มาตราส่วนสถาปัตยกรรม 100%</li>
+    <li><b>สถานะ on/off:</b> ยังไม่เชื่อมต่อ — รอ Google Form + Apps Script ตามแผนที่วางไว้ก่อนหน้า</li>
+    <li><b>ขั้นต่อไป:</b> เชื่อม Google Sheets จริง (master + live_status) แล้ว deploy ขึ้น GitHub Pages</li>
+  </ul>
+</div>
+
+<div class="footnote">ข้อมูลจริงจาก Master List (103 หน่วย) · Mockup สำหรับพรีเซนต์ก่อนเชื่อมข้อมูลจริง</div>
+
+<script>
+/* =================================================================
+   CONFIG — วางลิงก์ CSV จาก Google Sheet ของคุณตรงนี้ (แท็บ master เท่านั้น)
+   วิธีได้ลิงก์: Google Sheet -> File -> Share -> Publish to web
+   -> เลือกแท็บ master -> เลือกรูปแบบ CSV -> Publish -> คัดลอกลิงก์มาวางด้านล่าง
+
+   ยังไม่ต้องทำ live_status ตอนนี้ — ปล่อยว่างไว้ก่อนได้เลย
+================================================================= */
+const CONFIG = {
+  masterCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR46FjigufrazSUV19KMDLkNTbjFh5tty4lQ70_9RHFQi-b47SXtv6r2-5TfPx6sN-9YvL64tUXrvMC/pub?gid=0&single=true&output=csv",   // <-- วางลิงก์ CSV ของแท็บ master ตรงนี้
+};
+
+/* ต้องมีหัวคอลัมน์ชื่อเหล่านี้ในแท็บ master (ตัวพิมพ์เล็กทั้งหมด):
+   ahu_id, description, phase, location, group_room, brand, ton, kw
+   ถ้าใช้ชื่ออื่น ส่งชื่อจริงมาบอกได้ แล้วผมจะแก้ให้ */
+
+const FALLBACK_AHUS = [{"id": "H-2-2MAHU-06", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 37}, {"id": "H-3-2MAHU-01", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-3-2MAHU-02", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-3-2MAHU-03", "desc": "เครื่องส่งลมเย็น EH98 (OAU)", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-3-2MAHU-04", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-3-2MAHU-05", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-4-2MAHU-04", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-4-2MAHU-05", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-4-2MAHU-06", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-4-2MAHU-07", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 52, "kw": 18.5}, {"id": "H-2-2MAHU-01", "desc": "เครื่องส่งลมเย็น EH99", "phase": "BITEC-P2-PHA", "location": "BITEC-EH99", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 37}, {"id": "H-2-2MAHU-02", "desc": "เครื่องส่งลมเย็น EH99", "phase": "BITEC-P2-PHA", "location": "BITEC-EH99", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 45}, {"id": "H-2-2MAHU-03", "desc": "เครื่องส่งลมเย็น EH99 (OAU)", "phase": "BITEC-P2-PHA", "location": "BITEC-EH99", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 45}, {"id": "H-2-2MAHU-04", "desc": "เครื่องส่งลมเย็น EH99", "phase": "BITEC-P2-PHA", "location": "BITEC-EH99", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 45}, {"id": "H-2-2MAHU-05", "desc": "เครื่องส่งลมเย็น EH99", "phase": "BITEC-P2-PHA", "location": "BITEC-EH99", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 45}, {"id": "H-9-2MAHU-01", "desc": "เครื่องส่งลมเย็น EH100 Front", "phase": "BITEC-P2-PHA", "location": "BITEC-EH100-FRONT", "group_room": "EXHIBITION", "brand": "TRANE", "ton": 126, "kw": 55}, {"id": "H-9-2MAHU-02", "desc": "เครื่องส่งลมเย็น EH100 Front", "phase": "BITEC-P2-PHA", "location": "BITEC-EH100-FRONT", "group_room": "EXHIBITION", "brand": "TRANE", "ton": 126, "kw": 55}, {"id": "H-9-2MAHU-03", "desc": "เครื่องส่งลมเย็น EH100 Front", "phase": "BITEC-P2-PHA", "location": "BITEC-EH100-FRONT", "group_room": "EXHIBITION", "brand": "TRANE", "ton": 126, "kw": 55}, {"id": "H-9-2MAHU-04", "desc": "เครื่องส่งลมเย็น EH100 Front", "phase": "BITEC-P2-PHA", "location": "BITEC-EH100-FRONT", "group_room": "EXHIBITION", "brand": "TRANE", "ton": 126, "kw": 55}, {"id": "H-1-2MAHU-01", "desc": "เครื่องส่งลมเย็น EH100 Back", "phase": "BITEC-P2-PHA", "location": "BITEC-CHILLER-PLANT", "group_room": "EXHIBITION", "brand": "Trane", "ton": 100, "kw": 45}, {"id": "H-1-2MAHU-02", "desc": "เครื่องส่งลมเย็น EH100 Back", "phase": "BITEC-P2-PHA", "location": "BITEC-CHILLER-PLANT", "group_room": "EXHIBITION", "brand": "Trane", "ton": 100, "kw": 45}, {"id": "H-1-2MAHU-03", "desc": "เครื่องส่งลมเย็น EH100 Back (OAU)", "phase": "BITEC-P2-PHA", "location": "BITEC-CHILLER-PLANT", "group_room": "EXHIBITION", "brand": "Trane", "ton": 100, "kw": 45}, {"id": "H-1-2MAHU-04", "desc": "เครื่องส่งลมเย็น EH100 Back", "phase": "BITEC-P2-PHA", "location": "BITEC-CHILLER-PLANT", "group_room": "EXHIBITION", "brand": "Trane", "ton": 100, "kw": 45}, {"id": "H-1-2MAHU-05", "desc": "เครื่องส่งลมเย็น EH100 Back", "phase": "BITEC-P2-PHA", "location": "BITEC-CHILLER-PLANT", "group_room": "EXHIBITION", "brand": "Trane", "ton": 100, "kw": 45}, {"id": "AHU-SEH101-01", "desc": "เครื่องส่งลมเย็นข้าง EH101", "phase": "BITEC-P1-PHA", "location": "BITEC-HQF2", "group_room": "EXHIBITION", "brand": "Trane", "ton": 60, "kw": 15}, {"id": "AHU-SEH101-02", "desc": "เครื่องส่งลมเย็นข้าง EH101", "phase": "BITEC-P1-PHA", "location": "BITEC-HQF2", "group_room": "EXHIBITION", "brand": "Trane", "ton": 60, "kw": 15}, {"id": "AHU-EH101-F", "desc": "เครื่องส่งลมเย็น EH101 ด้านหน้า", "phase": "BITEC-P1-PHA", "location": "BITEC-EH101", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH101-B", "desc": "เครื่องส่งลมเย็น EH101 ด้านหลัง", "phase": "BITEC-P1-PHA", "location": "BITEC-EH101", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH102-F", "desc": "เครื่องส่งลมเย็น EH102 ด้านหน้า", "phase": "BITEC-P1-PHA", "location": "BITEC-EH102", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH102-B", "desc": "เครื่องส่งลมเย็น EH102 ด้านหลัง", "phase": "BITEC-P1-PHA", "location": "BITEC-EH102", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH103-F", "desc": "เครื่องส่งลมเย็น EH103 ด้านหน้า", "phase": "BITEC-P1-PHA", "location": "BITEC-EH103", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH103-B", "desc": "เครื่องส่งลมเย็น EH103 ด้านหลัง", "phase": "BITEC-P1-PHA", "location": "BITEC-EH103", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH104-F", "desc": "เครื่องส่งลมเย็น EH104 ด้านหน้า", "phase": "BITEC-P1-PHA", "location": "BITEC-EH104", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH104-B", "desc": "เครื่องส่งลมเย็น EH104 ด้านหลัง", "phase": "BITEC-P1-PHA", "location": "BITEC-EH104", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-BEAT-01", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-02", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-03", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-04", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-05", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-06", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-07", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-08", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-09", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-10", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-11", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-12", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-13", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-14", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-15", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-16", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-17", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-18", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-19", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-20", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-21", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-22", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-23", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-24", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-25", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-26", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-27", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-28", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-29", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-30", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BTLIVE-01", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-02", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-03", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-04", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-05", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-06", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-07", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-08", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-09", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-10", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-SMGARDEN-01", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-02", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-03", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-04", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-05", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-06", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-07", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-08", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-09", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Trane", "ton": 80, "kw": 30}, {"id": "AHU-GH201-01", "desc": "เครื่องส่งลมเย็น GH201", "phase": "BITEC-P1-PHA", "location": "BITEC-GH201", "group_room": "CONVENTION", "brand": "Carrier", "ton": 35, "kw": 7.5}, {"id": "AHU-GH201-02", "desc": "เครื่องส่งลมเย็น GH201", "phase": "BITEC-P1-PHA", "location": "BITEC-GH201", "group_room": "CONVENTION", "brand": "Carrier", "ton": 35, "kw": 7.5}, {"id": "AHU-GH202-01", "desc": "เครื่องส่งลมเย็น GH202", "phase": "BITEC-P1-PHA", "location": "BITEC-GH202", "group_room": "CONVENTION", "brand": "Carrier", "ton": 35, "kw": 7.5}, {"id": "AHU-GH202-02", "desc": "เครื่องส่งลมเย็น GH202", "phase": "BITEC-P1-PHA", "location": "BITEC-GH202", "group_room": "CONVENTION", "brand": "Carrier", "ton": 35, "kw": 7.5}, {"id": "AHU-GH203-01", "desc": "เครื่องส่งลมเย็น GH203", "phase": "BITEC-P1-PHA", "location": "BITEC-GH203", "group_room": "CONVENTION", "brand": "Carrier", "ton": 40, "kw": 11}, {"id": "AHU-GH203-02", "desc": "เครื่องส่งลมเย็น GH203", "phase": "BITEC-P1-PHA", "location": "BITEC-GH203", "group_room": "CONVENTION", "brand": "Carrier", "ton": 40, "kw": 11}, {"id": "OAU-GH203-03", "desc": "เครื่องจ่ายอากาศบริสุทธิ์ GH203", "phase": "BITEC-P1-PHA", "location": "BITEC-GH203", "group_room": "CONVENTION", "brand": "TRANE", "ton": 35, "kw": 5.5}, {"id": "H-6-3MAHU-07", "desc": "เครื่องส่งลมเย็น BH1", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-6-3MAHU-08", "desc": "เครื่องส่งลมเย็น BH1", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-6-3MAHU-02", "desc": "เครื่องส่งลมเย็น BH2", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-6-3MAHU-03", "desc": "เครื่องส่งลมเย็น BH2", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-5-3MAHU-01", "desc": "เครื่องส่งลมเย็น BH3", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-5-3MAHU-02", "desc": "เครื่องส่งลมเย็น BH3", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-6-GSAHU-01", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 10, "kw": 1.5}, {"id": "H-6-GSAHU-02", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 10, "kw": 1.5}, {"id": "H-6-GSAHU-03", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 15, "kw": 1.5}, {"id": "H-6-GSAHU-04", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 15, "kw": 1.5}, {"id": "H-6-GSAHU-05", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 15, "kw": 1.5}, {"id": "H-6-GSAHU-06", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 15, "kw": 1.5}, {"id": "H-6-GSAHU-07", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 15, "kw": 1.5}];
+const ORDER = {"p1": ["BITEC-HQF2", "BITEC-EH101", "BITEC-EH102", "BITEC-EH103", "BITEC-EH104", "BITEC-BEAT", "BITEC-LIVE", "BITEC-SAMA-GARDEN", "BITEC-GH201", "BITEC-GH202", "BITEC-GH203"], "p2": ["BITEC-COSMOS", "BITEC-BHIRAJ", "BITEC-EH98", "BITEC-EH99", "BITEC-EH100-FRONT", "BITEC-CHILLER-PLANT"]};
+let AHUS = FALLBACK_AHUS;
+
+function showBanner(type, html){
+  const el = document.getElementById("data-banner");
+  el.className = "data-banner show " + type;
+  el.innerHTML = html;
+}
+
+function fetchCSV(url){
+  return new Promise((resolve, reject)=>{
+    if(!url){ reject(new Error("no url")); return; }
+    fetch(url, { cache: "no-store" })
+      .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+      .then(text => resolve(Papa.parse(text, { header:true, skipEmptyLines:true }).data))
+      .catch(reject);
+  });
+}
+
+async function loadMaster(){
+  try{
+    const rows = await fetchCSV(CONFIG.masterCsvUrl);
+    if(!rows.length) throw new Error("master sheet ว่างเปล่า");
+    AHUS = rows.filter(r => r.ahu_id).map(r => ({
+      id: r.ahu_id.trim(),
+      desc: r.description || "",
+      phase: (r.phase || "").trim(),
+      location: (r.location || "").trim(),
+      group_room: (r.group_room || "EXHIBITION").trim().toUpperCase(),
+      brand: r.brand || "",
+      ton: Number(r.ton) || 0,
+      kw: Number(r.kw) || 0,
+    }));
+    showBanner("ok", "<b>เชื่อมต่อ Google Sheets สำเร็จ</b> — กำลังแสดงข้อมูลสดจาก master (" + AHUS.length + " หน่วย)");
+  }catch(err){
+    console.warn("Using fallback data:", err);
+    AHUS = FALLBACK_AHUS;
+    showBanner("warn", "<b>ยังไม่ได้เชื่อมต่อ Google Sheets</b> — กำลังแสดงข้อมูลชุดล่าสุดที่มี (103 หน่วย) ไปตั้งค่า <code>CONFIG.masterCsvUrl</code> ที่ต้นสคริปต์เมื่อพร้อม");
+  }
+  renderEverything();
+}
+
+function zoneTypeClass(group){ return group === "CONVENTION" ? "convention" : "exhibition"; }
+function shortName(loc){ return loc.replace("BITEC-",""); }
+function shortId(id){ const parts = id.split("-"); return parts.slice(-2).join("-"); }
+
+function buildLocIndex(phaseKey){
+  const items = AHUS.filter(a => a.phase === (phaseKey==="p1" ? "BITEC-P1-PHA" : "BITEC-P2-PHA"));
+  const byLoc = {};
+  items.forEach(a => {
+    const g = (byLoc[a.location] = byLoc[a.location] || {items:[], ton:0, kw:0, group:a.group_room});
+    g.items.push(a); g.ton += a.ton||0; g.kw += a.kw||0;
+  });
+  return byLoc;
+}
+
+function renderBoard(phaseKey){
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  const byLoc = buildLocIndex(phaseKey);
+  const order = ORDER[phaseKey];
+  order.forEach(loc=>{
+    const g = byLoc[loc];
+    if(!g) return;
+    const cls = zoneTypeClass(g.group);
+    const col = document.createElement("div");
+    col.className = `zone-col ${cls}`;
+    const pills = g.items.map(a => `
+      <div class="ahu-pill" title="${a.desc}">
+        <span class="pid">${shortId(a.id)}</span>
+        <span class="pspec">${a.brand} · ${a.ton}TR / ${a.kw}kW</span>
+      </div>
+    `).join("");
+    col.innerHTML = `
+      <div class="zc-head"><div class="zname">${shortName(loc)}</div><div class="zmeta">${g.items.length} AHU</div></div>
+      <div class="zc-body">${pills}</div>
+      <div class="zc-foot">${g.ton.toLocaleString()} TR · ${g.kw.toLocaleString()} kW</div>
+    `;
+    board.appendChild(col);
+  });
+}
+
+function renderSummaryTable(phaseKey){
+  const byLoc = buildLocIndex(phaseKey);
+  const rows = Object.entries(byLoc).sort((a,b)=> b[1].items.length - a[1].items.length);
+  document.getElementById("summary-body").innerHTML = rows.map(([loc,g])=>`
+    <tr>
+      <td>${shortName(loc)}</td>
+      <td><span class="pill ${zoneTypeClass(g.group)}">${g.group}</span></td>
+      <td class="mono">${g.items.length}</td>
+      <td class="mono">${g.ton.toLocaleString()}</td>
+      <td class="mono">${g.kw.toLocaleString()}</td>
+    </tr>
+  `).join("");
+}
+
+let currentPhase = "p1";
+function switchPhase(p){
+  currentPhase = p;
+  document.querySelectorAll(".phase-tab").forEach(t=>t.classList.toggle("active", t.dataset.phase===p));
+  document.getElementById("canvas-title").textContent = "Floor Plan — " + (p==="p1" ? "Phase 1" : "Phase 2");
+  document.getElementById("summary-phase-tag").textContent = (p==="p1" ? "Phase 1" : "Phase 2");
+  renderBoard(p);
+  renderSummaryTable(p);
+}
+document.querySelectorAll(".phase-tab").forEach(tab=> tab.addEventListener("click", ()=> switchPhase(tab.dataset.phase)));
+
+function renderEverything(){
+  renderBoard(currentPhase);
+  renderSummaryTable(currentPhase);
+
+  /* ===== Header metrics ===== */
+  document.getElementById("m-total").textContent = AHUS.length;
+  document.getElementById("m-zones").textContent = new Set(AHUS.map(a=>a.location)).size;
+  document.getElementById("m-ton").textContent = AHUS.reduce((s,a)=>s+(a.ton||0),0).toLocaleString();
+  document.getElementById("m-kw").textContent = AHUS.reduce((s,a)=>s+(a.kw||0),0).toLocaleString();
+
+  /* ===== Insight: Exhibition vs Convention donut ===== */
+  const groupAgg = {};
+  AHUS.forEach(a=>{ const g=(groupAgg[a.group_room]=groupAgg[a.group_room]||{count:0,ton:0}); g.count++; g.ton+=a.ton||0; });
+  const totalUnits = AHUS.length;
+  const exhPct = (groupAgg["EXHIBITION"]?.count||0)/totalUnits*100;
+  document.getElementById("donut-group").style.background = `conic-gradient(var(--exh-1) 0% ${exhPct}%, var(--con-1) ${exhPct}% 100%)`;
+  document.getElementById("donut-group-n").textContent = totalUnits;
+  document.getElementById("donut-group-legend").innerHTML = Object.entries(groupAgg).map(([k,v])=>`
+    <div class="li"><span class="dot" style="background:${k==="EXHIBITION"?"var(--exh-1)":"var(--con-1)"};"></span><b>${v.count}</b>&nbsp;${k} (${v.ton.toLocaleString()} TR)</div>
+  `).join("");
+
+  /* ===== Insight: Brand bars ===== */
+  const brandAgg = {};
+  AHUS.forEach(a=>{ const b=(a.brand||"—").trim().toUpperCase(); brandAgg[b]=(brandAgg[b]||0)+1; });
+  const maxBrand = Math.max(...Object.values(brandAgg));
+  const brandColors = ["var(--exh-1)","var(--con-1)","var(--amber)","var(--green)"];
+  document.getElementById("brand-bars").innerHTML = Object.entries(brandAgg).sort((a,b)=>b[1]-a[1]).map(([b,c],i)=>`
+    <div class="bar-row">
+      <div class="top"><span>${b}</span><b>${c}</b></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${c/maxBrand*100}%; background:${brandColors[i%4]};"></div></div>
+    </div>
+  `).join("");
+
+  /* ===== Insight: Phase comparison ===== */
+  const phaseAgg = {};
+  AHUS.forEach(a=>{ const p=(phaseAgg[a.phase]=phaseAgg[a.phase]||{count:0,ton:0,kw:0}); p.count++; p.ton+=a.ton||0; p.kw+=a.kw||0; });
+  document.getElementById("phase-compare").innerHTML = Object.entries(phaseAgg).sort((a,b)=>a[0].localeCompare(b[0])).map(([p,v])=>`
+    <div class="compare-col">
+      <div class="cl">${p.replace("BITEC-","")}</div>
+      <div class="cv">${v.count}</div>
+      <div class="cs">${v.ton.toLocaleString()} TR</div>
+      <div class="cs">${v.kw.toLocaleString()} kW</div>
+    </div>
+  `).join("");
+
+  /* ===== Insight: Top 5 zones by TR ===== */
+  const zoneAgg = {};
+  AHUS.forEach(a=>{ const z=(zoneAgg[a.location]=zoneAgg[a.location]||{ton:0,count:0}); z.ton+=a.ton||0; z.count++; });
+  const topZones = Object.entries(zoneAgg).sort((a,b)=>b[1].ton-a[1].ton).slice(0,5);
+  const maxZoneTon = topZones[0][1].ton;
+  document.getElementById("top-zone-bars").innerHTML = topZones.map(([loc,v])=>`
+    <div class="bar-row">
+      <div class="top"><span>${shortName(loc)}</span><b>${v.ton.toLocaleString()} TR</b></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${v.ton/maxZoneTon*100}%; background:linear-gradient(90deg, var(--exh-1), var(--con-1));"></div></div>
+    </div>
+  `).join("");
+}
+
+/* ===== Boot ===== */
+loadMaster();
+</script>
+
+</body>
+</html>
