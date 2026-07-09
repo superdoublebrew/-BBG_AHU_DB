@@ -3,473 +3,996 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BITEC AHU Master Dashboard</title>
+<title>BITEC Chiller & AHU Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
   :root{
-    --exh-1: #a855f7; --exh-2: #6d28d9;
-    --con-1: #22d3ee; --con-2: #0e7490;
-    --text:       #f3f6fb;
-    --text-muted: #93a0b8;
-    --text-faint: #59657f;
-    --glass:        rgba(255,255,255,0.035);
-    --glass-border: rgba(255,255,255,0.10);
-    --amber: #f2b84f;
-    --green: #34d399;
+    --p1-1:#22d3ee; --p1-2:#0e7490;
+    --p2-1:#a855f7; --p2-2:#6d28d9;
+    --text:#f3f6fb; --text-muted:#93a0b8; --text-faint:#59657f;
+    --glass:rgba(255,255,255,0.035); --glass-border:rgba(255,255,255,0.10);
+    --green:#34d399; --amber:#f2b84f; --slate:#6b7690; --cyan:#38bdf8;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
-    min-height:100vh; position:relative;
+    min-height:100vh;
     background:
-      radial-gradient(circle at 6% 4%,  rgba(168,85,247,0.13), transparent 38%),
-      radial-gradient(circle at 96% 10%, rgba(34,211,238,0.12), transparent 40%),
-      radial-gradient(circle at 50% 100%, rgba(52,211,153,0.05), transparent 45%),
-      linear-gradient(180deg, #05070d 0%, #030408 100%);
+      radial-gradient(circle at 6% 4%, rgba(34,211,238,0.13), transparent 38%),
+      radial-gradient(circle at 96% 10%, rgba(168,85,247,0.12), transparent 40%),
+      linear-gradient(180deg,#05070d 0%,#030408 100%);
     background-attachment:fixed;
-    color:var(--text);
-    font-family:'Inter', sans-serif;
-    font-size:13px;
-    padding:22px;
+    color:var(--text); font-family:'Inter',sans-serif; font-size:13px; padding:22px;
   }
-  body::after{
-    content:""; position:fixed; inset:0; pointer-events:none; z-index:999;
-    opacity:0.03; mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  }
-  ::-webkit-scrollbar{height:6px; width:6px;}
+  ::-webkit-scrollbar{height:7px; width:7px;}
   ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18); border-radius:10px;}
+  .glass{ background:var(--glass); border:1px solid var(--glass-border); border-radius:20px;
+    backdrop-filter:blur(26px) saturate(150%); -webkit-backdrop-filter:blur(26px) saturate(150%);
+    box-shadow:0 18px 50px rgba(0,0,0,0.42); }
+  .mono{font-family:'JetBrains Mono',monospace;}
 
-  .glass{
-    background:var(--glass); border:1px solid var(--glass-border); border-radius:20px;
-    backdrop-filter: blur(26px) saturate(150%); -webkit-backdrop-filter: blur(26px) saturate(150%);
-    box-shadow: 0 18px 50px rgba(0,0,0,0.42);
-  }
-  .mono{font-family:'JetBrains Mono', monospace;}
-
-  /* ===== Header ===== */
   .topbar{ padding:18px 26px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:18px; margin-bottom:14px; }
   .brand{display:flex; align-items:center; gap:14px;}
-  .brand-mark{
-    width:44px; height:44px; border-radius:13px; flex-shrink:0;
-    background:conic-gradient(from 200deg, var(--con-1), var(--exh-1), var(--con-1));
+  .brand-mark{ width:44px; height:44px; border-radius:13px; flex-shrink:0;
+    background:conic-gradient(from 200deg,var(--p1-1),var(--p2-1),var(--p1-1));
     display:flex; align-items:center; justify-content:center;
-    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:17px; color:#0a0612;
-    box-shadow:0 8px 22px rgba(168,85,247,0.35);
-  }
-  .brand h1{
-    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:19px;
-    background:linear-gradient(90deg, #ffffff 10%, #b7c3dd 100%);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-  .brand .sub{ display:flex; align-items:center; gap:8px; font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); margin-top:5px; }
-  .brand .sub .warn{
-    color:var(--amber); background:rgba(242,184,79,0.1); border:1px solid rgba(242,184,79,0.3);
-    padding:2px 9px; border-radius:20px; text-transform:none; letter-spacing:0; font-size:10px;
-  }
-  .metric-row{display:flex; gap:0;}
-  .metric{ padding:2px 20px; text-align:center; border-right:1px solid rgba(255,255,255,0.08); }
-  .metric:last-child{ border-right:none; }
-  .metric .lbl{font-size:9px; letter-spacing:1.2px; text-transform:uppercase; color:var(--text-faint);}
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; color:#0a0612; }
+  .brand h1{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px;
+    background:linear-gradient(90deg,#fff 10%,#b7c3dd 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .brand .sub{ font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); margin-top:5px; }
+  .metric-row{display:flex;}
+  .metric{ padding:2px 18px; text-align:center; border-right:1px solid rgba(255,255,255,0.08); }
+  .metric:last-child{border-right:none;}
+  .metric .lbl{font-size:9px; letter-spacing:1.1px; text-transform:uppercase; color:var(--text-faint);}
   .metric .val{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px;}
 
-  /* ===== Section title ===== */
-  .section-title{
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px;
-    letter-spacing:1px; text-transform:uppercase; color:var(--text-faint);
-    margin:22px 4px 10px;
-  }
+  .tabs{ display:flex; gap:8px; padding:0 4px 14px; }
+  .tab{ padding:11px 26px; border-radius:12px; cursor:pointer;
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
+    color:var(--text-muted); border:1px solid var(--glass-border); background:rgba(255,255,255,0.02); transition:all .18s; }
+  .tab:hover{color:var(--text);}
+  .tab.active{ color:#0a0612; background:linear-gradient(120deg,var(--p1-1),var(--p2-1)); border-color:transparent; }
 
-  /* ===== Insight cards row ===== */
-  .insight-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; }
-  @media (max-width:1100px){ .insight-grid{grid-template-columns:repeat(2,1fr);} }
-  .insight-card{ padding:18px; }
-  .insight-card h4{
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:11.5px;
-    color:var(--text-muted); text-transform:uppercase; letter-spacing:0.7px; margin-bottom:14px;
-  }
-
-  .donut-wrap{ display:flex; align-items:center; gap:14px; }
-  .donut{ width:76px; height:76px; border-radius:50%; flex-shrink:0; position:relative; }
-  .donut-hole{ position:absolute; inset:13px; border-radius:50%; background:#0a0a14; display:flex; align-items:center; justify-content:center; flex-direction:column; }
-  .donut-hole .n{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; }
-  .donut-hole .l{ font-size:7.5px; color:var(--text-faint); text-transform:uppercase; }
-  .donut-legend{ font-size:11px; display:flex; flex-direction:column; gap:6px; }
-  .donut-legend .li{ display:flex; align-items:center; gap:6px; color:var(--text-muted); }
-  .donut-legend b{ color:var(--text); font-family:'JetBrains Mono',monospace; }
-  .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
-
-  .bar-list{ display:flex; flex-direction:column; gap:9px; }
-  .bar-row .top{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-muted); margin-bottom:3px; }
-  .bar-row .top b{ color:var(--text); font-family:'JetBrains Mono',monospace; }
-  .bar-track{ height:6px; border-radius:4px; background:rgba(255,255,255,0.06); overflow:hidden; }
-  .bar-fill{ height:100%; border-radius:4px; }
-
-  .compare-row{ display:flex; gap:10px; }
-  .compare-col{ flex:1; padding:10px; border-radius:12px; background:rgba(255,255,255,0.03); text-align:center; }
-  .compare-col .cl{ font-size:9.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.6px; }
-  .compare-col .cv{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; margin-top:4px; }
-  .compare-col .cs{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--text-muted); margin-top:3px; }
-
-  /* ===== Phase tabs ===== */
-  .phase-tabs{ display:flex; gap:8px; padding:0 4px 14px; }
-  .phase-tab{
-    padding:10px 24px; border-radius:12px; cursor:pointer;
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px;
-    color:var(--text-muted); border:1px solid var(--glass-border);
-    background:rgba(255,255,255,0.02); transition: all 0.18s ease;
-  }
-  .phase-tab:hover{ color:var(--text); }
-  .phase-tab.active{ color:#0a0612; background:linear-gradient(120deg, var(--con-1), var(--exh-1)); border-color:transparent; }
-
-  .canvas-card{ padding:22px; }
-  .card-title{
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;
-    color:var(--text); display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;
-  }
-  .card-title .tag{ font-size:9.5px; letter-spacing:1.1px; text-transform:uppercase; color:var(--text-faint);
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .canvas-card{ padding:24px; }
+  .card-title{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .card-title .tag{ font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint);
     padding:4px 12px; border:1px solid var(--glass-border); border-radius:20px; }
-
-  /* ===== Zone column board ===== */
-  .board{ display:flex; gap:14px; align-items:flex-start; overflow-x:auto; padding-bottom:10px; }
-  .zone-col{ flex:0 0 148px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.14);
-    box-shadow: 0 14px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.14); }
-  .zc-head{ padding:12px 12px 10px; text-align:center; }
-  .zone-col.exhibition .zc-head{ background:linear-gradient(150deg, var(--exh-1) 0%, var(--exh-2) 100%); }
-  .zone-col.convention .zc-head{ background:linear-gradient(150deg, var(--con-1) 0%, var(--con-2) 100%); }
-  .zc-head .zname{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,0.25); }
-  .zc-head .zmeta{ font-family:'JetBrains Mono',monospace; font-size:10px; color:rgba(255,255,255,0.85); margin-top:4px; }
-  .zc-body{ background: rgba(255,255,255,0.035); padding:9px; display:flex; flex-direction:column; gap:6px; }
-  .ahu-pill{ padding:7px 9px; border-radius:9px; background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
-    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text); cursor:default; transition: background 0.15s ease; }
-  .ahu-pill:hover{ background: rgba(255,255,255,0.11); }
-  .zone-col.exhibition .ahu-pill{ border-color: rgba(168,85,247,0.35); }
-  .zone-col.convention .ahu-pill{ border-color: rgba(34,211,238,0.35); }
-  .ahu-pill .pid{ font-weight:700; }
-  .ahu-pill .pspec{ display:block; font-size:9px; color:var(--text-faint); margin-top:2px; font-family:'Inter',sans-serif; }
-  .zc-foot{ padding:8px 12px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); background:rgba(0,0,0,0.2); }
-
-  .legend-row{ display:flex; gap:16px; margin-bottom:16px; }
-  .legend-item{display:flex; align-items:center; gap:7px; font-size:11px; color:var(--text-muted);}
-  .legend-swatch{width:16px; height:10px; border-radius:4px; display:inline-block;}
-
-  /* ===== Zone summary table ===== */
-  .summary-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
-  .summary-table th{ text-align:left; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:10px;
-    letter-spacing:0.6px; text-transform:uppercase; color:var(--text-faint); padding:10px; border-bottom:1px solid var(--glass-border); }
-  .summary-table td{ padding:10px; border-bottom:1px solid rgba(255,255,255,0.04); }
-  .pill{ font-size:9.5px; font-weight:600; padding:3px 11px; border-radius:20px; }
-  .pill.exhibition{ background:rgba(168,85,247,0.16); color:#e3c8ff; }
-  .pill.convention{ background:rgba(34,211,238,0.16); color:#bdf3fc; }
-
-  /* ===== Coming soon / live status placeholder ===== */
-  .coming-soon{
-    border:1.5px dashed rgba(255,255,255,0.16); border-radius:18px; padding:22px;
-    background:rgba(255,255,255,0.015);
-  }
-  .cs-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:14px; }
-  @media (max-width:1100px){ .cs-grid{grid-template-columns:repeat(2,1fr);} }
-  .cs-item{ padding:16px; border-radius:14px; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); text-align:center; }
-  .cs-item .ci-icon{ font-size:20px; opacity:0.4; }
-  .cs-item .ci-label{ font-size:10.5px; color:var(--text-faint); margin-top:8px; }
-  .cs-note{ font-size:11px; color:var(--text-muted); line-height:1.7; margin-top:4px; }
-  .cs-note b{ color:var(--amber); }
-
-  /* ===== Notes ===== */
-  .notes-card ul{ padding-left:18px; font-size:11.5px; color:var(--text-muted); line-height:1.9; }
-  .notes-card li b{ color:var(--text); }
-
+  .plan-svg{width:100%; height:auto; display:block;}
+  .legend{ display:flex; gap:18px; margin-top:14px; font-size:11px; color:var(--text-muted); flex-wrap:wrap; }
+  .legend .li{display:flex; align-items:center; gap:6px;}
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
   .footnote{text-align:center; font-size:10.5px; color:var(--text-faint); margin-top:16px;}
 
-  .data-banner{
-    display:none; align-items:center; gap:10px;
-    padding:10px 18px; border-radius:12px; margin-bottom:12px; font-size:11.5px;
-  }
-  .data-banner.show{ display:flex; }
-  .data-banner.warn{ background:rgba(242,184,79,0.1); border:1px solid rgba(242,184,79,0.35); color:var(--amber); }
-  .data-banner.ok{ background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.35); color:var(--green); }
-  .data-banner b{ font-weight:700; }
-  .data-banner code{ background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:5px; }
+  .hall-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-start; }
+  .hall{ flex:0 0 108px; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.14);
+    box-shadow:0 10px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06); background:rgba(255,255,255,0.025); }
+  .hall-head{ padding:8px 8px 7px; text-align:center; position:relative; }
+  .hall.p1 .hall-head{ background:linear-gradient(150deg, rgba(56,189,248,0.28), rgba(14,116,144,0.28)); border-bottom:1px solid rgba(56,189,248,0.3); }
+  .hall.p2 .hall-head{ background:linear-gradient(150deg, rgba(168,85,247,0.28), rgba(109,40,217,0.28)); border-bottom:1px solid rgba(168,85,247,0.3); }
+  .hall-head .hn{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11px; color:#fff; letter-spacing:0.2px; }
+  .hall-head .hc{ font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,0.75); margin-top:2px; }
+  .hall-body{ padding:7px; display:flex; flex-direction:column; gap:4px; }
+  .ahu-box{ display:flex; align-items:center; gap:5px; padding:4px 6px; border-radius:5px;
+    background:rgba(0,0,0,0.28); border:1px solid rgba(255,255,255,0.07); }
+  .ahu-box .dot{ width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .ahu-box .dot.on{ background:#34d399; box-shadow:0 0 6px 1px rgba(52,211,153,0.7); }
+  .ahu-box .dot.sb{ background:#38bdf8; box-shadow:0 0 6px 1px rgba(56,189,248,0.7); }
+  .ahu-box .dot.off{ background:#5c6579; }
+  .ahu-box .id{ font-family:'JetBrains Mono',monospace; font-size:8.5px; color:#e7ecf5; letter-spacing:-0.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .hall-foot{ padding:5px 8px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-faint); background:rgba(0,0,0,0.22); border-top:1px solid rgba(255,255,255,0.05); }
+
+
+  .kpi-strip{ display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .kpi-chip{ flex:1; min-width:100px; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,0.035);
+    border:1px solid var(--glass-border); text-align:center; }
+  .kpi-chip .kl{ font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); font-family:'JetBrains Mono',monospace; }
+  .kpi-chip .kv{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; margin-top:2px; }
+  .kpi-chip.on .kv{ color:#34d399; } .kpi-chip.sb .kv{ color:#38bdf8; } .kpi-chip.off .kv{ color:#93a0b8; }
+  .mockbadge{ font-size:8.5px; letter-spacing:0.6px; text-transform:uppercase; color:#f2b84f;
+    background:rgba(242,184,79,0.12); border:1px solid rgba(242,184,79,0.3); padding:2px 8px; border-radius:20px; }
+
+  .ahu-grid{ display:grid; grid-template-columns:1fr 230px; gap:14px; align-items:start; }
+  @media (max-width:960px){ .ahu-grid{grid-template-columns:1fr;} }
+  .side-card{ padding:14px; }
+  .side-card h4{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:10.5px; letter-spacing:0.6px;
+    text-transform:uppercase; color:var(--text-faint); margin-bottom:10px; }
+  .zc-btn-row{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:14px; }
+  .zc-btn{ padding:8px; text-align:center; border-radius:8px; font-size:10.5px; font-weight:600;
+    font-family:'Space Grotesk',sans-serif; color:#fff; opacity:0.85; }
+  .zc-btn.on{ background:#1d9e75; } .zc-btn.off{ background:#3a4256; }
+  .zc-btn.event-on{ background:#a83b7a; } .zc-btn.event-off{ background:#7a3a63; }
+
+  .donut-wrap{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .donut{ width:64px; height:64px; border-radius:50%; flex-shrink:0;
+    background:conic-gradient(#34d399 0% 52%, #38bdf8 52% 76%, #4b5468 76% 100%); position:relative; }
+  .donut-hole{ position:absolute; inset:10px; border-radius:50%; background:#0d1017; display:flex; align-items:center; justify-content:center; }
+  .donut-hole span{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; }
+  .donut-legend{ font-size:10px; display:flex; flex-direction:column; gap:5px; color:var(--text-muted); }
+  .donut-legend .li{display:flex; align-items:center; gap:5px;}
+  .donut-legend .dot{width:7px; height:7px; border-radius:50%;}
+
+  .alarm-item{ display:flex; align-items:flex-start; gap:7px; font-size:10px; color:var(--text-muted); margin-bottom:8px; }
+  .alarm-item .ic{ font-size:11px; margin-top:1px; }
+  .alarm-item b{ color:var(--text); display:block; font-size:10.5px; }
+
+  .bottom-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:12px; }
+  @media (max-width:960px){ .bottom-grid{grid-template-columns:repeat(2,1fr);} }
+  .bcard{ padding:12px; }
+  .bcard h5{ font-size:9.5px; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px; font-family:'JetBrains Mono',monospace; }
+  .bcard .row{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-muted); margin-bottom:5px; }
+  .bcard .row b{ color:var(--text); font-family:'JetBrains Mono',monospace; }
+
+  .ahu-node:hover rect{ stroke:#fff; stroke-width:1.4; }
+  .ahu-modal-backdrop{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:50; align-items:center; justify-content:center; }
+  .ahu-modal-backdrop.show{ display:flex; }
+  .ahu-modal{ width:280px; padding:20px; }
+  .ahu-modal h3{ font-family:'Space Grotesk',sans-serif; font-size:16px; margin-bottom:2px; }
+  .ahu-modal .hall{ font-size:11px; color:var(--text-faint); margin-bottom:14px; font-family:'JetBrains Mono',monospace; }
+  .ahu-modal .row{ display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+  .ahu-modal .row b{ color:var(--text); font-family:'JetBrains Mono',monospace; }
+  .ahu-modal .status-badge{ display:inline-block; padding:3px 10px; border-radius:20px; font-size:10.5px; font-weight:600; }
+  .ahu-modal .close-btn{ margin-top:14px; width:100%; padding:8px; border-radius:8px; background:rgba(255,255,255,0.06);
+    border:1px solid var(--glass-border); color:var(--text-muted); font-family:'Space Grotesk',sans-serif; font-weight:600; cursor:pointer; }
+  .ahu-modal .mocknote{ font-size:9.5px; color:#f2b84f; margin-top:10px; }
 </style>
 </head>
 <body>
-
-<div class="data-banner" id="data-banner"></div>
 
 <div class="topbar glass">
   <div class="brand">
     <div class="brand-mark">B</div>
     <div>
-      <h1>BITEC AHU Master Dashboard</h1>
-      <div class="sub">ข้อมูลจริงจาก Master List <span class="warn">ยังไม่เชื่อมสถานะ on/off</span></div>
+      <h1>BITEC Chiller &amp; AHU Dashboard</h1>
+      <div class="sub">Full loop · หน้าบ้าน (AHU) + หลังบ้าน (chiller plant)</div>
     </div>
   </div>
   <div class="metric-row">
-    <div class="metric"><div class="lbl">Total AHU</div><div class="val" id="m-total">--</div></div>
-    <div class="metric"><div class="lbl">Zones</div><div class="val" id="m-zones">--</div></div>
-    <div class="metric"><div class="lbl">Total TR</div><div class="val" id="m-ton">--</div></div>
-    <div class="metric"><div class="lbl">Total kW</div><div class="val" id="m-kw">--</div></div>
+    <div class="metric"><div class="lbl">AHU</div><div class="val">103</div></div>
+    <div class="metric"><div class="lbl">Chillers</div><div class="val">12</div></div>
+    <div class="metric"><div class="lbl">Cooling towers</div><div class="val">11</div></div>
+    <div class="metric"><div class="lbl">Pumps</div><div class="val">42</div></div>
   </div>
 </div>
 
-<div class="section-title">ภาพรวมข้อมูลจริง (Master Data Insights)</div>
-<div class="insight-grid">
-  <div class="insight-card glass">
-    <h4>Exhibition vs Convention</h4>
-    <div class="donut-wrap">
-      <div class="donut" id="donut-group"><div class="donut-hole"><div class="n" id="donut-group-n">--</div><div class="l">Units</div></div></div>
-      <div class="donut-legend" id="donut-group-legend"></div>
+<div class="tabs">
+  <div class="tab active" data-tab="ahu">หน้าบ้าน · AHU floor plan</div>
+  <div class="tab" data-tab="plant">หลังบ้าน · chiller plant loop</div>
+</div>
+
+<div class="panel active" id="panel-ahu">
+  <div class="kpi-strip">
+      <div class="kpi-chip on"><div class="kl">running (sample)</div><div class="kv">28</div></div>
+      <div class="kpi-chip sb"><div class="kl">standby (sample)</div><div class="kv">13</div></div>
+      <div class="kpi-chip off"><div class="kl">stopped (sample)</div><div class="kv">7</div></div>
+      <div class="kpi-chip"><div class="kl">shown / total</div><div class="kv">54 / 103</div></div>
+      <div class="kpi-chip" style="display:flex; align-items:center; justify-content:center;"><span class="mockbadge">mock data</span></div>
+    </div>
+
+    <div class="ahu-grid">
+      <div class="canvas-card glass" style="padding:20px;">
+        <div class="card-title"><span>AHU floor plan — วางตำแหน่งตามผังจริง</span><span class="tag">mock status</span></div>
+        <svg width="100%" viewBox="0 0 700 660" xmlns="http://www.w3.org/2000/svg">
+<line x1="-16.0" y1="14" x2="716.0" y2="14" stroke="#22d3ee" stroke-width="2.6"/>
+<text x="-16.0" y="8" font-family="JetBrains Mono" font-size="9" fill="#22d3ee">CHWS DISTRIBUTION MAIN</text>
+<line x1="350.0" y1="14" x2="350.0" y2="30" stroke="#22d3ee" stroke-width="1.6"/>
+<line x1="22.0" y1="46" x2="678.0" y2="46" stroke="#4b5468" stroke-width="2"/>
+<circle cx="22.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
+<line x1="22.0" y1="46" x2="22.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
+<rect x="-16.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
+<text x="22.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">SAMA GARDEN</text>
+<text x="22.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">9 units</text>
+<line x1="22.0" y1="92" x2="22.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="22.0" y1="100" x2="22.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="22.0" y1="113.0" x2="-8.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="GDN-01" data-hall="SAMA GARDEN" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="-12.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="-3.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M -3.0 113.0 L -3.0 108.0 A 5 5 0 0 1 1.2999999999999998 110.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M -3.0 113.0 L 1.2999999999999998 115.5 A 5 5 0 0 1 -7.3 115.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="8.0" cy="106.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="9.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">GDN-01</text>
+            </g>
+<line x1="22.0" y1="129.0" x2="22.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="22.0" y1="145.0" x2="-8.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="GDN-02" data-hall="SAMA GARDEN" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="-12.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="-3.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M -3.0 145.0 L -3.0 140.0 A 5 5 0 0 1 1.2999999999999998 142.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M -3.0 145.0 L 1.2999999999999998 147.5 A 5 5 0 0 1 -7.3 147.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="8.0" cy="138.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="9.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">GDN-02</text>
+            </g>
+<line x1="22.0" y1="161.0" x2="22.0" y2="177.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="22.0" y1="177.0" x2="-8.0" y2="177.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="GDN-03" data-hall="SAMA GARDEN" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="-12.0" y="164" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="-3.0" cy="177.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M -3.0 177.0 L -3.0 172.0 A 5 5 0 0 1 1.2999999999999998 174.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M -3.0 177.0 L 1.2999999999999998 179.5 A 5 5 0 0 1 -7.3 179.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="8.0" cy="170.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="9.0" y="180.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">GDN-03</text>
+            </g>
+<line x1="22.0" y1="193.0" x2="22.0" y2="209.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="22.0" y1="209.0" x2="-8.0" y2="209.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="GDN-04" data-hall="SAMA GARDEN" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="-12.0" y="196" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="-3.0" cy="209.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M -3.0 209.0 L -3.0 204.0 A 5 5 0 0 1 1.2999999999999998 206.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M -3.0 209.0 L 1.2999999999999998 211.5 A 5 5 0 0 1 -7.3 211.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="8.0" cy="202.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="9.0" y="212.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">GDN-04</text>
+            </g>
+<line x1="22.0" y1="225.0" x2="22.0" y2="241.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="22.0" y1="241.0" x2="-8.0" y2="241.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="GDN-05" data-hall="SAMA GARDEN" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="-12.0" y="228" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="-3.0" cy="241.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M -3.0 241.0 L -3.0 236.0 A 5 5 0 0 1 1.2999999999999998 238.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M -3.0 241.0 L 1.2999999999999998 243.5 A 5 5 0 0 1 -7.3 243.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="8.0" cy="234.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="9.0" y="244.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">GDN-05</text>
+            </g>
+<circle cx="104.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
+<line x1="104.0" y1="46" x2="104.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
+<rect x="66.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
+<text x="104.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">BEAT</text>
+<text x="104.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">30 units</text>
+<line x1="104.0" y1="92" x2="104.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="104.0" y1="100" x2="104.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="104.0" y1="113.0" x2="74.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="BEAT-01" data-hall="BEAT" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="70.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="79.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 79.0 113.0 L 79.0 108.0 A 5 5 0 0 1 83.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 79.0 113.0 L 83.3 115.5 A 5 5 0 0 1 74.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="90.0" cy="106.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="91.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BEAT-01</text>
+            </g>
+<line x1="104.0" y1="129.0" x2="104.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="104.0" y1="145.0" x2="74.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="BEAT-02" data-hall="BEAT" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="70.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="79.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 79.0 145.0 L 79.0 140.0 A 5 5 0 0 1 83.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 79.0 145.0 L 83.3 147.5 A 5 5 0 0 1 74.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="90.0" cy="138.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="91.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BEAT-02</text>
+            </g>
+<line x1="104.0" y1="161.0" x2="104.0" y2="177.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="104.0" y1="177.0" x2="74.0" y2="177.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="BEAT-03" data-hall="BEAT" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="70.0" y="164" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="79.0" cy="177.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 79.0 177.0 L 79.0 172.0 A 5 5 0 0 1 83.3 174.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 79.0 177.0 L 83.3 179.5 A 5 5 0 0 1 74.7 179.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="90.0" cy="170.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="91.0" y="180.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BEAT-03</text>
+            </g>
+<line x1="104.0" y1="193.0" x2="104.0" y2="209.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="104.0" y1="209.0" x2="74.0" y2="209.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="BEAT-04" data-hall="BEAT" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="70.0" y="196" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="79.0" cy="209.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 79.0 209.0 L 79.0 204.0 A 5 5 0 0 1 83.3 206.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 79.0 209.0 L 83.3 211.5 A 5 5 0 0 1 74.7 211.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="90.0" cy="202.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="91.0" y="212.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BEAT-04</text>
+            </g>
+<line x1="104.0" y1="225.0" x2="104.0" y2="241.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="104.0" y1="241.0" x2="74.0" y2="241.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="BEAT-05" data-hall="BEAT" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="70.0" y="228" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="79.0" cy="241.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 79.0 241.0 L 79.0 236.0 A 5 5 0 0 1 83.3 238.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 79.0 241.0 L 83.3 243.5 A 5 5 0 0 1 74.7 243.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="90.0" cy="234.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="91.0" y="244.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BEAT-05</text>
+            </g>
+<circle cx="186.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
+<line x1="186.0" y1="46" x2="186.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
+<rect x="148.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
+<text x="186.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH104</text>
+<text x="186.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
+<line x1="186.0" y1="92" x2="186.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="186.0" y1="100" x2="186.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="186.0" y1="113.0" x2="156.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="104-01" data-hall="EH104" data-status="Stopped" data-brand="Tasaki" onclick="showAhuDetail(this)">
+              <rect x="152.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="161.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 161.0 113.0 L 161.0 108.0 A 5 5 0 0 1 165.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 161.0 113.0 L 165.3 115.5 A 5 5 0 0 1 156.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="172.0" cy="106.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
+              <text x="173.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">104-01</text>
+            </g>
+<line x1="186.0" y1="129.0" x2="186.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="186.0" y1="145.0" x2="156.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="104-02" data-hall="EH104" data-status="Standby" data-brand="Tasaki" onclick="showAhuDetail(this)">
+              <rect x="152.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="161.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 161.0 145.0 L 161.0 140.0 A 5 5 0 0 1 165.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 161.0 145.0 L 165.3 147.5 A 5 5 0 0 1 156.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="172.0" cy="138.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="173.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">104-02</text>
+            </g>
+<circle cx="268.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
+<line x1="268.0" y1="46" x2="268.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
+<rect x="230.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
+<text x="268.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH103</text>
+<text x="268.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
+<line x1="268.0" y1="92" x2="268.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="268.0" y1="100" x2="268.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="268.0" y1="113.0" x2="238.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="103-01" data-hall="EH103" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+              <rect x="234.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="243.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 243.0 113.0 L 243.0 108.0 A 5 5 0 0 1 247.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 243.0 113.0 L 247.3 115.5 A 5 5 0 0 1 238.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="254.0" cy="106.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="255.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">103-01</text>
+            </g>
+<line x1="268.0" y1="129.0" x2="268.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="268.0" y1="145.0" x2="238.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="103-02" data-hall="EH103" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+              <rect x="234.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="243.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 243.0 145.0 L 243.0 140.0 A 5 5 0 0 1 247.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 243.0 145.0 L 247.3 147.5 A 5 5 0 0 1 238.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="254.0" cy="138.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="255.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">103-02</text>
+            </g>
+<circle cx="350.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
+<line x1="350.0" y1="46" x2="350.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
+<rect x="312.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
+<text x="350.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH102</text>
+<text x="350.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
+<line x1="350.0" y1="92" x2="350.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="350.0" y1="100" x2="350.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="350.0" y1="113.0" x2="320.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="102-01" data-hall="EH102" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+              <rect x="316.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="325.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 325.0 113.0 L 325.0 108.0 A 5 5 0 0 1 329.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 325.0 113.0 L 329.3 115.5 A 5 5 0 0 1 320.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="336.0" cy="106.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="337.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">102-01</text>
+            </g>
+<line x1="350.0" y1="129.0" x2="350.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="350.0" y1="145.0" x2="320.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="102-02" data-hall="EH102" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+              <rect x="316.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="325.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 325.0 145.0 L 325.0 140.0 A 5 5 0 0 1 329.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 325.0 145.0 L 329.3 147.5 A 5 5 0 0 1 320.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="336.0" cy="138.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="337.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">102-02</text>
+            </g>
+<circle cx="432.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
+<line x1="432.0" y1="46" x2="432.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
+<rect x="394.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
+<text x="432.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH101</text>
+<text x="432.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
+<line x1="432.0" y1="92" x2="432.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="432.0" y1="100" x2="432.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="432.0" y1="113.0" x2="402.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="101-01" data-hall="EH101" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+              <rect x="398.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="407.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 407.0 113.0 L 407.0 108.0 A 5 5 0 0 1 411.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 407.0 113.0 L 411.3 115.5 A 5 5 0 0 1 402.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="418.0" cy="106.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="419.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">101-01</text>
+            </g>
+<line x1="432.0" y1="129.0" x2="432.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="432.0" y1="145.0" x2="402.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="101-02" data-hall="EH101" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+              <rect x="398.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="407.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 407.0 145.0 L 407.0 140.0 A 5 5 0 0 1 411.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 407.0 145.0 L 411.3 147.5 A 5 5 0 0 1 402.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="418.0" cy="138.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="419.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">101-02</text>
+            </g>
+<circle cx="514.0" cy="46" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="1.6"/>
+<line x1="514.0" y1="46" x2="514.0" y2="68" stroke="#a855f7" stroke-width="1.6"/>
+<rect x="476.0" y="68" width="76" height="24" rx="4" fill="#a855f722" stroke="#a855f7" stroke-width="0.8"/>
+<text x="514.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH100 FRONT</text>
+<text x="514.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">4 units</text>
+<line x1="514.0" y1="92" x2="514.0" y2="100" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="514.0" y1="100" x2="514.0" y2="113.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="514.0" y1="113.0" x2="484.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="100F-01" data-hall="EH100 FRONT" data-status="Standby" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="480.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="489.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 489.0 113.0 L 489.0 108.0 A 5 5 0 0 1 493.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 489.0 113.0 L 493.3 115.5 A 5 5 0 0 1 484.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="500.0" cy="106.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="501.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">100F-01</text>
+            </g>
+<line x1="514.0" y1="129.0" x2="514.0" y2="145.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="514.0" y1="145.0" x2="484.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="100F-02" data-hall="EH100 FRONT" data-status="Stopped" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="480.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="489.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 489.0 145.0 L 489.0 140.0 A 5 5 0 0 1 493.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 489.0 145.0 L 493.3 147.5 A 5 5 0 0 1 484.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="500.0" cy="138.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
+              <text x="501.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">100F-02</text>
+            </g>
+<line x1="514.0" y1="161.0" x2="514.0" y2="177.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="514.0" y1="177.0" x2="484.0" y2="177.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="100F-03" data-hall="EH100 FRONT" data-status="Stopped" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="480.0" y="164" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="489.0" cy="177.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 489.0 177.0 L 489.0 172.0 A 5 5 0 0 1 493.3 174.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 489.0 177.0 L 493.3 179.5 A 5 5 0 0 1 484.7 179.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="500.0" cy="170.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
+              <text x="501.0" y="180.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">100F-03</text>
+            </g>
+<line x1="514.0" y1="193.0" x2="514.0" y2="209.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="514.0" y1="209.0" x2="484.0" y2="209.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="100F-04" data-hall="EH100 FRONT" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="480.0" y="196" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="489.0" cy="209.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 489.0 209.0 L 489.0 204.0 A 5 5 0 0 1 493.3 206.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 489.0 209.0 L 493.3 211.5 A 5 5 0 0 1 484.7 211.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="500.0" cy="202.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="501.0" y="212.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">100F-04</text>
+            </g>
+<circle cx="596.0" cy="46" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="1.6"/>
+<line x1="596.0" y1="46" x2="596.0" y2="68" stroke="#a855f7" stroke-width="1.6"/>
+<rect x="558.0" y="68" width="76" height="24" rx="4" fill="#a855f722" stroke="#a855f7" stroke-width="0.8"/>
+<text x="596.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH99</text>
+<text x="596.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">5 units</text>
+<line x1="596.0" y1="92" x2="596.0" y2="100" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="596.0" y1="100" x2="596.0" y2="113.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="596.0" y1="113.0" x2="566.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="099-01" data-hall="EH99" data-status="Standby" data-brand="Trane" onclick="showAhuDetail(this)">
+              <rect x="562.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="571.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 571.0 113.0 L 571.0 108.0 A 5 5 0 0 1 575.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 571.0 113.0 L 575.3 115.5 A 5 5 0 0 1 566.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="582.0" cy="106.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="583.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">099-01</text>
+            </g>
+<line x1="596.0" y1="129.0" x2="596.0" y2="145.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="596.0" y1="145.0" x2="566.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="099-02" data-hall="EH99" data-status="Running" data-brand="Trane" onclick="showAhuDetail(this)">
+              <rect x="562.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="571.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 571.0 145.0 L 571.0 140.0 A 5 5 0 0 1 575.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 571.0 145.0 L 575.3 147.5 A 5 5 0 0 1 566.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="582.0" cy="138.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="583.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">099-02</text>
+            </g>
+<line x1="596.0" y1="161.0" x2="596.0" y2="177.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="596.0" y1="177.0" x2="566.0" y2="177.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="099-03" data-hall="EH99" data-status="Running" data-brand="Trane" onclick="showAhuDetail(this)">
+              <rect x="562.0" y="164" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="571.0" cy="177.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 571.0 177.0 L 571.0 172.0 A 5 5 0 0 1 575.3 174.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 571.0 177.0 L 575.3 179.5 A 5 5 0 0 1 566.7 179.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="582.0" cy="170.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="583.0" y="180.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">099-03</text>
+            </g>
+<line x1="596.0" y1="193.0" x2="596.0" y2="209.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="596.0" y1="209.0" x2="566.0" y2="209.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="099-04" data-hall="EH99" data-status="Stopped" data-brand="Trane" onclick="showAhuDetail(this)">
+              <rect x="562.0" y="196" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="571.0" cy="209.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 571.0 209.0 L 571.0 204.0 A 5 5 0 0 1 575.3 206.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 571.0 209.0 L 575.3 211.5 A 5 5 0 0 1 566.7 211.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="582.0" cy="202.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
+              <text x="583.0" y="212.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">099-04</text>
+            </g>
+<line x1="596.0" y1="225.0" x2="596.0" y2="241.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="596.0" y1="241.0" x2="566.0" y2="241.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="099-05" data-hall="EH99" data-status="Stopped" data-brand="Trane" onclick="showAhuDetail(this)">
+              <rect x="562.0" y="228" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="571.0" cy="241.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 571.0 241.0 L 571.0 236.0 A 5 5 0 0 1 575.3 238.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 571.0 241.0 L 575.3 243.5 A 5 5 0 0 1 566.7 243.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="582.0" cy="234.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
+              <text x="583.0" y="244.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">099-05</text>
+            </g>
+<circle cx="678.0" cy="46" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="1.6"/>
+<line x1="678.0" y1="46" x2="678.0" y2="68" stroke="#a855f7" stroke-width="1.6"/>
+<rect x="640.0" y="68" width="76" height="24" rx="4" fill="#a855f722" stroke="#a855f7" stroke-width="0.8"/>
+<text x="678.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH98</text>
+<text x="678.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">10 units</text>
+<line x1="678.0" y1="92" x2="678.0" y2="100" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="678.0" y1="100" x2="678.0" y2="113.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="678.0" y1="113.0" x2="648.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="098-01" data-hall="EH98" data-status="Standby" data-brand="Trane" onclick="showAhuDetail(this)">
+              <rect x="644.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="653.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 653.0 113.0 L 653.0 108.0 A 5 5 0 0 1 657.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 653.0 113.0 L 657.3 115.5 A 5 5 0 0 1 648.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="664.0" cy="106.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="665.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">098-01</text>
+            </g>
+<line x1="678.0" y1="129.0" x2="678.0" y2="145.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="678.0" y1="145.0" x2="648.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="098-02" data-hall="EH98" data-status="Stopped" data-brand="Trane" onclick="showAhuDetail(this)">
+              <rect x="644.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="653.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 653.0 145.0 L 653.0 140.0 A 5 5 0 0 1 657.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 653.0 145.0 L 657.3 147.5 A 5 5 0 0 1 648.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="664.0" cy="138.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
+              <text x="665.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">098-02</text>
+            </g>
+<line x1="678.0" y1="161.0" x2="678.0" y2="177.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="678.0" y1="177.0" x2="648.0" y2="177.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="098-03" data-hall="EH98" data-status="Running" data-brand="Trane" onclick="showAhuDetail(this)">
+              <rect x="644.0" y="164" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="653.0" cy="177.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 653.0 177.0 L 653.0 172.0 A 5 5 0 0 1 657.3 174.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 653.0 177.0 L 657.3 179.5 A 5 5 0 0 1 648.7 179.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="664.0" cy="170.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="665.0" y="180.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">098-03</text>
+            </g>
+<line x1="678.0" y1="193.0" x2="678.0" y2="209.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="678.0" y1="209.0" x2="648.0" y2="209.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="098-04" data-hall="EH98" data-status="Standby" data-brand="Trane" onclick="showAhuDetail(this)">
+              <rect x="644.0" y="196" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="653.0" cy="209.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 653.0 209.0 L 653.0 204.0 A 5 5 0 0 1 657.3 206.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 653.0 209.0 L 657.3 211.5 A 5 5 0 0 1 648.7 211.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="664.0" cy="202.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="665.0" y="212.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">098-04</text>
+            </g>
+<line x1="678.0" y1="225.0" x2="678.0" y2="241.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="678.0" y1="241.0" x2="648.0" y2="241.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="098-05" data-hall="EH98" data-status="Running" data-brand="Trane" onclick="showAhuDetail(this)">
+              <rect x="644.0" y="228" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="653.0" cy="241.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 653.0 241.0 L 653.0 236.0 A 5 5 0 0 1 657.3 238.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 653.0 241.0 L 657.3 243.5 A 5 5 0 0 1 648.7 243.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="664.0" cy="234.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="665.0" y="244.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">098-05</text>
+            </g>
+<line x1="145.0" y1="366" x2="555.0" y2="366" stroke="#4b5468" stroke-width="2"/>
+<circle cx="145.0" cy="366" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
+<line x1="145.0" y1="366" x2="145.0" y2="388" stroke="#38bdf8" stroke-width="1.6"/>
+<rect x="107.0" y="388" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
+<text x="145.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">LIVE</text>
+<text x="145.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">10 units</text>
+<line x1="145.0" y1="412" x2="145.0" y2="420" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="145.0" y1="420" x2="145.0" y2="433.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="145.0" y1="433.0" x2="115.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="LIVE-01" data-hall="LIVE" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="111.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="120.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 120.0 433.0 L 120.0 428.0 A 5 5 0 0 1 124.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 120.0 433.0 L 124.3 435.5 A 5 5 0 0 1 115.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="131.0" cy="426.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="132.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">LIVE-01</text>
+            </g>
+<line x1="145.0" y1="449.0" x2="145.0" y2="465.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="145.0" y1="465.0" x2="115.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="LIVE-02" data-hall="LIVE" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="111.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="120.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 120.0 465.0 L 120.0 460.0 A 5 5 0 0 1 124.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 120.0 465.0 L 124.3 467.5 A 5 5 0 0 1 115.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="131.0" cy="458.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="132.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">LIVE-02</text>
+            </g>
+<line x1="145.0" y1="481.0" x2="145.0" y2="497.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="145.0" y1="497.0" x2="115.0" y2="497.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="LIVE-03" data-hall="LIVE" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="111.0" y="484" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="120.0" cy="497.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 120.0 497.0 L 120.0 492.0 A 5 5 0 0 1 124.3 494.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 120.0 497.0 L 124.3 499.5 A 5 5 0 0 1 115.7 499.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="131.0" cy="490.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="132.0" y="500.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">LIVE-03</text>
+            </g>
+<circle cx="227.0" cy="366" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
+<line x1="227.0" y1="366" x2="227.0" y2="388" stroke="#38bdf8" stroke-width="1.6"/>
+<rect x="189.0" y="388" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
+<text x="227.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">GH201</text>
+<text x="227.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
+<line x1="227.0" y1="412" x2="227.0" y2="420" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="227.0" y1="420" x2="227.0" y2="433.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="227.0" y1="433.0" x2="197.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="201-01" data-hall="GH201" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="193.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="202.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 202.0 433.0 L 202.0 428.0 A 5 5 0 0 1 206.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 202.0 433.0 L 206.3 435.5 A 5 5 0 0 1 197.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="213.0" cy="426.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="214.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">201-01</text>
+            </g>
+<line x1="227.0" y1="449.0" x2="227.0" y2="465.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="227.0" y1="465.0" x2="197.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="201-02" data-hall="GH201" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="193.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="202.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 202.0 465.0 L 202.0 460.0 A 5 5 0 0 1 206.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 202.0 465.0 L 206.3 467.5 A 5 5 0 0 1 197.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="213.0" cy="458.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="214.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">201-02</text>
+            </g>
+<circle cx="309.0" cy="366" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
+<line x1="309.0" y1="366" x2="309.0" y2="388" stroke="#38bdf8" stroke-width="1.6"/>
+<rect x="271.0" y="388" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
+<text x="309.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">GH202</text>
+<text x="309.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
+<line x1="309.0" y1="412" x2="309.0" y2="420" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="309.0" y1="420" x2="309.0" y2="433.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="309.0" y1="433.0" x2="279.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="202-01" data-hall="GH202" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="275.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="284.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 284.0 433.0 L 284.0 428.0 A 5 5 0 0 1 288.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 284.0 433.0 L 288.3 435.5 A 5 5 0 0 1 279.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="295.0" cy="426.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="296.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">202-01</text>
+            </g>
+<line x1="309.0" y1="449.0" x2="309.0" y2="465.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="309.0" y1="465.0" x2="279.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="202-02" data-hall="GH202" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="275.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="284.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 284.0 465.0 L 284.0 460.0 A 5 5 0 0 1 288.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 284.0 465.0 L 288.3 467.5 A 5 5 0 0 1 279.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="295.0" cy="458.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="296.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">202-02</text>
+            </g>
+<circle cx="391.0" cy="366" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
+<line x1="391.0" y1="366" x2="391.0" y2="388" stroke="#38bdf8" stroke-width="1.6"/>
+<rect x="353.0" y="388" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
+<text x="391.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">GH203</text>
+<text x="391.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">3 units</text>
+<line x1="391.0" y1="412" x2="391.0" y2="420" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="391.0" y1="420" x2="391.0" y2="433.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="391.0" y1="433.0" x2="361.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="203-01" data-hall="GH203" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="357.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="366.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 366.0 433.0 L 366.0 428.0 A 5 5 0 0 1 370.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 366.0 433.0 L 370.3 435.5 A 5 5 0 0 1 361.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="377.0" cy="426.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="378.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">203-01</text>
+            </g>
+<line x1="391.0" y1="449.0" x2="391.0" y2="465.0" stroke="#38bdf8" stroke-width="1.2"/>
+<line x1="391.0" y1="465.0" x2="361.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="203-02" data-hall="GH203" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+              <rect x="357.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="366.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 366.0 465.0 L 366.0 460.0 A 5 5 0 0 1 370.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 366.0 465.0 L 370.3 467.5 A 5 5 0 0 1 361.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="377.0" cy="458.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="378.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">203-02</text>
+            </g>
+<circle cx="473.0" cy="366" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="1.6"/>
+<line x1="473.0" y1="366" x2="473.0" y2="388" stroke="#a855f7" stroke-width="1.6"/>
+<rect x="435.0" y="388" width="76" height="24" rx="4" fill="#a855f722" stroke="#a855f7" stroke-width="0.8"/>
+<text x="473.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">BHIRAJ</text>
+<text x="473.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">6 units</text>
+<line x1="473.0" y1="412" x2="473.0" y2="420" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="473.0" y1="420" x2="473.0" y2="433.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="473.0" y1="433.0" x2="443.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="BH-01" data-hall="BHIRAJ" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="439.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="448.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 448.0 433.0 L 448.0 428.0 A 5 5 0 0 1 452.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 448.0 433.0 L 452.3 435.5 A 5 5 0 0 1 443.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="459.0" cy="426.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="460.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BH-01</text>
+            </g>
+<line x1="473.0" y1="449.0" x2="473.0" y2="465.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="473.0" y1="465.0" x2="443.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="BH-02" data-hall="BHIRAJ" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="439.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="448.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 448.0 465.0 L 448.0 460.0 A 5 5 0 0 1 452.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 448.0 465.0 L 452.3 467.5 A 5 5 0 0 1 443.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="459.0" cy="458.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="460.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BH-02</text>
+            </g>
+<line x1="473.0" y1="481.0" x2="473.0" y2="497.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="473.0" y1="497.0" x2="443.0" y2="497.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="BH-03" data-hall="BHIRAJ" data-status="Standby" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="439.0" y="484" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="448.0" cy="497.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 448.0 497.0 L 448.0 492.0 A 5 5 0 0 1 452.3 494.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 448.0 497.0 L 452.3 499.5 A 5 5 0 0 1 443.7 499.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="459.0" cy="490.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="460.0" y="500.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BH-03</text>
+            </g>
+<circle cx="555.0" cy="366" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="1.6"/>
+<line x1="555.0" y1="366" x2="555.0" y2="388" stroke="#a855f7" stroke-width="1.6"/>
+<rect x="517.0" y="388" width="76" height="24" rx="4" fill="#a855f722" stroke="#a855f7" stroke-width="0.8"/>
+<text x="555.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">COSMOS</text>
+<text x="555.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">7 units</text>
+<line x1="555.0" y1="412" x2="555.0" y2="420" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="555.0" y1="420" x2="555.0" y2="433.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="555.0" y1="433.0" x2="525.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="CSM-01" data-hall="COSMOS" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="521.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="530.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 530.0 433.0 L 530.0 428.0 A 5 5 0 0 1 534.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 530.0 433.0 L 534.3 435.5 A 5 5 0 0 1 525.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="541.0" cy="426.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="542.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">CSM-01</text>
+            </g>
+<line x1="555.0" y1="449.0" x2="555.0" y2="465.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="555.0" y1="465.0" x2="525.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="CSM-02" data-hall="COSMOS" data-status="Standby" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="521.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="530.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 530.0 465.0 L 530.0 460.0 A 5 5 0 0 1 534.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 530.0 465.0 L 534.3 467.5 A 5 5 0 0 1 525.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="541.0" cy="458.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
+              <text x="542.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">CSM-02</text>
+            </g>
+<line x1="555.0" y1="481.0" x2="555.0" y2="497.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="555.0" y1="497.0" x2="525.0" y2="497.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="CSM-03" data-hall="COSMOS" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="521.0" y="484" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="530.0" cy="497.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 530.0 497.0 L 530.0 492.0 A 5 5 0 0 1 534.3 494.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 530.0 497.0 L 534.3 499.5 A 5 5 0 0 1 525.7 499.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="541.0" cy="490.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
+              <text x="542.0" y="500.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">CSM-03</text>
+            </g>
+<line x1="555.0" y1="513.0" x2="555.0" y2="529.0" stroke="#a855f7" stroke-width="1.2"/>
+<line x1="555.0" y1="529.0" x2="525.0" y2="529.0" stroke="#5f6b80" stroke-width="1"/>
+<g class="ahu-node" style="cursor:pointer" data-id="CSM-04" data-hall="COSMOS" data-status="Stopped" data-brand="TRANE" onclick="showAhuDetail(this)">
+              <rect x="521.0" y="516" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+              <circle cx="530.0" cy="529.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
+      <path d="M 530.0 529.0 L 530.0 524.0 A 5 5 0 0 1 534.3 526.5 Z" fill="#7a8699" opacity="0.6"/>
+      <path d="M 530.0 529.0 L 534.3 531.5 A 5 5 0 0 1 525.7 531.5 Z" fill="#7a8699" opacity="0.6"/>
+      <circle cx="541.0" cy="522.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
+              <text x="542.0" y="532.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">CSM-04</text>
+            </g>
+<line x1="22.0" y1="260" x2="22.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="104.0" y1="260" x2="104.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="186.0" y1="164" x2="186.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="268.0" y1="164" x2="268.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="350.0" y1="164" x2="350.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="432.0" y1="164" x2="432.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="514.0" y1="228" x2="514.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="596.0" y1="260" x2="596.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="678.0" y1="260" x2="678.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="145.0" y1="516" x2="145.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="227.0" y1="484" x2="227.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="309.0" y1="484" x2="309.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="391.0" y1="484" x2="391.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="473.0" y1="516" x2="473.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="555.0" y1="548" x2="555.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
+<line x1="22.0" y1="620" x2="678.0" y2="620" stroke="#34d399" stroke-width="2.4"/>
+<text x="22.0" y="636" font-family="JetBrains Mono" font-size="9" fill="#34d399">CHWR RETURN MANIFOLD → plant room (ดูต่อที่หลังบ้าน)</text>
+</svg><div class="hc">10 units</div></div>
+      <div class="hall-body"><div class="ahu-box"><span class="dot sb"></span><span class="id">LIVE-01</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">LIVE-02</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">LIVE-03</span></div></div>
+      <div class="hall-foot"></div>
+    </div><div class="hall p1">
+      <div class="hall-head"><div class="hn">GH201</div><div class="hc">2 units</div></div>
+      <div class="hall-body"><div class="ahu-box"><span class="dot on"></span><span class="id">201-01</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">201-02</span></div></div>
+      <div class="hall-foot"></div>
+    </div><div class="hall p1">
+      <div class="hall-head"><div class="hn">GH202</div><div class="hc">2 units</div></div>
+      <div class="hall-body"><div class="ahu-box"><span class="dot on"></span><span class="id">202-01</span></div><div class="ahu-box"><span class="dot sb"></span><span class="id">202-02</span></div></div>
+      <div class="hall-foot"></div>
+    </div><div class="hall p1">
+      <div class="hall-head"><div class="hn">GH203</div><div class="hc">3 units</div></div>
+      <div class="hall-body"><div class="ahu-box"><span class="dot on"></span><span class="id">203-01</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">203-02</span></div></div>
+      <div class="hall-foot"></div>
+    </div><div class="hall p2">
+      <div class="hall-head"><div class="hn">BHIRAJ</div><div class="hc">6 units</div></div>
+      <div class="hall-body"><div class="ahu-box"><span class="dot on"></span><span class="id">BH-01</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">BH-02</span></div><div class="ahu-box"><span class="dot sb"></span><span class="id">BH-03</span></div></div>
+      <div class="hall-foot"></div>
+    </div><div class="hall p2">
+      <div class="hall-head"><div class="hn">COSMOS</div><div class="hc">7 units</div></div>
+      <div class="hall-body"><div class="ahu-box"><span class="dot on"></span><span class="id">CSM-01</span></div><div class="ahu-box"><span class="dot sb"></span><span class="id">CSM-02</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">CSM-03</span></div><div class="ahu-box"><span class="dot off"></span><span class="id">CSM-04</span></div></div>
+      <div class="hall-foot"></div>
+    </div></div>
+        <div class="legend">
+          <div class="li"><span class="dot" style="background:#34d399; box-shadow:0 0 5px 1px rgba(52,211,153,0.7)"></span> running</div>
+          <div class="li"><span class="dot" style="background:#38bdf8; box-shadow:0 0 5px 1px rgba(56,189,248,0.7)"></span> standby</div>
+          <div class="li"><span class="dot" style="background:#5c6579"></span> stopped</div>
+          <div class="li"><span class="dot" style="background:linear-gradient(120deg,#38bdf8,#0e7490)"></span> Phase 1</div>
+          <div class="li"><span class="dot" style="background:linear-gradient(120deg,#a855f7,#6d28d9)"></span> Phase 2</div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="side-card glass">
+          <h4>zone control</h4>
+          <div class="zc-btn-row">
+            <div class="zc-btn on">ALL ON</div><div class="zc-btn off">ALL OFF</div>
+            <div class="zc-btn on">COMMON ON</div><div class="zc-btn off">COMMON OFF</div>
+            <div class="zc-btn event-on">EVENT ON</div><div class="zc-btn event-off">EVENT OFF</div>
+          </div>
+          <span class="mockbadge">ปุ่มตัวอย่าง ยังไม่เชื่อมควบคุมจริง</span>
+        </div>
+
+        <div class="side-card glass">
+          <h4>quick view</h4>
+          <div class="donut-wrap">
+            <div class="donut"><div class="donut-hole"><span>54</span></div></div>
+            <div class="donut-legend">
+              <div class="li"><span class="dot" style="background:#34d399"></span>28 running</div>
+              <div class="li"><span class="dot" style="background:#38bdf8"></span>13 standby</div>
+              <div class="li"><span class="dot" style="background:#4b5468"></span>7 stopped</div>
+            </div>
+          </div>
+          <span class="mockbadge">sample จาก 54 จุดที่แสดง</span>
+        </div>
+
+        <div class="side-card glass">
+          <h4>system alarms</h4>
+          <div class="alarm-item"><span class="ic">🔴</span><div><b>EH103-B</b>High supply air temp · mock</div></div>
+          <div class="alarm-item"><span class="ic">🟡</span><div><b>H-SCHP-04</b>Flow low · mock</div></div>
+          <span class="mockbadge">ตัวอย่าง ยังไม่เชื่อมข้อมูลจริง</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+      <div class="bcard glass">
+        <h5>chilled water (reference)</h5>
+        <div class="row"><span>CHWS</span><b>7.2 °C</b></div>
+        <div class="row"><span>CHWR</span><b>12.5 °C</b></div>
+        <div class="row"><span>ΔT / flow</span><b>5.3°C · 1,250 m³/h</b></div>
+        <span class="mockbadge">ค่าอ้างอิงจากภาพตัวอย่าง ไม่ใช่ค่าจริง</span>
+      </div>
+      <div class="bcard glass">
+        <h5>AHU summary (sample)</h5>
+        <div class="row"><span>Running</span><b>28 (52%)</b></div>
+        <div class="row"><span>Standby</span><b>13 (24%)</b></div>
+        <div class="row"><span>Stopped</span><b>7 (13%)</b></div>
+      </div>
+      <div class="bcard glass">
+        <h5>energy (mock)</h5>
+        <div class="row"><span>CHW plant</span><b>— kWh</b></div>
+        <div class="row"><span>AHU fans</span><b>— kWh</b></div>
+        <span class="mockbadge">รอเชื่อม energy log จริง</span>
+      </div>
+      <div class="bcard glass">
+        <h5>notes</h5>
+        <div class="row" style="display:block; color:var(--text-muted); line-height:1.6;">
+          ตำแหน่ง hall อ้างอิงจากผังจริงที่ยืนยันแล้ว · สถานะ/พลังงาน/alarm ยังเป็น mock ทั้งหมด รอเชื่อม live_status และ chiller_log
+        </div>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<div class="panel" id="panel-plant">
+  <div class="canvas-card glass">
+    <div class="card-title"><span>Chiller plant — full circulation loop (หลังบ้าน)</span><span class="tag">closed loop</span></div>
+    <svg class="plan-svg" viewBox="0 0 680 640" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="ac" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+      </defs>
+      <style>
+        .nd rect{ fill:rgba(255,255,255,0.05); stroke:rgba(255,255,255,0.18); }
+        .nd .t{ font-family:'Space Grotesk',sans-serif; fill:#f3f6fb; font-size:11px; font-weight:600; }
+        .nd .id{ font-family:'JetBrains Mono',monospace; fill:#93a0b8; font-size:9px; }
+        .cool{ stroke:#38bdf8; stroke-width:2.4; fill:none; }
+        .sup{ stroke:#22d3ee; stroke-width:2.4; fill:none; }
+        .ret{ stroke:#34d399; stroke-width:2.4; fill:none; }
+        .lbl{ font-family:'JetBrains Mono',monospace; font-size:9px; }
+        .rd{ font-family:'JetBrains Mono',monospace; font-size:9px; fill:#f2b84f; }
+        .jn{ fill:#c9d2e3; }
+      </style>
+
+      <text class="lbl" x="120" y="20" text-anchor="start" fill="#38bdf8">■ CONDENSER WATER LOOP</text>
+
+      <g class="nd"><rect x="40" y="34" width="130" height="54" rx="8"/><text class="t" x="105" y="55" text-anchor="middle">Cooling tower</text><text class="id" x="105" y="72" text-anchor="middle">P1-CT-01~04 · H-CT-01~07</text></g>
+      <g class="nd"><rect x="275" y="34" width="130" height="54" rx="8"/><text class="t" x="340" y="55" text-anchor="middle">Cond. water pump</text><text class="id" x="340" y="72" text-anchor="middle">P1-CDP · H-CDP · 14</text></g>
+      <g class="nd"><rect x="510" y="34" width="130" height="54" rx="8"/><text class="t" x="575" y="55" text-anchor="middle">Condenser</text><text class="id" x="575" y="72" text-anchor="middle">CH-01~12 (shell)</text></g>
+
+      <path class="cool" d="M170 61 L275 61" marker-end="url(#ac)"/>
+      <circle cx="222" cy="61" r="3" class="jn"/>
+      <path class="cool" d="M405 61 L510 61" marker-end="url(#ac)"/>
+      <circle cx="457" cy="61" r="3" class="jn"/>
+      <path class="cool" d="M575 88 L575 112 L105 112 L105 90" marker-end="url(#ac)"/>
+      <circle cx="575" cy="112" r="3" class="jn"/><circle cx="105" cy="112" r="3" class="jn"/>
+      <text class="rd" x="340" y="107" text-anchor="middle">CW return → cooling tower</text>
+
+      <line x1="40" y1="148" x2="640" y2="148" stroke="rgba(255,255,255,0.09)" stroke-dasharray="3 4"/>
+      <text class="lbl" x="120" y="168" text-anchor="start" fill="#22d3ee">■ CHILLED WATER LOOP</text>
+
+      <g class="nd"><rect x="510" y="182" width="130" height="60" rx="8"/><text class="t" x="575" y="205" text-anchor="middle">Chiller</text><text class="id" x="575" y="223" text-anchor="middle">P1-CH-01~04 · H1-CH-01~08</text></g>
+      <g class="nd"><rect x="275" y="182" width="130" height="60" rx="8"/><text class="t" x="340" y="205" text-anchor="middle">Header supply</text><text class="id" x="340" y="223" text-anchor="middle">HEADER-SUPPLY</text></g>
+      <g class="nd"><rect x="40" y="182" width="130" height="60" rx="8"/><text class="t" x="105" y="205" text-anchor="middle">SCHP</text><text class="id" x="105" y="223" text-anchor="middle">SCHP-01~07 · H-SCHP-01~09</text></g>
+
+      <path class="sup" d="M510 212 L405 212" marker-end="url(#as)"/>
+      <circle cx="457" cy="212" r="3" class="jn"/>
+      <text class="rd" x="457" y="205" text-anchor="middle">CHWS 7°C</text>
+      <path class="sup" d="M275 212 L170 212" marker-end="url(#as)"/>
+      <circle cx="222" cy="212" r="3" class="jn"/>
+
+      <path class="sup" d="M105 242 L105 285 L220 285 L220 314" marker-end="url(#as)"/>
+      <circle cx="105" cy="285" r="3" class="jn"/><circle cx="450" cy="285" r="3" class="jn"/>
+      <path class="sup" d="M105 285 L450 285 L450 314" marker-end="url(#as)"/>
+      <text class="rd" x="300" y="279" text-anchor="middle">flow 1,250 m³/h</text>
+
+      <g class="nd"><rect x="150" y="314" width="140" height="56" rx="8" fill="rgba(168,85,247,0.14)" stroke="#a855f7"/><text class="t" x="220" y="336" text-anchor="middle">Phase 1 · 66 AHU</text><text class="id" x="220" y="354" text-anchor="middle">Front·Back·EH105·EH106</text></g>
+      <g class="nd"><rect x="380" y="314" width="140" height="56" rx="8" fill="rgba(168,85,247,0.14)" stroke="#a855f7"/><text class="t" x="450" y="336" text-anchor="middle">Phase 2 · 37 AHU</text><text class="id" x="450" y="354" text-anchor="middle">Exh·Sale·Support</text></g>
+
+      <path class="sup" d="M220 370 L220 396" marker-end="url(#as)"/>
+      <path class="sup" d="M450 370 L450 396" marker-end="url(#as)"/>
+
+      <rect x="70" y="396" width="560" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.16)" stroke-dasharray="4 4"/>
+      <text class="t" x="340" y="420" text-anchor="middle" font-family="Space Grotesk" font-size="12" fill="#f3f6fb">AHU · 103 units</text>
+      <text class="id" x="340" y="438" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#93a0b8">BITEC-AHU · แลกเปลี่ยนความร้อนกับอากาศ</text>
+
+      <path class="ret" d="M340 454 L340 478 L655 478 L655 212 L640 212" marker-end="url(#ar)"/>
+      <circle cx="340" cy="478" r="3" class="jn"/><circle cx="655" cy="212" r="3" class="jn"/>
+      <text class="rd" x="500" y="472" text-anchor="middle">CHWR 12.5°C · ΔT 5.3°C · return → evaporator</text>
+
+      <text class="lbl" x="340" y="520" text-anchor="middle" fill="#59657f">วงจรปิด (closed loop) — น้ำหมุนเวียนไม่มีสิ้นสุด</text>
+
+      <g font-family="JetBrains Mono" font-size="8.5">
+        <rect x="70" y="548" width="18" height="8" rx="2" fill="#38bdf8"/><text x="94" y="555" fill="#93a0b8">condenser water</text>
+        <rect x="220" y="548" width="18" height="8" rx="2" fill="#22d3ee"/><text x="244" y="555" fill="#93a0b8">chilled supply</text>
+        <rect x="360" y="548" width="18" height="8" rx="2" fill="#34d399"/><text x="384" y="555" fill="#93a0b8">chilled return</text>
+        <circle cx="490" cy="552" r="3" fill="#c9d2e3"/><text x="500" y="555" fill="#93a0b8">junction</text>
+      </g>
+    </svg>
+    <div class="legend">
+      <div class="li"><span class="dot" style="background:#38bdf8"></span> condenser water (ระบายความร้อน)</div>
+      <div class="li"><span class="dot" style="background:#22d3ee"></span> chilled water supply</div>
+      <div class="li"><span class="dot" style="background:#34d399"></span> chilled water return</div>
     </div>
   </div>
-
-  <div class="insight-card glass">
-    <h4>สัดส่วนยี่ห้อ (Brand)</h4>
-    <div class="bar-list" id="brand-bars"></div>
-  </div>
-
-  <div class="insight-card glass">
-    <h4>Phase 1 vs Phase 2</h4>
-    <div class="compare-row" id="phase-compare"></div>
-  </div>
-
-  <div class="insight-card glass">
-    <h4>Top 5 โซน (ตาม TR)</h4>
-    <div class="bar-list" id="top-zone-bars"></div>
-  </div>
 </div>
 
-<div class="section-title">ผังพื้น &amp; รายชื่อ AHU</div>
-<div class="phase-tabs">
-  <div class="phase-tab active" data-phase="p1">Phase 1</div>
-  <div class="phase-tab" data-phase="p2">Phase 2</div>
-</div>
-
-<div class="canvas-card glass">
-  <div class="card-title"><span id="canvas-title">Floor Plan — Phase 1</span><span class="tag">รายชื่อ AHU ครบทุกตัว</span></div>
-  <div class="legend-row">
-    <div class="legend-item"><span class="legend-swatch" style="background:linear-gradient(120deg, var(--exh-1), var(--exh-2));"></span> Exhibition</div>
-    <div class="legend-item"><span class="legend-swatch" style="background:linear-gradient(120deg, var(--con-1), var(--con-2));"></span> Convention</div>
-  </div>
-  <div class="board" id="board"></div>
-</div>
-
-<div class="canvas-card glass" style="margin-top:14px;">
-  <div class="card-title"><span>สรุปตามโซน (คำนวณจากข้อมูลจริง)</span><span class="tag" id="summary-phase-tag">Phase 1</span></div>
-  <table class="summary-table">
-    <thead><tr><th>Location</th><th>ประเภท</th><th>จำนวน AHU</th><th>รวม TR</th><th>รวม kW</th></tr></thead>
-    <tbody id="summary-body"></tbody>
-  </table>
-</div>
-
-<div class="section-title">สถานะระบบเรียลไทม์ (รอเชื่อมข้อมูลจริง)</div>
-<div class="canvas-card coming-soon">
-  <div class="cs-note">ส่วนนี้จะแสดง <b>Running / Standby / Stopped / Alarm</b> ของแต่ละ AHU แบบเรียลไทม์ เมื่อเชื่อมต่อ <b>live_status</b> จาก Google Sheets เรียบร้อยแล้ว (ตามแผนที่วางไว้) ตอนนี้ยังไม่แสดงตัวเลขเพราะไม่อยากให้ข้อมูลปลอมทำให้เข้าใจผิด</div>
-  <div class="cs-grid">
-    <div class="cs-item"><div class="ci-icon">◔</div><div class="ci-label">Running / Standby / Stopped</div></div>
-    <div class="cs-item"><div class="ci-icon">⚠</div><div class="ci-label">System Alarms</div></div>
-    <div class="cs-item"><div class="ci-icon">⏱</div><div class="ci-label">Last Updated Timestamp</div></div>
-    <div class="cs-item"><div class="ci-icon">📈</div><div class="ci-label">Energy Trend รายวัน</div></div>
-  </div>
-</div>
-
-<div class="section-title">Notes</div>
-<div class="canvas-card glass notes-card">
-  <ul>
-    <li><b>ข้อมูล:</b> master list จริงจาก Brew (103 หน่วย, อัปเดตล่าสุดตามไฟล์ที่ส่งมา)</li>
-    <li><b>ผังพื้น:</b> จัดกลุ่มตามโซนจริง เรียงลำดับตามไฟล์ผังคร่าวๆ ที่ให้มา ยังไม่ใช่มาตราส่วนสถาปัตยกรรม 100%</li>
-    <li><b>สถานะ on/off:</b> ยังไม่เชื่อมต่อ — รอ Google Form + Apps Script ตามแผนที่วางไว้ก่อนหน้า</li>
-    <li><b>ขั้นต่อไป:</b> เชื่อม Google Sheets จริง (master + live_status) แล้ว deploy ขึ้น GitHub Pages</li>
-  </ul>
-</div>
-
-<div class="footnote">ข้อมูลจริงจาก Master List (103 หน่วย) · Mockup สำหรับพรีเซนต์ก่อนเชื่อมข้อมูลจริง</div>
+<div class="footnote">BITEC master data (ยืนยัน parent_id ครบ) · Mockup 2 tab สำหรับพรีเซนต์ก่อนเชื่อมข้อมูลจริง</div>
 
 <script>
-/* =================================================================
-   CONFIG — วางลิงก์ CSV จาก Google Sheet ของคุณตรงนี้ (แท็บ master เท่านั้น)
-   วิธีได้ลิงก์: Google Sheet -> File -> Share -> Publish to web
-   -> เลือกแท็บ master -> เลือกรูปแบบ CSV -> Publish -> คัดลอกลิงก์มาวางด้านล่าง
-
-   ยังไม่ต้องทำ live_status ตอนนี้ — ปล่อยว่างไว้ก่อนได้เลย
-================================================================= */
-const CONFIG = {
-  masterCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vR46FjigufrazSUV19KMDLkNTbjFh5tty4lQ70_9RHFQi-b47SXtv6r2-5TfPx6sN-9YvL64tUXrvMC/pub?gid=0&single=true&output=csv",   // <-- วางลิงก์ CSV ของแท็บ master ตรงนี้
-};
-
-/* ต้องมีหัวคอลัมน์ชื่อเหล่านี้ในแท็บ master (ตัวพิมพ์เล็กทั้งหมด):
-   ahu_id, description, phase, location, group_room, brand, ton, kw
-   ถ้าใช้ชื่ออื่น ส่งชื่อจริงมาบอกได้ แล้วผมจะแก้ให้ */
-
-const FALLBACK_AHUS = [{"id": "H-2-2MAHU-06", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 37}, {"id": "H-3-2MAHU-01", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-3-2MAHU-02", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-3-2MAHU-03", "desc": "เครื่องส่งลมเย็น EH98 (OAU)", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-3-2MAHU-04", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-3-2MAHU-05", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-4-2MAHU-04", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-4-2MAHU-05", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-4-2MAHU-06", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 131, "kw": 45}, {"id": "H-4-2MAHU-07", "desc": "เครื่องส่งลมเย็น EH98", "phase": "BITEC-P2-PHA", "location": "BITEC-EH98", "group_room": "EXHIBITION", "brand": "Trane", "ton": 52, "kw": 18.5}, {"id": "H-2-2MAHU-01", "desc": "เครื่องส่งลมเย็น EH99", "phase": "BITEC-P2-PHA", "location": "BITEC-EH99", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 37}, {"id": "H-2-2MAHU-02", "desc": "เครื่องส่งลมเย็น EH99", "phase": "BITEC-P2-PHA", "location": "BITEC-EH99", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 45}, {"id": "H-2-2MAHU-03", "desc": "เครื่องส่งลมเย็น EH99 (OAU)", "phase": "BITEC-P2-PHA", "location": "BITEC-EH99", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 45}, {"id": "H-2-2MAHU-04", "desc": "เครื่องส่งลมเย็น EH99", "phase": "BITEC-P2-PHA", "location": "BITEC-EH99", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 45}, {"id": "H-2-2MAHU-05", "desc": "เครื่องส่งลมเย็น EH99", "phase": "BITEC-P2-PHA", "location": "BITEC-EH99", "group_room": "EXHIBITION", "brand": "Trane", "ton": 126, "kw": 45}, {"id": "H-9-2MAHU-01", "desc": "เครื่องส่งลมเย็น EH100 Front", "phase": "BITEC-P2-PHA", "location": "BITEC-EH100-FRONT", "group_room": "EXHIBITION", "brand": "TRANE", "ton": 126, "kw": 55}, {"id": "H-9-2MAHU-02", "desc": "เครื่องส่งลมเย็น EH100 Front", "phase": "BITEC-P2-PHA", "location": "BITEC-EH100-FRONT", "group_room": "EXHIBITION", "brand": "TRANE", "ton": 126, "kw": 55}, {"id": "H-9-2MAHU-03", "desc": "เครื่องส่งลมเย็น EH100 Front", "phase": "BITEC-P2-PHA", "location": "BITEC-EH100-FRONT", "group_room": "EXHIBITION", "brand": "TRANE", "ton": 126, "kw": 55}, {"id": "H-9-2MAHU-04", "desc": "เครื่องส่งลมเย็น EH100 Front", "phase": "BITEC-P2-PHA", "location": "BITEC-EH100-FRONT", "group_room": "EXHIBITION", "brand": "TRANE", "ton": 126, "kw": 55}, {"id": "H-1-2MAHU-01", "desc": "เครื่องส่งลมเย็น EH100 Back", "phase": "BITEC-P2-PHA", "location": "BITEC-CHILLER-PLANT", "group_room": "EXHIBITION", "brand": "Trane", "ton": 100, "kw": 45}, {"id": "H-1-2MAHU-02", "desc": "เครื่องส่งลมเย็น EH100 Back", "phase": "BITEC-P2-PHA", "location": "BITEC-CHILLER-PLANT", "group_room": "EXHIBITION", "brand": "Trane", "ton": 100, "kw": 45}, {"id": "H-1-2MAHU-03", "desc": "เครื่องส่งลมเย็น EH100 Back (OAU)", "phase": "BITEC-P2-PHA", "location": "BITEC-CHILLER-PLANT", "group_room": "EXHIBITION", "brand": "Trane", "ton": 100, "kw": 45}, {"id": "H-1-2MAHU-04", "desc": "เครื่องส่งลมเย็น EH100 Back", "phase": "BITEC-P2-PHA", "location": "BITEC-CHILLER-PLANT", "group_room": "EXHIBITION", "brand": "Trane", "ton": 100, "kw": 45}, {"id": "H-1-2MAHU-05", "desc": "เครื่องส่งลมเย็น EH100 Back", "phase": "BITEC-P2-PHA", "location": "BITEC-CHILLER-PLANT", "group_room": "EXHIBITION", "brand": "Trane", "ton": 100, "kw": 45}, {"id": "AHU-SEH101-01", "desc": "เครื่องส่งลมเย็นข้าง EH101", "phase": "BITEC-P1-PHA", "location": "BITEC-HQF2", "group_room": "EXHIBITION", "brand": "Trane", "ton": 60, "kw": 15}, {"id": "AHU-SEH101-02", "desc": "เครื่องส่งลมเย็นข้าง EH101", "phase": "BITEC-P1-PHA", "location": "BITEC-HQF2", "group_room": "EXHIBITION", "brand": "Trane", "ton": 60, "kw": 15}, {"id": "AHU-EH101-F", "desc": "เครื่องส่งลมเย็น EH101 ด้านหน้า", "phase": "BITEC-P1-PHA", "location": "BITEC-EH101", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH101-B", "desc": "เครื่องส่งลมเย็น EH101 ด้านหลัง", "phase": "BITEC-P1-PHA", "location": "BITEC-EH101", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH102-F", "desc": "เครื่องส่งลมเย็น EH102 ด้านหน้า", "phase": "BITEC-P1-PHA", "location": "BITEC-EH102", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH102-B", "desc": "เครื่องส่งลมเย็น EH102 ด้านหลัง", "phase": "BITEC-P1-PHA", "location": "BITEC-EH102", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH103-F", "desc": "เครื่องส่งลมเย็น EH103 ด้านหน้า", "phase": "BITEC-P1-PHA", "location": "BITEC-EH103", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH103-B", "desc": "เครื่องส่งลมเย็น EH103 ด้านหลัง", "phase": "BITEC-P1-PHA", "location": "BITEC-EH103", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH104-F", "desc": "เครื่องส่งลมเย็น EH104 ด้านหน้า", "phase": "BITEC-P1-PHA", "location": "BITEC-EH104", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-EH104-B", "desc": "เครื่องส่งลมเย็น EH104 ด้านหลัง", "phase": "BITEC-P1-PHA", "location": "BITEC-EH104", "group_room": "EXHIBITION", "brand": "Tasaki", "ton": 400, "kw": 80}, {"id": "AHU-BEAT-01", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-02", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-03", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-04", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-05", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-06", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-07", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-08", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-09", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-10", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-11", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-12", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-13", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-14", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-15", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-16", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-17", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-18", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-19", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-20", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-21", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-22", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-23", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-24", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-25", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-26", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-27", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-28", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-29", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BEAT-30", "desc": "เครื่องส่งลมเย็น Beat Active", "phase": "BITEC-P1-PHA", "location": "BITEC-BEAT", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 20, "kw": 7.5}, {"id": "AHU-BTLIVE-01", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-02", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-03", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-04", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-05", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-06", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-07", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-08", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-09", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-BTLIVE-10", "desc": "เครื่องส่งลมเย็น Bitec Live", "phase": "BITEC-P1-PHA", "location": "BITEC-LIVE", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 83, "kw": 15}, {"id": "AHU-SMGARDEN-01", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-02", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-03", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-04", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-05", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-06", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-07", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-08", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Carrier", "ton": 63, "kw": 15}, {"id": "AHU-SMGARDEN-09", "desc": "เครื่องส่งลมเย็น SAMA Garden", "phase": "BITEC-P1-PHA", "location": "BITEC-SAMA-GARDEN", "group_room": "EXHIBITION", "brand": "Trane", "ton": 80, "kw": 30}, {"id": "AHU-GH201-01", "desc": "เครื่องส่งลมเย็น GH201", "phase": "BITEC-P1-PHA", "location": "BITEC-GH201", "group_room": "CONVENTION", "brand": "Carrier", "ton": 35, "kw": 7.5}, {"id": "AHU-GH201-02", "desc": "เครื่องส่งลมเย็น GH201", "phase": "BITEC-P1-PHA", "location": "BITEC-GH201", "group_room": "CONVENTION", "brand": "Carrier", "ton": 35, "kw": 7.5}, {"id": "AHU-GH202-01", "desc": "เครื่องส่งลมเย็น GH202", "phase": "BITEC-P1-PHA", "location": "BITEC-GH202", "group_room": "CONVENTION", "brand": "Carrier", "ton": 35, "kw": 7.5}, {"id": "AHU-GH202-02", "desc": "เครื่องส่งลมเย็น GH202", "phase": "BITEC-P1-PHA", "location": "BITEC-GH202", "group_room": "CONVENTION", "brand": "Carrier", "ton": 35, "kw": 7.5}, {"id": "AHU-GH203-01", "desc": "เครื่องส่งลมเย็น GH203", "phase": "BITEC-P1-PHA", "location": "BITEC-GH203", "group_room": "CONVENTION", "brand": "Carrier", "ton": 40, "kw": 11}, {"id": "AHU-GH203-02", "desc": "เครื่องส่งลมเย็น GH203", "phase": "BITEC-P1-PHA", "location": "BITEC-GH203", "group_room": "CONVENTION", "brand": "Carrier", "ton": 40, "kw": 11}, {"id": "OAU-GH203-03", "desc": "เครื่องจ่ายอากาศบริสุทธิ์ GH203", "phase": "BITEC-P1-PHA", "location": "BITEC-GH203", "group_room": "CONVENTION", "brand": "TRANE", "ton": 35, "kw": 5.5}, {"id": "H-6-3MAHU-07", "desc": "เครื่องส่งลมเย็น BH1", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-6-3MAHU-08", "desc": "เครื่องส่งลมเย็น BH1", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-6-3MAHU-02", "desc": "เครื่องส่งลมเย็น BH2", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-6-3MAHU-03", "desc": "เครื่องส่งลมเย็น BH2", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-5-3MAHU-01", "desc": "เครื่องส่งลมเย็น BH3", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-5-3MAHU-02", "desc": "เครื่องส่งลมเย็น BH3", "phase": "BITEC-P2-PHA", "location": "BITEC-BHIRAJ", "group_room": "CONVENTION", "brand": "TRANE", "ton": 74, "kw": 37}, {"id": "H-6-GSAHU-01", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 10, "kw": 1.5}, {"id": "H-6-GSAHU-02", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 10, "kw": 1.5}, {"id": "H-6-GSAHU-03", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 15, "kw": 1.5}, {"id": "H-6-GSAHU-04", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 15, "kw": 1.5}, {"id": "H-6-GSAHU-05", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 15, "kw": 1.5}, {"id": "H-6-GSAHU-06", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 15, "kw": 1.5}, {"id": "H-6-GSAHU-07", "desc": "เครื่องส่งลมเย็น COSMOS", "phase": "BITEC-P2-PHA", "location": "BITEC-COSMOS", "group_room": "CONVENTION", "brand": "TRANE", "ton": 15, "kw": 1.5}];
-const ORDER = {"p1": ["BITEC-HQF2", "BITEC-EH101", "BITEC-EH102", "BITEC-EH103", "BITEC-EH104", "BITEC-BEAT", "BITEC-LIVE", "BITEC-SAMA-GARDEN", "BITEC-GH201", "BITEC-GH202", "BITEC-GH203"], "p2": ["BITEC-COSMOS", "BITEC-BHIRAJ", "BITEC-EH98", "BITEC-EH99", "BITEC-EH100-FRONT", "BITEC-CHILLER-PLANT"]};
-let AHUS = FALLBACK_AHUS;
-
-function showBanner(type, html){
-  const el = document.getElementById("data-banner");
-  el.className = "data-banner show " + type;
-  el.innerHTML = html;
-}
-
-function fetchCSV(url){
-  return new Promise((resolve, reject)=>{
-    if(!url){ reject(new Error("no url")); return; }
-    fetch(url, { cache: "no-store" })
-      .then(r => { if(!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
-      .then(text => resolve(Papa.parse(text, { header:true, skipEmptyLines:true }).data))
-      .catch(reject);
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
   });
-}
-
-async function loadMaster(){
-  try{
-    const rows = await fetchCSV(CONFIG.masterCsvUrl);
-    if(!rows.length) throw new Error("master sheet ว่างเปล่า");
-    AHUS = rows.filter(r => r.ahu_id).map(r => ({
-      id: r.ahu_id.trim(),
-      desc: r.description || "",
-      phase: (r.phase || "").trim(),
-      location: (r.location || "").trim(),
-      group_room: (r.group_room || "EXHIBITION").trim().toUpperCase(),
-      brand: r.brand || "",
-      ton: Number(r.ton) || 0,
-      kw: Number(r.kw) || 0,
-    }));
-    showBanner("ok", "<b>เชื่อมต่อ Google Sheets สำเร็จ</b> — กำลังแสดงข้อมูลสดจาก master (" + AHUS.length + " หน่วย)");
-  }catch(err){
-    console.warn("Using fallback data:", err);
-    AHUS = FALLBACK_AHUS;
-    showBanner("warn", "<b>ยังไม่ได้เชื่อมต่อ Google Sheets</b> — กำลังแสดงข้อมูลชุดล่าสุดที่มี (103 หน่วย) ไปตั้งค่า <code>CONFIG.masterCsvUrl</code> ที่ต้นสคริปต์เมื่อพร้อม");
-  }
-  renderEverything();
-}
-
-function zoneTypeClass(group){ return group === "CONVENTION" ? "convention" : "exhibition"; }
-function shortName(loc){ return loc.replace("BITEC-",""); }
-function shortId(id){ const parts = id.split("-"); return parts.slice(-2).join("-"); }
-
-function buildLocIndex(phaseKey){
-  const items = AHUS.filter(a => a.phase === (phaseKey==="p1" ? "BITEC-P1-PHA" : "BITEC-P2-PHA"));
-  const byLoc = {};
-  items.forEach(a => {
-    const g = (byLoc[a.location] = byLoc[a.location] || {items:[], ton:0, kw:0, group:a.group_room});
-    g.items.push(a); g.ton += a.ton||0; g.kw += a.kw||0;
-  });
-  return byLoc;
-}
-
-function renderBoard(phaseKey){
-  const board = document.getElementById("board");
-  board.innerHTML = "";
-  const byLoc = buildLocIndex(phaseKey);
-  const order = ORDER[phaseKey];
-  order.forEach(loc=>{
-    const g = byLoc[loc];
-    if(!g) return;
-    const cls = zoneTypeClass(g.group);
-    const col = document.createElement("div");
-    col.className = `zone-col ${cls}`;
-    const pills = g.items.map(a => `
-      <div class="ahu-pill" title="${a.desc}">
-        <span class="pid">${shortId(a.id)}</span>
-        <span class="pspec">${a.brand} · ${a.ton}TR / ${a.kw}kW</span>
-      </div>
-    `).join("");
-    col.innerHTML = `
-      <div class="zc-head"><div class="zname">${shortName(loc)}</div><div class="zmeta">${g.items.length} AHU</div></div>
-      <div class="zc-body">${pills}</div>
-      <div class="zc-foot">${g.ton.toLocaleString()} TR · ${g.kw.toLocaleString()} kW</div>
-    `;
-    board.appendChild(col);
-  });
-}
-
-function renderSummaryTable(phaseKey){
-  const byLoc = buildLocIndex(phaseKey);
-  const rows = Object.entries(byLoc).sort((a,b)=> b[1].items.length - a[1].items.length);
-  document.getElementById("summary-body").innerHTML = rows.map(([loc,g])=>`
-    <tr>
-      <td>${shortName(loc)}</td>
-      <td><span class="pill ${zoneTypeClass(g.group)}">${g.group}</span></td>
-      <td class="mono">${g.items.length}</td>
-      <td class="mono">${g.ton.toLocaleString()}</td>
-      <td class="mono">${g.kw.toLocaleString()}</td>
-    </tr>
-  `).join("");
-}
-
-let currentPhase = "p1";
-function switchPhase(p){
-  currentPhase = p;
-  document.querySelectorAll(".phase-tab").forEach(t=>t.classList.toggle("active", t.dataset.phase===p));
-  document.getElementById("canvas-title").textContent = "Floor Plan — " + (p==="p1" ? "Phase 1" : "Phase 2");
-  document.getElementById("summary-phase-tag").textContent = (p==="p1" ? "Phase 1" : "Phase 2");
-  renderBoard(p);
-  renderSummaryTable(p);
-}
-document.querySelectorAll(".phase-tab").forEach(tab=> tab.addEventListener("click", ()=> switchPhase(tab.dataset.phase)));
-
-function renderEverything(){
-  renderBoard(currentPhase);
-  renderSummaryTable(currentPhase);
-
-  /* ===== Header metrics ===== */
-  document.getElementById("m-total").textContent = AHUS.length;
-  document.getElementById("m-zones").textContent = new Set(AHUS.map(a=>a.location)).size;
-  document.getElementById("m-ton").textContent = AHUS.reduce((s,a)=>s+(a.ton||0),0).toLocaleString();
-  document.getElementById("m-kw").textContent = AHUS.reduce((s,a)=>s+(a.kw||0),0).toLocaleString();
-
-  /* ===== Insight: Exhibition vs Convention donut ===== */
-  const groupAgg = {};
-  AHUS.forEach(a=>{ const g=(groupAgg[a.group_room]=groupAgg[a.group_room]||{count:0,ton:0}); g.count++; g.ton+=a.ton||0; });
-  const totalUnits = AHUS.length;
-  const exhPct = (groupAgg["EXHIBITION"]?.count||0)/totalUnits*100;
-  document.getElementById("donut-group").style.background = `conic-gradient(var(--exh-1) 0% ${exhPct}%, var(--con-1) ${exhPct}% 100%)`;
-  document.getElementById("donut-group-n").textContent = totalUnits;
-  document.getElementById("donut-group-legend").innerHTML = Object.entries(groupAgg).map(([k,v])=>`
-    <div class="li"><span class="dot" style="background:${k==="EXHIBITION"?"var(--exh-1)":"var(--con-1)"};"></span><b>${v.count}</b>&nbsp;${k} (${v.ton.toLocaleString()} TR)</div>
-  `).join("");
-
-  /* ===== Insight: Brand bars ===== */
-  const brandAgg = {};
-  AHUS.forEach(a=>{ const b=(a.brand||"—").trim().toUpperCase(); brandAgg[b]=(brandAgg[b]||0)+1; });
-  const maxBrand = Math.max(...Object.values(brandAgg));
-  const brandColors = ["var(--exh-1)","var(--con-1)","var(--amber)","var(--green)"];
-  document.getElementById("brand-bars").innerHTML = Object.entries(brandAgg).sort((a,b)=>b[1]-a[1]).map(([b,c],i)=>`
-    <div class="bar-row">
-      <div class="top"><span>${b}</span><b>${c}</b></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${c/maxBrand*100}%; background:${brandColors[i%4]};"></div></div>
-    </div>
-  `).join("");
-
-  /* ===== Insight: Phase comparison ===== */
-  const phaseAgg = {};
-  AHUS.forEach(a=>{ const p=(phaseAgg[a.phase]=phaseAgg[a.phase]||{count:0,ton:0,kw:0}); p.count++; p.ton+=a.ton||0; p.kw+=a.kw||0; });
-  document.getElementById("phase-compare").innerHTML = Object.entries(phaseAgg).sort((a,b)=>a[0].localeCompare(b[0])).map(([p,v])=>`
-    <div class="compare-col">
-      <div class="cl">${p.replace("BITEC-","")}</div>
-      <div class="cv">${v.count}</div>
-      <div class="cs">${v.ton.toLocaleString()} TR</div>
-      <div class="cs">${v.kw.toLocaleString()} kW</div>
-    </div>
-  `).join("");
-
-  /* ===== Insight: Top 5 zones by TR ===== */
-  const zoneAgg = {};
-  AHUS.forEach(a=>{ const z=(zoneAgg[a.location]=zoneAgg[a.location]||{ton:0,count:0}); z.ton+=a.ton||0; z.count++; });
-  const topZones = Object.entries(zoneAgg).sort((a,b)=>b[1].ton-a[1].ton).slice(0,5);
-  const maxZoneTon = topZones[0][1].ton;
-  document.getElementById("top-zone-bars").innerHTML = topZones.map(([loc,v])=>`
-    <div class="bar-row">
-      <div class="top"><span>${shortName(loc)}</span><b>${v.ton.toLocaleString()} TR</b></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${v.ton/maxZoneTon*100}%; background:linear-gradient(90deg, var(--exh-1), var(--con-1));"></div></div>
-    </div>
-  `).join("");
-}
-
-/* ===== Boot ===== */
-loadMaster();
+});
 </script>
 
+
+<div class="ahu-modal-backdrop" id="ahu-modal-backdrop" onclick="if(event.target===this) closeAhuDetail()">
+  <div class="ahu-modal glass">
+    <h3 id="am-id">—</h3>
+    <div class="hall" id="am-hall">—</div>
+    <div class="row"><span>Status</span><span class="status-badge" id="am-status-badge">—</span></div>
+    <div class="row"><span>Brand</span><b id="am-brand">—</b></div>
+    <div class="row"><span>Zone</span><b id="am-zone">—</b></div>
+    <div class="mocknote">สถานะเป็นข้อมูล mock — รอเชื่อม live_status จริง</div>
+    <button class="close-btn" onclick="closeAhuDetail()">ปิด</button>
+  </div>
+</div>
+
+<script>
+const STATUS_COLORS = { Running:"#34d399", Standby:"#38bdf8", Stopped:"#5c6579" };
+function showAhuDetail(el){
+  const id = el.getAttribute("data-id");
+  const hall = el.getAttribute("data-hall");
+  const status = el.getAttribute("data-status");
+  const brand = el.getAttribute("data-brand");
+  document.getElementById("am-id").textContent = id;
+  document.getElementById("am-hall").textContent = "BITEC-" + hall.replace(/ /g,"-");
+  const badge = document.getElementById("am-status-badge");
+  badge.textContent = status;
+  badge.style.background = STATUS_COLORS[status] + "26";
+  badge.style.color = STATUS_COLORS[status];
+  document.getElementById("am-brand").textContent = brand;
+  document.getElementById("am-zone").textContent = hall;
+  document.getElementById("ahu-modal-backdrop").classList.add("show");
+}
+function closeAhuDetail(){
+  document.getElementById("ahu-modal-backdrop").classList.remove("show");
+}
+</script>
 </body>
 </html>
