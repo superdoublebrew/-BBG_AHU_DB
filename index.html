@@ -56,12 +56,12 @@
   .panel{display:none;}
   .panel.active{display:block;}
   .canvas-card{ padding:24px; }
-  .card-title{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px;
-    display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .card-title{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-shrink:0; }
   .card-title .tag{ font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint);
     padding:4px 12px; border:1px solid var(--glass-border); border-radius:20px; }
   .plan-svg{width:100%; height:auto; display:block;}
-  .legend{ display:flex; gap:18px; margin-top:14px; font-size:11px; color:var(--text-muted); flex-wrap:wrap; }
+  .legend{ display:flex; gap:14px; margin-top:6px; font-size:10px; color:var(--text-muted); flex-wrap:wrap; flex-shrink:0; }
   .legend .li{display:flex; align-items:center; gap:6px;}
   .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
   .footnote{text-align:center; font-size:10.5px; color:var(--text-faint); margin-top:16px;}
@@ -137,6 +137,25 @@
   .ahu-modal .close-btn{ margin-top:14px; width:100%; padding:8px; border-radius:8px; background:rgba(255,255,255,0.06);
     border:1px solid var(--glass-border); color:var(--text-muted); font-family:'Space Grotesk',sans-serif; font-weight:600; cursor:pointer; }
   .ahu-modal .mocknote{ font-size:9.5px; color:#f2b84f; margin-top:10px; }
+
+  html, body{ height:100%; overflow:hidden; }
+  body{ display:flex; flex-direction:column; padding:14px; gap:10px; }
+  .topbar{ margin-bottom:0; flex-shrink:0; padding:12px 22px; }
+  .tabs{ padding:0 4px; flex-shrink:0; }
+  .panel{ flex:1; min-height:0; }
+  .panel.active{ display:flex; flex-direction:column; gap:10px; }
+  .ahu-grid{ flex:1; min-height:0; display:grid; grid-template-columns:1fr 220px; gap:10px; }
+  .ahu-grid .canvas-card{ display:flex; flex-direction:column; min-height:0; padding:12px 16px; }
+  .plan-svg{ flex:1; min-height:0; width:100%; }
+  .side-card{ flex:1; display:flex; flex-direction:column; min-height:0; padding:12px; }
+  .side-card:has(.zc-btn-row){ flex:0 0 auto; }
+  .footnote{ display:none; }
+  .bottom-strip{ flex-shrink:0; display:flex; gap:14px; align-items:center; padding:8px 18px; font-size:10.5px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; }
+  .bottom-strip b{ color:var(--text); }
+  .bottom-strip .sep{ color:var(--text-faint); }
+
+  .panel.active > .canvas-card{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  .panel.active > .canvas-card .plan-svg{ flex:1; min-height:0; }
 </style>
 </head>
 <body>
@@ -163,704 +182,223 @@
 </div>
 
 <div class="panel active" id="panel-ahu">
-  <div class="kpi-strip">
-      <div class="kpi-chip on"><div class="kl">running (sample)</div><div class="kv">28</div></div>
-      <div class="kpi-chip sb"><div class="kl">standby (sample)</div><div class="kv">13</div></div>
-      <div class="kpi-chip off"><div class="kl">stopped (sample)</div><div class="kv">7</div></div>
-      <div class="kpi-chip"><div class="kl">shown / total</div><div class="kv">54 / 103</div></div>
-      <div class="kpi-chip" style="display:flex; align-items:center; justify-content:center;"><span class="mockbadge">mock data</span></div>
-    </div>
-
-    <div class="ahu-grid">
-      <div class="canvas-card glass" style="padding:20px;">
-        <div class="card-title"><span>AHU floor plan — วางตำแหน่งตามผังจริง</span><span class="tag">mock status</span></div>
-        <svg width="100%" viewBox="0 0 700 660" xmlns="http://www.w3.org/2000/svg">
-<line x1="-16.0" y1="14" x2="716.0" y2="14" stroke="#22d3ee" stroke-width="2.6"/>
-<text x="-16.0" y="8" font-family="JetBrains Mono" font-size="9" fill="#22d3ee">CHWS DISTRIBUTION MAIN</text>
-<line x1="350.0" y1="14" x2="350.0" y2="30" stroke="#22d3ee" stroke-width="1.6"/>
-<line x1="22.0" y1="46" x2="678.0" y2="46" stroke="#4b5468" stroke-width="2"/>
-<circle cx="22.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
-<line x1="22.0" y1="46" x2="22.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
-<rect x="-16.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
-<text x="22.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">SAMA GARDEN</text>
-<text x="22.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">9 units</text>
-<line x1="22.0" y1="92" x2="22.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="22.0" y1="100" x2="22.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="22.0" y1="113.0" x2="-8.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="GDN-01" data-hall="SAMA GARDEN" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="-12.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="-3.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M -3.0 113.0 L -3.0 108.0 A 5 5 0 0 1 1.2999999999999998 110.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M -3.0 113.0 L 1.2999999999999998 115.5 A 5 5 0 0 1 -7.3 115.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="8.0" cy="106.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="9.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">GDN-01</text>
-            </g>
-<line x1="22.0" y1="129.0" x2="22.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="22.0" y1="145.0" x2="-8.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="GDN-02" data-hall="SAMA GARDEN" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="-12.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="-3.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M -3.0 145.0 L -3.0 140.0 A 5 5 0 0 1 1.2999999999999998 142.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M -3.0 145.0 L 1.2999999999999998 147.5 A 5 5 0 0 1 -7.3 147.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="8.0" cy="138.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="9.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">GDN-02</text>
-            </g>
-<line x1="22.0" y1="161.0" x2="22.0" y2="177.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="22.0" y1="177.0" x2="-8.0" y2="177.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="GDN-03" data-hall="SAMA GARDEN" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="-12.0" y="164" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="-3.0" cy="177.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M -3.0 177.0 L -3.0 172.0 A 5 5 0 0 1 1.2999999999999998 174.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M -3.0 177.0 L 1.2999999999999998 179.5 A 5 5 0 0 1 -7.3 179.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="8.0" cy="170.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="9.0" y="180.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">GDN-03</text>
-            </g>
-<line x1="22.0" y1="193.0" x2="22.0" y2="209.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="22.0" y1="209.0" x2="-8.0" y2="209.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="GDN-04" data-hall="SAMA GARDEN" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="-12.0" y="196" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="-3.0" cy="209.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M -3.0 209.0 L -3.0 204.0 A 5 5 0 0 1 1.2999999999999998 206.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M -3.0 209.0 L 1.2999999999999998 211.5 A 5 5 0 0 1 -7.3 211.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="8.0" cy="202.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="9.0" y="212.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">GDN-04</text>
-            </g>
-<line x1="22.0" y1="225.0" x2="22.0" y2="241.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="22.0" y1="241.0" x2="-8.0" y2="241.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="GDN-05" data-hall="SAMA GARDEN" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="-12.0" y="228" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="-3.0" cy="241.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M -3.0 241.0 L -3.0 236.0 A 5 5 0 0 1 1.2999999999999998 238.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M -3.0 241.0 L 1.2999999999999998 243.5 A 5 5 0 0 1 -7.3 243.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="8.0" cy="234.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="9.0" y="244.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">GDN-05</text>
-            </g>
-<circle cx="104.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
-<line x1="104.0" y1="46" x2="104.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
-<rect x="66.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
-<text x="104.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">BEAT</text>
-<text x="104.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">30 units</text>
-<line x1="104.0" y1="92" x2="104.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="104.0" y1="100" x2="104.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="104.0" y1="113.0" x2="74.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="BEAT-01" data-hall="BEAT" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="70.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="79.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 79.0 113.0 L 79.0 108.0 A 5 5 0 0 1 83.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 79.0 113.0 L 83.3 115.5 A 5 5 0 0 1 74.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="90.0" cy="106.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="91.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BEAT-01</text>
-            </g>
-<line x1="104.0" y1="129.0" x2="104.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="104.0" y1="145.0" x2="74.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="BEAT-02" data-hall="BEAT" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="70.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="79.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 79.0 145.0 L 79.0 140.0 A 5 5 0 0 1 83.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 79.0 145.0 L 83.3 147.5 A 5 5 0 0 1 74.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="90.0" cy="138.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="91.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BEAT-02</text>
-            </g>
-<line x1="104.0" y1="161.0" x2="104.0" y2="177.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="104.0" y1="177.0" x2="74.0" y2="177.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="BEAT-03" data-hall="BEAT" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="70.0" y="164" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="79.0" cy="177.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 79.0 177.0 L 79.0 172.0 A 5 5 0 0 1 83.3 174.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 79.0 177.0 L 83.3 179.5 A 5 5 0 0 1 74.7 179.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="90.0" cy="170.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="91.0" y="180.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BEAT-03</text>
-            </g>
-<line x1="104.0" y1="193.0" x2="104.0" y2="209.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="104.0" y1="209.0" x2="74.0" y2="209.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="BEAT-04" data-hall="BEAT" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="70.0" y="196" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="79.0" cy="209.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 79.0 209.0 L 79.0 204.0 A 5 5 0 0 1 83.3 206.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 79.0 209.0 L 83.3 211.5 A 5 5 0 0 1 74.7 211.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="90.0" cy="202.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="91.0" y="212.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BEAT-04</text>
-            </g>
-<line x1="104.0" y1="225.0" x2="104.0" y2="241.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="104.0" y1="241.0" x2="74.0" y2="241.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="BEAT-05" data-hall="BEAT" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="70.0" y="228" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="79.0" cy="241.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 79.0 241.0 L 79.0 236.0 A 5 5 0 0 1 83.3 238.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 79.0 241.0 L 83.3 243.5 A 5 5 0 0 1 74.7 243.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="90.0" cy="234.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="91.0" y="244.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BEAT-05</text>
-            </g>
-<circle cx="186.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
-<line x1="186.0" y1="46" x2="186.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
-<rect x="148.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
-<text x="186.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH104</text>
-<text x="186.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
-<line x1="186.0" y1="92" x2="186.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="186.0" y1="100" x2="186.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="186.0" y1="113.0" x2="156.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="104-01" data-hall="EH104" data-status="Stopped" data-brand="Tasaki" onclick="showAhuDetail(this)">
-              <rect x="152.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="161.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 161.0 113.0 L 161.0 108.0 A 5 5 0 0 1 165.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 161.0 113.0 L 165.3 115.5 A 5 5 0 0 1 156.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="172.0" cy="106.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
-              <text x="173.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">104-01</text>
-            </g>
-<line x1="186.0" y1="129.0" x2="186.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="186.0" y1="145.0" x2="156.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="104-02" data-hall="EH104" data-status="Standby" data-brand="Tasaki" onclick="showAhuDetail(this)">
-              <rect x="152.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="161.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 161.0 145.0 L 161.0 140.0 A 5 5 0 0 1 165.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 161.0 145.0 L 165.3 147.5 A 5 5 0 0 1 156.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="172.0" cy="138.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="173.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">104-02</text>
-            </g>
-<circle cx="268.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
-<line x1="268.0" y1="46" x2="268.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
-<rect x="230.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
-<text x="268.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH103</text>
-<text x="268.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
-<line x1="268.0" y1="92" x2="268.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="268.0" y1="100" x2="268.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="268.0" y1="113.0" x2="238.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="103-01" data-hall="EH103" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
-              <rect x="234.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="243.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 243.0 113.0 L 243.0 108.0 A 5 5 0 0 1 247.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 243.0 113.0 L 247.3 115.5 A 5 5 0 0 1 238.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="254.0" cy="106.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="255.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">103-01</text>
-            </g>
-<line x1="268.0" y1="129.0" x2="268.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="268.0" y1="145.0" x2="238.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="103-02" data-hall="EH103" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
-              <rect x="234.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="243.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 243.0 145.0 L 243.0 140.0 A 5 5 0 0 1 247.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 243.0 145.0 L 247.3 147.5 A 5 5 0 0 1 238.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="254.0" cy="138.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="255.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">103-02</text>
-            </g>
-<circle cx="350.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
-<line x1="350.0" y1="46" x2="350.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
-<rect x="312.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
-<text x="350.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH102</text>
-<text x="350.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
-<line x1="350.0" y1="92" x2="350.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="350.0" y1="100" x2="350.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="350.0" y1="113.0" x2="320.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="102-01" data-hall="EH102" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
-              <rect x="316.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="325.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 325.0 113.0 L 325.0 108.0 A 5 5 0 0 1 329.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 325.0 113.0 L 329.3 115.5 A 5 5 0 0 1 320.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="336.0" cy="106.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="337.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">102-01</text>
-            </g>
-<line x1="350.0" y1="129.0" x2="350.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="350.0" y1="145.0" x2="320.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="102-02" data-hall="EH102" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
-              <rect x="316.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="325.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 325.0 145.0 L 325.0 140.0 A 5 5 0 0 1 329.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 325.0 145.0 L 329.3 147.5 A 5 5 0 0 1 320.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="336.0" cy="138.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="337.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">102-02</text>
-            </g>
-<circle cx="432.0" cy="46" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
-<line x1="432.0" y1="46" x2="432.0" y2="68" stroke="#38bdf8" stroke-width="1.6"/>
-<rect x="394.0" y="68" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
-<text x="432.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH101</text>
-<text x="432.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
-<line x1="432.0" y1="92" x2="432.0" y2="100" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="432.0" y1="100" x2="432.0" y2="113.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="432.0" y1="113.0" x2="402.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="101-01" data-hall="EH101" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
-              <rect x="398.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="407.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 407.0 113.0 L 407.0 108.0 A 5 5 0 0 1 411.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 407.0 113.0 L 411.3 115.5 A 5 5 0 0 1 402.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="418.0" cy="106.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="419.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">101-01</text>
-            </g>
-<line x1="432.0" y1="129.0" x2="432.0" y2="145.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="432.0" y1="145.0" x2="402.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="101-02" data-hall="EH101" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
-              <rect x="398.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="407.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 407.0 145.0 L 407.0 140.0 A 5 5 0 0 1 411.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 407.0 145.0 L 411.3 147.5 A 5 5 0 0 1 402.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="418.0" cy="138.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="419.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">101-02</text>
-            </g>
-<circle cx="514.0" cy="46" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="1.6"/>
-<line x1="514.0" y1="46" x2="514.0" y2="68" stroke="#a855f7" stroke-width="1.6"/>
-<rect x="476.0" y="68" width="76" height="24" rx="4" fill="#a855f722" stroke="#a855f7" stroke-width="0.8"/>
-<text x="514.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH100 FRONT</text>
-<text x="514.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">4 units</text>
-<line x1="514.0" y1="92" x2="514.0" y2="100" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="514.0" y1="100" x2="514.0" y2="113.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="514.0" y1="113.0" x2="484.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="100F-01" data-hall="EH100 FRONT" data-status="Standby" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="480.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="489.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 489.0 113.0 L 489.0 108.0 A 5 5 0 0 1 493.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 489.0 113.0 L 493.3 115.5 A 5 5 0 0 1 484.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="500.0" cy="106.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="501.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">100F-01</text>
-            </g>
-<line x1="514.0" y1="129.0" x2="514.0" y2="145.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="514.0" y1="145.0" x2="484.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="100F-02" data-hall="EH100 FRONT" data-status="Stopped" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="480.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="489.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 489.0 145.0 L 489.0 140.0 A 5 5 0 0 1 493.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 489.0 145.0 L 493.3 147.5 A 5 5 0 0 1 484.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="500.0" cy="138.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
-              <text x="501.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">100F-02</text>
-            </g>
-<line x1="514.0" y1="161.0" x2="514.0" y2="177.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="514.0" y1="177.0" x2="484.0" y2="177.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="100F-03" data-hall="EH100 FRONT" data-status="Stopped" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="480.0" y="164" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="489.0" cy="177.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 489.0 177.0 L 489.0 172.0 A 5 5 0 0 1 493.3 174.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 489.0 177.0 L 493.3 179.5 A 5 5 0 0 1 484.7 179.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="500.0" cy="170.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
-              <text x="501.0" y="180.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">100F-03</text>
-            </g>
-<line x1="514.0" y1="193.0" x2="514.0" y2="209.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="514.0" y1="209.0" x2="484.0" y2="209.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="100F-04" data-hall="EH100 FRONT" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="480.0" y="196" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="489.0" cy="209.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 489.0 209.0 L 489.0 204.0 A 5 5 0 0 1 493.3 206.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 489.0 209.0 L 493.3 211.5 A 5 5 0 0 1 484.7 211.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="500.0" cy="202.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="501.0" y="212.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">100F-04</text>
-            </g>
-<circle cx="596.0" cy="46" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="1.6"/>
-<line x1="596.0" y1="46" x2="596.0" y2="68" stroke="#a855f7" stroke-width="1.6"/>
-<rect x="558.0" y="68" width="76" height="24" rx="4" fill="#a855f722" stroke="#a855f7" stroke-width="0.8"/>
-<text x="596.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH99</text>
-<text x="596.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">5 units</text>
-<line x1="596.0" y1="92" x2="596.0" y2="100" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="596.0" y1="100" x2="596.0" y2="113.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="596.0" y1="113.0" x2="566.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="099-01" data-hall="EH99" data-status="Standby" data-brand="Trane" onclick="showAhuDetail(this)">
-              <rect x="562.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="571.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 571.0 113.0 L 571.0 108.0 A 5 5 0 0 1 575.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 571.0 113.0 L 575.3 115.5 A 5 5 0 0 1 566.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="582.0" cy="106.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="583.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">099-01</text>
-            </g>
-<line x1="596.0" y1="129.0" x2="596.0" y2="145.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="596.0" y1="145.0" x2="566.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="099-02" data-hall="EH99" data-status="Running" data-brand="Trane" onclick="showAhuDetail(this)">
-              <rect x="562.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="571.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 571.0 145.0 L 571.0 140.0 A 5 5 0 0 1 575.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 571.0 145.0 L 575.3 147.5 A 5 5 0 0 1 566.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="582.0" cy="138.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="583.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">099-02</text>
-            </g>
-<line x1="596.0" y1="161.0" x2="596.0" y2="177.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="596.0" y1="177.0" x2="566.0" y2="177.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="099-03" data-hall="EH99" data-status="Running" data-brand="Trane" onclick="showAhuDetail(this)">
-              <rect x="562.0" y="164" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="571.0" cy="177.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 571.0 177.0 L 571.0 172.0 A 5 5 0 0 1 575.3 174.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 571.0 177.0 L 575.3 179.5 A 5 5 0 0 1 566.7 179.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="582.0" cy="170.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="583.0" y="180.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">099-03</text>
-            </g>
-<line x1="596.0" y1="193.0" x2="596.0" y2="209.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="596.0" y1="209.0" x2="566.0" y2="209.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="099-04" data-hall="EH99" data-status="Stopped" data-brand="Trane" onclick="showAhuDetail(this)">
-              <rect x="562.0" y="196" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="571.0" cy="209.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 571.0 209.0 L 571.0 204.0 A 5 5 0 0 1 575.3 206.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 571.0 209.0 L 575.3 211.5 A 5 5 0 0 1 566.7 211.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="582.0" cy="202.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
-              <text x="583.0" y="212.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">099-04</text>
-            </g>
-<line x1="596.0" y1="225.0" x2="596.0" y2="241.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="596.0" y1="241.0" x2="566.0" y2="241.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="099-05" data-hall="EH99" data-status="Stopped" data-brand="Trane" onclick="showAhuDetail(this)">
-              <rect x="562.0" y="228" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="571.0" cy="241.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 571.0 241.0 L 571.0 236.0 A 5 5 0 0 1 575.3 238.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 571.0 241.0 L 575.3 243.5 A 5 5 0 0 1 566.7 243.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="582.0" cy="234.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
-              <text x="583.0" y="244.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">099-05</text>
-            </g>
-<circle cx="678.0" cy="46" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="1.6"/>
-<line x1="678.0" y1="46" x2="678.0" y2="68" stroke="#a855f7" stroke-width="1.6"/>
-<rect x="640.0" y="68" width="76" height="24" rx="4" fill="#a855f722" stroke="#a855f7" stroke-width="0.8"/>
-<text x="678.0" y="79" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH98</text>
-<text x="678.0" y="89" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">10 units</text>
-<line x1="678.0" y1="92" x2="678.0" y2="100" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="678.0" y1="100" x2="678.0" y2="113.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="678.0" y1="113.0" x2="648.0" y2="113.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="098-01" data-hall="EH98" data-status="Standby" data-brand="Trane" onclick="showAhuDetail(this)">
-              <rect x="644.0" y="100" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="653.0" cy="113.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 653.0 113.0 L 653.0 108.0 A 5 5 0 0 1 657.3 110.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 653.0 113.0 L 657.3 115.5 A 5 5 0 0 1 648.7 115.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="664.0" cy="106.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="665.0" y="116.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">098-01</text>
-            </g>
-<line x1="678.0" y1="129.0" x2="678.0" y2="145.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="678.0" y1="145.0" x2="648.0" y2="145.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="098-02" data-hall="EH98" data-status="Stopped" data-brand="Trane" onclick="showAhuDetail(this)">
-              <rect x="644.0" y="132" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="653.0" cy="145.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 653.0 145.0 L 653.0 140.0 A 5 5 0 0 1 657.3 142.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 653.0 145.0 L 657.3 147.5 A 5 5 0 0 1 648.7 147.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="664.0" cy="138.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
-              <text x="665.0" y="148.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">098-02</text>
-            </g>
-<line x1="678.0" y1="161.0" x2="678.0" y2="177.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="678.0" y1="177.0" x2="648.0" y2="177.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="098-03" data-hall="EH98" data-status="Running" data-brand="Trane" onclick="showAhuDetail(this)">
-              <rect x="644.0" y="164" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="653.0" cy="177.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 653.0 177.0 L 653.0 172.0 A 5 5 0 0 1 657.3 174.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 653.0 177.0 L 657.3 179.5 A 5 5 0 0 1 648.7 179.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="664.0" cy="170.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="665.0" y="180.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">098-03</text>
-            </g>
-<line x1="678.0" y1="193.0" x2="678.0" y2="209.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="678.0" y1="209.0" x2="648.0" y2="209.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="098-04" data-hall="EH98" data-status="Standby" data-brand="Trane" onclick="showAhuDetail(this)">
-              <rect x="644.0" y="196" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="653.0" cy="209.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 653.0 209.0 L 653.0 204.0 A 5 5 0 0 1 657.3 206.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 653.0 209.0 L 657.3 211.5 A 5 5 0 0 1 648.7 211.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="664.0" cy="202.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="665.0" y="212.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">098-04</text>
-            </g>
-<line x1="678.0" y1="225.0" x2="678.0" y2="241.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="678.0" y1="241.0" x2="648.0" y2="241.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="098-05" data-hall="EH98" data-status="Running" data-brand="Trane" onclick="showAhuDetail(this)">
-              <rect x="644.0" y="228" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="653.0" cy="241.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 653.0 241.0 L 653.0 236.0 A 5 5 0 0 1 657.3 238.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 653.0 241.0 L 657.3 243.5 A 5 5 0 0 1 648.7 243.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="664.0" cy="234.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="665.0" y="244.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">098-05</text>
-            </g>
-<line x1="145.0" y1="366" x2="555.0" y2="366" stroke="#4b5468" stroke-width="2"/>
-<circle cx="145.0" cy="366" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
-<line x1="145.0" y1="366" x2="145.0" y2="388" stroke="#38bdf8" stroke-width="1.6"/>
-<rect x="107.0" y="388" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
-<text x="145.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">LIVE</text>
-<text x="145.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">10 units</text>
-<line x1="145.0" y1="412" x2="145.0" y2="420" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="145.0" y1="420" x2="145.0" y2="433.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="145.0" y1="433.0" x2="115.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="LIVE-01" data-hall="LIVE" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="111.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="120.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 120.0 433.0 L 120.0 428.0 A 5 5 0 0 1 124.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 120.0 433.0 L 124.3 435.5 A 5 5 0 0 1 115.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="131.0" cy="426.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="132.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">LIVE-01</text>
-            </g>
-<line x1="145.0" y1="449.0" x2="145.0" y2="465.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="145.0" y1="465.0" x2="115.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="LIVE-02" data-hall="LIVE" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="111.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="120.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 120.0 465.0 L 120.0 460.0 A 5 5 0 0 1 124.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 120.0 465.0 L 124.3 467.5 A 5 5 0 0 1 115.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="131.0" cy="458.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="132.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">LIVE-02</text>
-            </g>
-<line x1="145.0" y1="481.0" x2="145.0" y2="497.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="145.0" y1="497.0" x2="115.0" y2="497.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="LIVE-03" data-hall="LIVE" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="111.0" y="484" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="120.0" cy="497.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 120.0 497.0 L 120.0 492.0 A 5 5 0 0 1 124.3 494.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 120.0 497.0 L 124.3 499.5 A 5 5 0 0 1 115.7 499.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="131.0" cy="490.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="132.0" y="500.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">LIVE-03</text>
-            </g>
-<circle cx="227.0" cy="366" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
-<line x1="227.0" y1="366" x2="227.0" y2="388" stroke="#38bdf8" stroke-width="1.6"/>
-<rect x="189.0" y="388" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
-<text x="227.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">GH201</text>
-<text x="227.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
-<line x1="227.0" y1="412" x2="227.0" y2="420" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="227.0" y1="420" x2="227.0" y2="433.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="227.0" y1="433.0" x2="197.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="201-01" data-hall="GH201" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="193.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="202.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 202.0 433.0 L 202.0 428.0 A 5 5 0 0 1 206.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 202.0 433.0 L 206.3 435.5 A 5 5 0 0 1 197.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="213.0" cy="426.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="214.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">201-01</text>
-            </g>
-<line x1="227.0" y1="449.0" x2="227.0" y2="465.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="227.0" y1="465.0" x2="197.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="201-02" data-hall="GH201" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="193.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="202.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 202.0 465.0 L 202.0 460.0 A 5 5 0 0 1 206.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 202.0 465.0 L 206.3 467.5 A 5 5 0 0 1 197.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="213.0" cy="458.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="214.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">201-02</text>
-            </g>
-<circle cx="309.0" cy="366" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
-<line x1="309.0" y1="366" x2="309.0" y2="388" stroke="#38bdf8" stroke-width="1.6"/>
-<rect x="271.0" y="388" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
-<text x="309.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">GH202</text>
-<text x="309.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">2 units</text>
-<line x1="309.0" y1="412" x2="309.0" y2="420" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="309.0" y1="420" x2="309.0" y2="433.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="309.0" y1="433.0" x2="279.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="202-01" data-hall="GH202" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="275.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="284.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 284.0 433.0 L 284.0 428.0 A 5 5 0 0 1 288.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 284.0 433.0 L 288.3 435.5 A 5 5 0 0 1 279.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="295.0" cy="426.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="296.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">202-01</text>
-            </g>
-<line x1="309.0" y1="449.0" x2="309.0" y2="465.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="309.0" y1="465.0" x2="279.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="202-02" data-hall="GH202" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="275.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="284.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 284.0 465.0 L 284.0 460.0 A 5 5 0 0 1 288.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 284.0 465.0 L 288.3 467.5 A 5 5 0 0 1 279.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="295.0" cy="458.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="296.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">202-02</text>
-            </g>
-<circle cx="391.0" cy="366" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="1.6"/>
-<line x1="391.0" y1="366" x2="391.0" y2="388" stroke="#38bdf8" stroke-width="1.6"/>
-<rect x="353.0" y="388" width="76" height="24" rx="4" fill="#38bdf822" stroke="#38bdf8" stroke-width="0.8"/>
-<text x="391.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">GH203</text>
-<text x="391.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">3 units</text>
-<line x1="391.0" y1="412" x2="391.0" y2="420" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="391.0" y1="420" x2="391.0" y2="433.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="391.0" y1="433.0" x2="361.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="203-01" data-hall="GH203" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="357.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="366.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 366.0 433.0 L 366.0 428.0 A 5 5 0 0 1 370.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 366.0 433.0 L 370.3 435.5 A 5 5 0 0 1 361.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="377.0" cy="426.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="378.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">203-01</text>
-            </g>
-<line x1="391.0" y1="449.0" x2="391.0" y2="465.0" stroke="#38bdf8" stroke-width="1.2"/>
-<line x1="391.0" y1="465.0" x2="361.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="203-02" data-hall="GH203" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
-              <rect x="357.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="366.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 366.0 465.0 L 366.0 460.0 A 5 5 0 0 1 370.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 366.0 465.0 L 370.3 467.5 A 5 5 0 0 1 361.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="377.0" cy="458.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="378.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">203-02</text>
-            </g>
-<circle cx="473.0" cy="366" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="1.6"/>
-<line x1="473.0" y1="366" x2="473.0" y2="388" stroke="#a855f7" stroke-width="1.6"/>
-<rect x="435.0" y="388" width="76" height="24" rx="4" fill="#a855f722" stroke="#a855f7" stroke-width="0.8"/>
-<text x="473.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">BHIRAJ</text>
-<text x="473.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">6 units</text>
-<line x1="473.0" y1="412" x2="473.0" y2="420" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="473.0" y1="420" x2="473.0" y2="433.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="473.0" y1="433.0" x2="443.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="BH-01" data-hall="BHIRAJ" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="439.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="448.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 448.0 433.0 L 448.0 428.0 A 5 5 0 0 1 452.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 448.0 433.0 L 452.3 435.5 A 5 5 0 0 1 443.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="459.0" cy="426.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="460.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BH-01</text>
-            </g>
-<line x1="473.0" y1="449.0" x2="473.0" y2="465.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="473.0" y1="465.0" x2="443.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="BH-02" data-hall="BHIRAJ" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="439.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="448.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 448.0 465.0 L 448.0 460.0 A 5 5 0 0 1 452.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 448.0 465.0 L 452.3 467.5 A 5 5 0 0 1 443.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="459.0" cy="458.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="460.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BH-02</text>
-            </g>
-<line x1="473.0" y1="481.0" x2="473.0" y2="497.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="473.0" y1="497.0" x2="443.0" y2="497.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="BH-03" data-hall="BHIRAJ" data-status="Standby" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="439.0" y="484" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="448.0" cy="497.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 448.0 497.0 L 448.0 492.0 A 5 5 0 0 1 452.3 494.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 448.0 497.0 L 452.3 499.5 A 5 5 0 0 1 443.7 499.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="459.0" cy="490.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="460.0" y="500.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">BH-03</text>
-            </g>
-<circle cx="555.0" cy="366" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="1.6"/>
-<line x1="555.0" y1="366" x2="555.0" y2="388" stroke="#a855f7" stroke-width="1.6"/>
-<rect x="517.0" y="388" width="76" height="24" rx="4" fill="#a855f722" stroke="#a855f7" stroke-width="0.8"/>
-<text x="555.0" y="399" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">COSMOS</text>
-<text x="555.0" y="409" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="rgba(255,255,255,0.75)">7 units</text>
-<line x1="555.0" y1="412" x2="555.0" y2="420" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="555.0" y1="420" x2="555.0" y2="433.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="555.0" y1="433.0" x2="525.0" y2="433.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="CSM-01" data-hall="COSMOS" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="521.0" y="420" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="530.0" cy="433.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 530.0 433.0 L 530.0 428.0 A 5 5 0 0 1 534.3 430.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 530.0 433.0 L 534.3 435.5 A 5 5 0 0 1 525.7 435.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="541.0" cy="426.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="542.0" y="436.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">CSM-01</text>
-            </g>
-<line x1="555.0" y1="449.0" x2="555.0" y2="465.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="555.0" y1="465.0" x2="525.0" y2="465.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="CSM-02" data-hall="COSMOS" data-status="Standby" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="521.0" y="452" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="530.0" cy="465.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 530.0 465.0 L 530.0 460.0 A 5 5 0 0 1 534.3 462.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 530.0 465.0 L 534.3 467.5 A 5 5 0 0 1 525.7 467.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="541.0" cy="458.0" r="3" fill="#38bdf8" style="filter:drop-shadow(0 0 3px #38bdf8)"/>
-              <text x="542.0" y="468.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">CSM-02</text>
-            </g>
-<line x1="555.0" y1="481.0" x2="555.0" y2="497.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="555.0" y1="497.0" x2="525.0" y2="497.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="CSM-03" data-hall="COSMOS" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="521.0" y="484" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="530.0" cy="497.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 530.0 497.0 L 530.0 492.0 A 5 5 0 0 1 534.3 494.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 530.0 497.0 L 534.3 499.5 A 5 5 0 0 1 525.7 499.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="541.0" cy="490.0" r="3" fill="#34d399" style="filter:drop-shadow(0 0 3px #34d399)"/>
-              <text x="542.0" y="500.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">CSM-03</text>
-            </g>
-<line x1="555.0" y1="513.0" x2="555.0" y2="529.0" stroke="#a855f7" stroke-width="1.2"/>
-<line x1="555.0" y1="529.0" x2="525.0" y2="529.0" stroke="#5f6b80" stroke-width="1"/>
-<g class="ahu-node" style="cursor:pointer" data-id="CSM-04" data-hall="COSMOS" data-status="Stopped" data-brand="TRANE" onclick="showAhuDetail(this)">
-              <rect x="521.0" y="516" width="68" height="26" rx="5" fill="#0d1017" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
-              <circle cx="530.0" cy="529.0" r="6" fill="none" stroke="#7a8699" stroke-width="1"/>
-      <path d="M 530.0 529.0 L 530.0 524.0 A 5 5 0 0 1 534.3 526.5 Z" fill="#7a8699" opacity="0.6"/>
-      <path d="M 530.0 529.0 L 534.3 531.5 A 5 5 0 0 1 525.7 531.5 Z" fill="#7a8699" opacity="0.6"/>
-      <circle cx="541.0" cy="522.0" r="3" fill="#5c6579" style="filter:drop-shadow(0 0 3px #5c6579)"/>
-              <text x="542.0" y="532.0" font-family="JetBrains Mono" font-size="7.3" fill="#e7ecf5">CSM-04</text>
-            </g>
-<line x1="22.0" y1="260" x2="22.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="104.0" y1="260" x2="104.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="186.0" y1="164" x2="186.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="268.0" y1="164" x2="268.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="350.0" y1="164" x2="350.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="432.0" y1="164" x2="432.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="514.0" y1="228" x2="514.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="596.0" y1="260" x2="596.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="678.0" y1="260" x2="678.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="145.0" y1="516" x2="145.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="227.0" y1="484" x2="227.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="309.0" y1="484" x2="309.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="391.0" y1="484" x2="391.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="473.0" y1="516" x2="473.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="555.0" y1="548" x2="555.0" y2="620" stroke="#34d399" stroke-width="1.2" opacity="0.55"/>
-<line x1="22.0" y1="620" x2="678.0" y2="620" stroke="#34d399" stroke-width="2.4"/>
-<text x="22.0" y="636" font-family="JetBrains Mono" font-size="9" fill="#34d399">CHWR RETURN MANIFOLD → plant room (ดูต่อที่หลังบ้าน)</text>
-</svg><div class="hc">10 units</div></div>
-      <div class="hall-body"><div class="ahu-box"><span class="dot sb"></span><span class="id">LIVE-01</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">LIVE-02</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">LIVE-03</span></div></div>
-      <div class="hall-foot"></div>
-    </div><div class="hall p1">
-      <div class="hall-head"><div class="hn">GH201</div><div class="hc">2 units</div></div>
-      <div class="hall-body"><div class="ahu-box"><span class="dot on"></span><span class="id">201-01</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">201-02</span></div></div>
-      <div class="hall-foot"></div>
-    </div><div class="hall p1">
-      <div class="hall-head"><div class="hn">GH202</div><div class="hc">2 units</div></div>
-      <div class="hall-body"><div class="ahu-box"><span class="dot on"></span><span class="id">202-01</span></div><div class="ahu-box"><span class="dot sb"></span><span class="id">202-02</span></div></div>
-      <div class="hall-foot"></div>
-    </div><div class="hall p1">
-      <div class="hall-head"><div class="hn">GH203</div><div class="hc">3 units</div></div>
-      <div class="hall-body"><div class="ahu-box"><span class="dot on"></span><span class="id">203-01</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">203-02</span></div></div>
-      <div class="hall-foot"></div>
-    </div><div class="hall p2">
-      <div class="hall-head"><div class="hn">BHIRAJ</div><div class="hc">6 units</div></div>
-      <div class="hall-body"><div class="ahu-box"><span class="dot on"></span><span class="id">BH-01</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">BH-02</span></div><div class="ahu-box"><span class="dot sb"></span><span class="id">BH-03</span></div></div>
-      <div class="hall-foot"></div>
-    </div><div class="hall p2">
-      <div class="hall-head"><div class="hn">COSMOS</div><div class="hc">7 units</div></div>
-      <div class="hall-body"><div class="ahu-box"><span class="dot on"></span><span class="id">CSM-01</span></div><div class="ahu-box"><span class="dot sb"></span><span class="id">CSM-02</span></div><div class="ahu-box"><span class="dot on"></span><span class="id">CSM-03</span></div><div class="ahu-box"><span class="dot off"></span><span class="id">CSM-04</span></div></div>
-      <div class="hall-foot"></div>
-    </div></div>
-        <div class="legend">
-          <div class="li"><span class="dot" style="background:#34d399; box-shadow:0 0 5px 1px rgba(52,211,153,0.7)"></span> running</div>
-          <div class="li"><span class="dot" style="background:#38bdf8; box-shadow:0 0 5px 1px rgba(56,189,248,0.7)"></span> standby</div>
-          <div class="li"><span class="dot" style="background:#5c6579"></span> stopped</div>
-          <div class="li"><span class="dot" style="background:linear-gradient(120deg,#38bdf8,#0e7490)"></span> Phase 1</div>
-          <div class="li"><span class="dot" style="background:linear-gradient(120deg,#a855f7,#6d28d9)"></span> Phase 2</div>
+  <div class="ahu-grid">
+    <div class="canvas-card glass" style="padding:20px;">
+      <div class="card-title">
+        <span>AHU floor plan — วางตำแหน่งตามผังจริง</span>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#34d399;">28 on</span>
+          <span style="color:var(--text-faint); font-size:10px;">·</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#38bdf8;">13 sb</span>
+          <span style="color:var(--text-faint); font-size:10px;">·</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#93a0b8;">7 off</span>
+          <span class="tag" style="margin-left:6px;">mock status</span>
         </div>
       </div>
+      <svg class="plan-svg" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
+<path d="M 40 120 Q 340 40 640 120 L 640 300 Q 340 340 40 300 Z" fill="none" stroke="rgba(255,255,255,0.12)" stroke-dasharray="5 4" stroke-width="1"/>
+<text x="340" y="330" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#59657f">back of house / outdoor</text>
+<rect x="55" y="150" width="70" height="120" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
+<text x="90.0" y="166" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">SAMA</text>
+<text x="90.0" y="177" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">9 units</text>
+<g class="ahu-node" style="cursor:pointer" data-id="SAMA-01" data-hall="SAMA" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+      <rect x="59" y="184" width="62" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="67" cy="191.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="74" y="195" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">SAMA-01</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="SAMA-02" data-hall="SAMA" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
+      <rect x="59" y="202" width="62" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="67" cy="209.5" r="2.6" fill="#38bdf8" style="filter:drop-shadow(0 0 2.5px #38bdf8)"/>
+      <text x="74" y="213" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">SAMA-02</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="SAMA-03" data-hall="SAMA" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+      <rect x="59" y="220" width="62" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="67" cy="227.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="74" y="231" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">SAMA-03</text>
+    </g><rect x="130" y="145" width="65" height="130" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
+<text x="162.5" y="161" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">BEAT</text>
+<text x="162.5" y="172" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">30 units</text>
+<g class="ahu-node" style="cursor:pointer" data-id="BEAT-01" data-hall="BEAT" data-status="Running" data-brand="Carrier" onclick="showAhuDetail(this)">
+      <rect x="134" y="179" width="57" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="142" cy="186.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="149" y="190" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">BEAT-01</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="BEAT-02" data-hall="BEAT" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
+      <rect x="134" y="197" width="57" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="142" cy="204.5" r="2.6" fill="#38bdf8" style="filter:drop-shadow(0 0 2.5px #38bdf8)"/>
+      <text x="149" y="208" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">BEAT-02</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="BEAT-03" data-hall="BEAT" data-status="Standby" data-brand="Carrier" onclick="showAhuDetail(this)">
+      <rect x="134" y="215" width="57" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="142" cy="222.5" r="2.6" fill="#38bdf8" style="filter:drop-shadow(0 0 2.5px #38bdf8)"/>
+      <text x="149" y="226" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">BEAT-03</text>
+    </g><rect x="200" y="138" width="55" height="140" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
+<text x="227.5" y="154" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH104</text>
+<text x="227.5" y="165" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">2 units</text>
+<g class="ahu-node" style="cursor:pointer" data-id="EH104-01" data-hall="EH104" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+      <rect x="204" y="172" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="212" cy="179.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="219" y="183" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH104-01</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="EH104-02" data-hall="EH104" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+      <rect x="204" y="190" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="212" cy="197.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="219" y="201" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH104-02</text>
+    </g><rect x="260" y="132" width="55" height="146" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
+<text x="287.5" y="148" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH103</text>
+<text x="287.5" y="159" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">2 units</text>
+<g class="ahu-node" style="cursor:pointer" data-id="EH103-01" data-hall="EH103" data-status="Standby" data-brand="Tasaki" onclick="showAhuDetail(this)">
+      <rect x="264" y="166" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="272" cy="173.5" r="2.6" fill="#38bdf8" style="filter:drop-shadow(0 0 2.5px #38bdf8)"/>
+      <text x="279" y="177" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH103-01</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="EH103-02" data-hall="EH103" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+      <rect x="264" y="184" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="272" cy="191.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="279" y="195" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH103-02</text>
+    </g><rect x="320" y="128" width="55" height="150" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
+<text x="347.5" y="144" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH102</text>
+<text x="347.5" y="155" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">2 units</text>
+<g class="ahu-node" style="cursor:pointer" data-id="EH102-01" data-hall="EH102" data-status="Stopped" data-brand="Tasaki" onclick="showAhuDetail(this)">
+      <rect x="324" y="162" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="332" cy="169.5" r="2.6" fill="#5c6579" style="filter:drop-shadow(0 0 2.5px #5c6579)"/>
+      <text x="339" y="173" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH102-01</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="EH102-02" data-hall="EH102" data-status="Standby" data-brand="Tasaki" onclick="showAhuDetail(this)">
+      <rect x="324" y="180" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="332" cy="187.5" r="2.6" fill="#38bdf8" style="filter:drop-shadow(0 0 2.5px #38bdf8)"/>
+      <text x="339" y="191" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH102-02</text>
+    </g><rect x="380" y="128" width="55" height="150" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
+<text x="407.5" y="144" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH101</text>
+<text x="407.5" y="155" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">2 units</text>
+<g class="ahu-node" style="cursor:pointer" data-id="EH101-01" data-hall="EH101" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+      <rect x="384" y="162" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="392" cy="169.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="399" y="173" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH101-01</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="EH101-02" data-hall="EH101" data-status="Running" data-brand="Tasaki" onclick="showAhuDetail(this)">
+      <rect x="384" y="180" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="392" cy="187.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="399" y="191" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH101-02</text>
+    </g><rect x="440" y="132" width="60" height="146" rx="10" fill="rgba(168,85,247,0.10)" stroke="#a855f7" stroke-width="1"/>
+<text x="470.0" y="148" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH100F</text>
+<text x="470.0" y="159" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">4 units</text>
+<g class="ahu-node" style="cursor:pointer" data-id="EH100F-01" data-hall="EH100F" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
+      <rect x="444" y="166" width="52" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="452" cy="173.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="459" y="177" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH100F-01</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="EH100F-02" data-hall="EH100F" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
+      <rect x="444" y="184" width="52" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="452" cy="191.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="459" y="195" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH100F-02</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="EH100F-03" data-hall="EH100F" data-status="Running" data-brand="TRANE" onclick="showAhuDetail(this)">
+      <rect x="444" y="202" width="52" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="452" cy="209.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="459" y="213" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH100F-03</text>
+    </g><rect x="505" y="138" width="58" height="140" rx="10" fill="rgba(168,85,247,0.10)" stroke="#a855f7" stroke-width="1"/>
+<text x="534.0" y="154" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH99</text>
+<text x="534.0" y="165" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">5 units</text>
+<g class="ahu-node" style="cursor:pointer" data-id="EH99-01" data-hall="EH99" data-status="Running" data-brand="Trane" onclick="showAhuDetail(this)">
+      <rect x="509" y="172" width="50" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="517" cy="179.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="524" y="183" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH99-01</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="EH99-02" data-hall="EH99" data-status="Standby" data-brand="Trane" onclick="showAhuDetail(this)">
+      <rect x="509" y="190" width="50" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="517" cy="197.5" r="2.6" fill="#38bdf8" style="filter:drop-shadow(0 0 2.5px #38bdf8)"/>
+      <text x="524" y="201" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH99-02</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="EH99-03" data-hall="EH99" data-status="Stopped" data-brand="Trane" onclick="showAhuDetail(this)">
+      <rect x="509" y="208" width="50" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="517" cy="215.5" r="2.6" fill="#5c6579" style="filter:drop-shadow(0 0 2.5px #5c6579)"/>
+      <text x="524" y="219" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH99-03</text>
+    </g><rect x="568" y="145" width="55" height="130" rx="10" fill="rgba(168,85,247,0.10)" stroke="#a855f7" stroke-width="1"/>
+<text x="595.5" y="161" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">EH98</text>
+<text x="595.5" y="172" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">10 units</text>
+<g class="ahu-node" style="cursor:pointer" data-id="EH98-01" data-hall="EH98" data-status="Stopped" data-brand="Trane" onclick="showAhuDetail(this)">
+      <rect x="572" y="179" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="580" cy="186.5" r="2.6" fill="#5c6579" style="filter:drop-shadow(0 0 2.5px #5c6579)"/>
+      <text x="587" y="190" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH98-01</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="EH98-02" data-hall="EH98" data-status="Running" data-brand="Trane" onclick="showAhuDetail(this)">
+      <rect x="572" y="197" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="580" cy="204.5" r="2.6" fill="#34d399" style="filter:drop-shadow(0 0 2.5px #34d399)"/>
+      <text x="587" y="208" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH98-02</text>
+    </g>
+<g class="ahu-node" style="cursor:pointer" data-id="EH98-03" data-hall="EH98" data-status="Standby" data-brand="Trane" onclick="showAhuDetail(this)">
+      <rect x="572" y="215" width="47" height="15" rx="4" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.14)" stroke-width="0.6"/>
+      <circle cx="580" cy="222.5" r="2.6" fill="#38bdf8" style="filter:drop-shadow(0 0 2.5px #38bdf8)"/>
+      <text x="587" y="226" font-family="JetBrains Mono" font-size="6.6" fill="#e7ecf5">EH98-03</text>
+    </g><rect x="55" y="300" width="60" height="46" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
+<text x="85.0" y="316" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">LIVE</text>
+<text x="85.0" y="327" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">10 units</text><rect x="230" y="300" width="55" height="46" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
+<text x="257.5" y="316" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">GH201</text>
+<text x="257.5" y="327" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">2 units</text><rect x="290" y="300" width="55" height="46" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
+<text x="317.5" y="316" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">GH202</text>
+<text x="317.5" y="327" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">2 units</text><rect x="350" y="300" width="55" height="46" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
+<text x="377.5" y="316" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">GH203</text>
+<text x="377.5" y="327" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">3 units</text><rect x="565" y="300" width="60" height="34" rx="10" fill="rgba(168,85,247,0.10)" stroke="#a855f7" stroke-width="1"/>
+<text x="595.0" y="316" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">BHIRAJ</text>
+<text x="595.0" y="327" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">6 units</text><rect x="565" y="340" width="60" height="34" rx="10" fill="rgba(168,85,247,0.10)" stroke="#a855f7" stroke-width="1"/>
+<text x="595.0" y="356" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="8.5" fill="#fff">COSMOS</text>
+<text x="595.0" y="367" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">7 units</text>
+<path d="M 260 380 Q 340 410 420 380" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+<text x="340" y="425" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#59657f">visitor entrance</text>
+</svg>
+      <div class="legend">
+        <div class="li"><span class="dot" style="background:#34d399; box-shadow:0 0 5px 1px rgba(52,211,153,0.7)"></span> running</div>
+        <div class="li"><span class="dot" style="background:#38bdf8; box-shadow:0 0 5px 1px rgba(56,189,248,0.7)"></span> standby</div>
+        <div class="li"><span class="dot" style="background:#5c6579"></span> stopped</div>
+        <div class="li"><span class="dot" style="background:linear-gradient(120deg,#38bdf8,#0e7490)"></span> Phase 1</div>
+        <div class="li"><span class="dot" style="background:linear-gradient(120deg,#a855f7,#6d28d9)"></span> Phase 2</div>
+      </div>
+    </div>
 
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <div class="side-card glass">
-          <h4>zone control</h4>
-          <div class="zc-btn-row">
-            <div class="zc-btn on">ALL ON</div><div class="zc-btn off">ALL OFF</div>
-            <div class="zc-btn on">COMMON ON</div><div class="zc-btn off">COMMON OFF</div>
-            <div class="zc-btn event-on">EVENT ON</div><div class="zc-btn event-off">EVENT OFF</div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="side-card glass">
+        <h4>quick view <span class="mockbadge" style="float:right;">mock</span></h4>
+        <div class="donut-wrap">
+          <div class="donut"><div class="donut-hole"><span>54</span></div></div>
+          <div class="donut-legend">
+            <div class="li"><span class="dot" style="background:#34d399"></span>28 running (52%)</div>
+            <div class="li"><span class="dot" style="background:#38bdf8"></span>13 standby (24%)</div>
+            <div class="li"><span class="dot" style="background:#4b5468"></span>7 stopped (13%)</div>
           </div>
-          <span class="mockbadge">ปุ่มตัวอย่าง ยังไม่เชื่อมควบคุมจริง</span>
         </div>
+        <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-faint); font-family:'JetBrains Mono',monospace; border-top:1px solid var(--glass-border); padding-top:8px;">
+          <span>shown</span><b style="color:var(--text);">54 / 103</b>
+        </div>
+      </div>
 
-        <div class="side-card glass">
-          <h4>quick view</h4>
-          <div class="donut-wrap">
-            <div class="donut"><div class="donut-hole"><span>54</span></div></div>
-            <div class="donut-legend">
-              <div class="li"><span class="dot" style="background:#34d399"></span>28 running</div>
-              <div class="li"><span class="dot" style="background:#38bdf8"></span>13 standby</div>
-              <div class="li"><span class="dot" style="background:#4b5468"></span>7 stopped</div>
-            </div>
-          </div>
-          <span class="mockbadge">sample จาก 54 จุดที่แสดง</span>
+      <div class="side-card glass">
+        <h4>zone control</h4>
+        <div class="zc-btn-row">
+          <div class="zc-btn on">ALL ON</div><div class="zc-btn off">ALL OFF</div>
+          <div class="zc-btn on">COMMON ON</div><div class="zc-btn off">COMMON OFF</div>
+          <div class="zc-btn event-on">EVENT ON</div><div class="zc-btn event-off">EVENT OFF</div>
         </div>
+        <span class="mockbadge">ปุ่มตัวอย่าง ยังไม่เชื่อมควบคุมจริง</span>
+      </div>
 
-        <div class="side-card glass">
-          <h4>system alarms</h4>
-          <div class="alarm-item"><span class="ic">🔴</span><div><b>EH103-B</b>High supply air temp · mock</div></div>
-          <div class="alarm-item"><span class="ic">🟡</span><div><b>H-SCHP-04</b>Flow low · mock</div></div>
-          <span class="mockbadge">ตัวอย่าง ยังไม่เชื่อมข้อมูลจริง</span>
-        </div>
+      <div class="side-card glass">
+        <h4>system alarms</h4>
+        <div class="alarm-item"><span class="ic">🔴</span><div><b>EH103-B</b>High supply air temp · mock</div></div>
+        <div class="alarm-item"><span class="ic">🟡</span><div><b>H-SCHP-04</b>Flow low · mock</div></div>
+        <span class="mockbadge">ตัวอย่าง ยังไม่เชื่อมข้อมูลจริง</span>
       </div>
     </div>
+  </div>
 
-    <div class="bottom-grid">
-      <div class="bcard glass">
-        <h5>chilled water (reference)</h5>
-        <div class="row"><span>CHWS</span><b>7.2 °C</b></div>
-        <div class="row"><span>CHWR</span><b>12.5 °C</b></div>
-        <div class="row"><span>ΔT / flow</span><b>5.3°C · 1,250 m³/h</b></div>
-        <span class="mockbadge">ค่าอ้างอิงจากภาพตัวอย่าง ไม่ใช่ค่าจริง</span>
-      </div>
-      <div class="bcard glass">
-        <h5>AHU summary (sample)</h5>
-        <div class="row"><span>Running</span><b>28 (52%)</b></div>
-        <div class="row"><span>Standby</span><b>13 (24%)</b></div>
-        <div class="row"><span>Stopped</span><b>7 (13%)</b></div>
-      </div>
-      <div class="bcard glass">
-        <h5>energy (mock)</h5>
-        <div class="row"><span>CHW plant</span><b>— kWh</b></div>
-        <div class="row"><span>AHU fans</span><b>— kWh</b></div>
-        <span class="mockbadge">รอเชื่อม energy log จริง</span>
-      </div>
-      <div class="bcard glass">
-        <h5>notes</h5>
-        <div class="row" style="display:block; color:var(--text-muted); line-height:1.6;">
-          ตำแหน่ง hall อ้างอิงจากผังจริงที่ยืนยันแล้ว · สถานะ/พลังงาน/alarm ยังเป็น mock ทั้งหมด รอเชื่อม live_status และ chiller_log
-        </div>
-      </div>
-    </div>
-  </div></div>
+  <div class="bottom-strip glass" style="border-radius:12px;">
+    <span>CHWS <b>7.2°C</b></span><span class="sep">·</span>
+    <span>CHWR <b>12.5°C</b></span><span class="sep">·</span>
+    <span>ΔT <b>5.3°C</b></span><span class="sep">·</span>
+    <span>flow <b>1,250 m³/h</b></span>
+    <span class="mockbadge">ค่าอ้างอิงจากภาพตัวอย่าง ไม่ใช่ค่าจริง</span>
+    <span style="margin-left:auto; color:var(--text-faint);">ตำแหน่ง hall = ข้อมูลจริง · สถานะ/energy/alarm = mock รอเชื่อม live_status</span>
+  </div>
 </div>
 
 <div class="panel" id="panel-plant">
@@ -947,19 +485,9 @@
   </div>
 </div>
 
+
+
 <div class="footnote">BITEC master data (ยืนยัน parent_id ครบ) · Mockup 2 tab สำหรับพรีเซนต์ก่อนเชื่อมข้อมูลจริง</div>
-
-<script>
-document.querySelectorAll(".tab").forEach(tab=>{
-  tab.addEventListener("click", ()=>{
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
-    tab.classList.add("active");
-    document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
-  });
-});
-</script>
-
 
 <div class="ahu-modal-backdrop" id="ahu-modal-backdrop" onclick="if(event.target===this) closeAhuDetail()">
   <div class="ahu-modal glass">
@@ -994,5 +522,19 @@ function closeAhuDetail(){
   document.getElementById("ahu-modal-backdrop").classList.remove("show");
 }
 </script>
+</body>
+</html>
+
+<script>
+document.querySelectorAll(".tab").forEach(tab=>{
+  tab.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+  });
+});
+</script>
+
 </body>
 </html>
