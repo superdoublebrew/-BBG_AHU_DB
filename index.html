@@ -146,7 +146,8 @@
   .panel.active{ display:flex; flex-direction:column; gap:10px; }
   .ahu-grid{ flex:1; min-height:0; display:grid; grid-template-columns:1fr 220px; grid-template-rows:minmax(0,1fr); gap:10px; }
   .ahu-grid .canvas-card{ display:flex; flex-direction:column; min-height:0; padding:12px 16px; overflow:hidden; }
-  .plan-svg{ flex:1 1 0; min-height:0; width:100%; height:100%; display:block; }
+  .svg-wrap{ flex:1 1 0; min-height:0; overflow:hidden; }
+  .plan-svg{ width:100%; height:100%; display:block; }
   .side-card{ flex:1; display:flex; flex-direction:column; min-height:0; padding:12px; }
   .side-card:has(.zc-btn-row){ flex:0 0 auto; }
   .footnote{ display:none; }
@@ -155,7 +156,8 @@
   .bottom-strip .sep{ color:var(--text-faint); }
 
   .panel.active > .canvas-card{ flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
-  .panel.active > .canvas-card .plan-svg{ flex:1 1 0; min-height:0; height:100%; width:100%; display:block; }
+  .panel.active > .canvas-card .svg-wrap{ flex:1 1 0; min-height:0; overflow:hidden; }
+  .panel.active > .canvas-card .plan-svg{ width:100%; height:100%; display:block; }
 </style>
 </head>
 <body>
@@ -195,7 +197,7 @@
           <span class="tag" style="margin-left:6px;">mock status</span>
         </div>
       </div>
-      <svg class="plan-svg" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
+      <div class="svg-wrap"><svg class="plan-svg" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg">
 <path d="M 40 120 Q 340 40 640 120 L 640 300 Q 340 340 40 300 Z" fill="none" stroke="rgba(255,255,255,0.12)" stroke-dasharray="5 4" stroke-width="1"/>
 <text x="340" y="330" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#59657f">back of house / outdoor</text>
 <rect x="55" y="150" width="70" height="120" rx="10" fill="rgba(56,189,248,0.10)" stroke="#38bdf8" stroke-width="1"/>
@@ -346,7 +348,7 @@
 <text x="595.0" y="367" text-anchor="middle" font-family="JetBrains Mono" font-size="6.5" fill="rgba(255,255,255,0.7)">7 units</text>
 <path d="M 260 380 Q 340 410 420 380" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
 <text x="340" y="425" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#59657f">visitor entrance</text>
-</svg>
+</svg></div>
       <div class="legend">
         <div class="li"><span class="dot" style="background:#34d399; box-shadow:0 0 5px 1px rgba(52,211,153,0.7)"></span> running</div>
         <div class="li"><span class="dot" style="background:#38bdf8; box-shadow:0 0 5px 1px rgba(56,189,248,0.7)"></span> standby</div>
@@ -404,7 +406,7 @@
 <div class="panel" id="panel-plant">
   <div class="canvas-card glass">
     <div class="card-title"><span>Chiller plant — full circulation loop (หลังบ้าน)</span><span class="tag">closed loop</span></div>
-    <svg class="plan-svg" viewBox="0 0 680 640" xmlns="http://www.w3.org/2000/svg">
+    <div class="svg-wrap"><svg class="plan-svg" viewBox="0 0 680 640" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <marker id="ac" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
         <marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
@@ -476,7 +478,7 @@
         <rect x="360" y="548" width="18" height="8" rx="2" fill="#34d399"/><text x="384" y="555" fill="#93a0b8">chilled return</text>
         <circle cx="490" cy="552" r="3" fill="#c9d2e3"/><text x="500" y="555" fill="#93a0b8">junction</text>
       </g>
-    </svg>
+    </svg></div>
     <div class="legend">
       <div class="li"><span class="dot" style="background:#38bdf8"></span> condenser water (ระบายความร้อน)</div>
       <div class="li"><span class="dot" style="background:#22d3ee"></span> chilled water supply</div>
