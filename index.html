@@ -157,7 +157,73 @@
   #panel-plant .canvas-card{ display:flex; flex-direction:column; }
   #panel-plant .svg-wrap{ height:620px; }
   #panel-plant .plan-svg{ width:100%; height:100%; display:block; }
+
+  /* ===== v2 additions: circuit / zone / report ===== */
+  .kw-badge{ font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; color:#0a0612;
+    background:linear-gradient(120deg,#22d3ee,#38bdf8); padding:2px 9px; border-radius:20px; display:inline-block; }
+  .kw-badge.dim{ background:rgba(255,255,255,0.08); color:var(--text-muted); }
+  .status-dot{ width:8px; height:8px; border-radius:50%; display:inline-block; background:#34d399; box-shadow:0 0 6px 1px rgba(52,211,153,0.7); }
+
+  .circuit-wrap{ display:flex; flex-direction:column; gap:26px; padding:6px 4px; }
+  .loop-row{ display:flex; align-items:center; gap:0; flex-wrap:wrap; }
+  .loop-label{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--text-faint); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .loop-label .ln{ width:22px; height:2px; border-radius:2px; }
+  .node-card{ min-width:150px; padding:14px 16px; border-radius:14px; position:relative; flex-shrink:0; }
+  .node-card .nc-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+  .node-card .nc-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12.5px; color:#fff; }
+  .node-card .nc-sub{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint); margin-bottom:10px; }
+  .node-card .nc-kw{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; }
+  .node-card .nc-kw .u{ font-size:10px; color:var(--text-faint); font-weight:500; margin-left:3px; }
+  .node-card.chl{ border:1px solid #f2b84f; box-shadow:0 0 24px rgba(242,184,79,0.18); }
+  .node-card.chl .nc-kw{ color:#f2b84f; }
+  .node-card.cdw .nc-kw{ color:#38bdf8; }
+  .node-card.chw .nc-kw{ color:#22d3ee; }
+  .node-card.passthrough{ opacity:0.55; }
+  .node-card.passthrough .nc-kw{ color:var(--text-faint); font-size:12px; }
+  .arrow-flow{ display:flex; align-items:center; padding:0 6px; flex-shrink:0; }
+  .arrow-flow svg{ display:block; }
+  .zone-strip{ display:flex; gap:8px; flex-wrap:wrap; padding:14px; border-radius:14px; background:rgba(255,255,255,0.02);
+    border:1px dashed rgba(255,255,255,0.12); flex:1; min-width:280px; }
+  .zone-chip{ padding:8px 12px; border-radius:10px; background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.28); min-width:108px; }
+  .zone-chip .zn{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10.5px; color:#fff; }
+  .zone-chip .zk{ font-family:'JetBrains Mono',monospace; font-size:12px; color:#c9a6f7; margin-top:3px; }
+  .zone-chip .za{ font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text-faint); margin-top:1px; }
+  .zone-chip.alert{ background:rgba(239,68,68,0.14); border-color:rgba(239,68,68,0.4); }
+  .zone-chip.alert .zk{ color:#f87171; }
+
+  .zone-toolbar{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+  .zone-toolbar .th-input{ display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-muted); }
+  .zone-toolbar input[type=number]{ width:64px; padding:6px 8px; border-radius:8px; background:rgba(255,255,255,0.05);
+    border:1px solid var(--glass-border); color:var(--text); font-family:'JetBrains Mono',monospace; font-size:12px; }
+  .level-toggle{ display:flex; gap:6px; }
+  .level-toggle .lt-btn{ padding:7px 16px; border-radius:9px; font-size:11px; font-weight:600; font-family:'Space Grotesk',sans-serif;
+    color:var(--text-muted); border:1px solid var(--glass-border); cursor:pointer; background:rgba(255,255,255,0.02); }
+  .level-toggle .lt-btn.active{ color:#0a0612; background:linear-gradient(120deg,var(--p2-1),var(--p2-2)); border-color:transparent; }
+
+  .zone-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
+  .zone-table th{ text-align:left; padding:9px 12px; font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.6px;
+    text-transform:uppercase; color:var(--text-faint); border-bottom:1px solid var(--glass-border); }
+  .zone-table td{ padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.05); color:var(--text-muted); }
+  .zone-table td.zname{ color:var(--text); font-weight:600; font-family:'Space Grotesk',sans-serif; }
+  .zone-table td.num{ font-family:'JetBrains Mono',monospace; text-align:right; }
+  .zone-table tr.over td.num.wm2{ color:#f87171; font-weight:700; }
+  .badge-ok{ padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; background:rgba(52,211,153,0.14); color:#34d399; }
+  .badge-over{ padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; background:rgba(239,68,68,0.16); color:#f87171; }
+
+  .report-stat-row{ display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .report-stat{ flex:1; min-width:120px; padding:12px 16px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); }
+  .report-stat .rl{ font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint); font-family:'JetBrains Mono',monospace; }
+  .report-stat .rv{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; margin-top:3px; }
+  .chart-wrap{ padding:16px; border-radius:14px; background:rgba(255,255,255,0.02); }
+  .month-select{ display:flex; gap:6px; margin-bottom:14px; }
+  .month-select .m-btn{ padding:7px 18px; border-radius:9px; font-size:11px; font-weight:600; font-family:'Space Grotesk',sans-serif;
+    color:var(--text-muted); border:1px solid var(--glass-border); cursor:pointer; background:rgba(255,255,255,0.02); }
+  .month-select .m-btn.active{ color:#0a0612; background:linear-gradient(120deg,var(--p1-1),var(--p1-2)); border-color:transparent; }
+  .export-btn{ margin-top:14px; padding:9px 18px; border-radius:9px; font-size:11px; font-weight:600; font-family:'Space Grotesk',sans-serif;
+    color:#0a0612; background:linear-gradient(120deg,var(--p1-1),var(--p2-1)); border:none; cursor:pointer; }
 </style>
+
 </head>
 <body>
 
@@ -179,7 +245,9 @@
 
 <div class="tabs">
   <div class="tab active" data-tab="ahu">หน้าบ้าน · AHU floor plan</div>
-  <div class="tab" data-tab="plant">หลังบ้าน · chiller plant loop</div>
+  <div class="tab" data-tab="plant">หลังบ้าน · chiller circuit</div>
+  <div class="tab" data-tab="zone">Zone energy &amp; alert</div>
+  <div class="tab" data-tab="report">Monthly report</div>
 </div>
 
 <div class="panel active" id="panel-ahu">
@@ -853,92 +921,367 @@
 </div>
 
 <div class="panel" id="panel-plant">
-  <div class="canvas-card glass">
-    <div class="card-title"><span>Chiller plant — full circulation loop (หลังบ้าน)</span><span class="tag">closed loop</span></div>
-    <div class="svg-wrap"><svg class="plan-svg" viewBox="0 0 680 640" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <marker id="ac" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
-        <marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
-        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
-      </defs>
-      <style>
-        .nd rect{ fill:rgba(255,255,255,0.05); stroke:rgba(255,255,255,0.18); }
-        .nd .t{ font-family:'Space Grotesk',sans-serif; fill:#f3f6fb; font-size:11px; font-weight:600; }
-        .nd .id{ font-family:'JetBrains Mono',monospace; fill:#93a0b8; font-size:9px; }
-        .cool{ stroke:#38bdf8; stroke-width:2.4; fill:none; }
-        .sup{ stroke:#22d3ee; stroke-width:2.4; fill:none; }
-        .ret{ stroke:#34d399; stroke-width:2.4; fill:none; }
-        .lbl{ font-family:'JetBrains Mono',monospace; font-size:9px; }
-        .rd{ font-family:'JetBrains Mono',monospace; font-size:9px; fill:#f2b84f; }
-        .jn{ fill:#c9d2e3; }
-      </style>
+  <div class="canvas-card glass" style="padding:24px;">
+    <div class="card-title">
+      <span>Chiller Circuit — full loop พร้อม kW real-time (last known reading)</span>
+      <span class="tag">อัปเดตล่าสุด 2569-07-17 13:24 (17 Jul 2026)</span>
+    </div>
 
-      <text class="lbl" x="120" y="20" text-anchor="start" fill="#38bdf8">■ CONDENSER WATER LOOP</text>
+    <div class="circuit-wrap">
 
-      <g class="nd"><rect x="40" y="34" width="130" height="54" rx="8"/><text class="t" x="105" y="55" text-anchor="middle">Cooling tower</text><text class="id" x="105" y="72" text-anchor="middle">P1-CT-01~04 · H-CT-01~07</text></g>
-      <g class="nd"><rect x="275" y="34" width="130" height="54" rx="8"/><text class="t" x="340" y="55" text-anchor="middle">Cond. water pump</text><text class="id" x="340" y="72" text-anchor="middle">P1-CDP · H-CDP · 14</text></g>
-      <g class="nd"><rect x="510" y="34" width="130" height="54" rx="8"/><text class="t" x="575" y="55" text-anchor="middle">Condenser</text><text class="id" x="575" y="72" text-anchor="middle">CH-01~12 (shell)</text></g>
+      <div>
+        <div class="loop-label"><span class="ln" style="background:#38bdf8"></span>Condenser Water Loop (CDW)</div>
+        <div class="loop-row">
+          <div class="node-card glass cdw">
+            <div class="nc-head"><span class="nc-title">Cooling Tower</span><span class="status-dot"></span></div>
+            <div class="nc-sub">CT · 11 หน่วย</div>
+            <div class="nc-kw">114.2<span class="u">kW</span></div>
+          </div>
+          <div class="arrow-flow"><svg width="34" height="24" viewBox="0 0 34 24"><path d="M2 12 H28" stroke="#38bdf8" stroke-width="2.2" fill="none"/><path d="M22 6 L30 12 L22 18" stroke="#38bdf8" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="node-card glass cdw">
+            <div class="nc-head"><span class="nc-title">Condenser Water Pump</span><span class="status-dot"></span></div>
+            <div class="nc-sub">CDP · 14 หน่วย</div>
+            <div class="nc-kw">48.4<span class="u">kW</span></div>
+          </div>
+          <div class="arrow-flow"><svg width="34" height="24" viewBox="0 0 34 24"><path d="M2 12 H28" stroke="#38bdf8" stroke-width="2.2" fill="none"/><path d="M22 6 L30 12 L22 18" stroke="#38bdf8" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="node-card glass chl">
+            <div class="nc-head"><span class="nc-title">☀ Main Chiller</span><span class="status-dot"></span></div>
+            <div class="nc-sub">CHL · 12 หน่วย · 764.1 TR</div>
+            <div class="nc-kw">540.7<span class="u">kW</span></div>
+          </div>
+        </div>
+      </div>
 
-      <path class="cool" d="M170 61 L275 61" marker-end="url(#ac)"/>
-      <circle cx="222" cy="61" r="3" class="jn"/>
-      <path class="cool" d="M405 61 L510 61" marker-end="url(#ac)"/>
-      <circle cx="457" cy="61" r="3" class="jn"/>
-      <path class="cool" d="M575 88 L575 112 L105 112 L105 90" marker-end="url(#ac)"/>
-      <circle cx="575" cy="112" r="3" class="jn"/><circle cx="105" cy="112" r="3" class="jn"/>
-      <text class="rd" x="340" y="107" text-anchor="middle">CW return → cooling tower</text>
+      <div>
+        <div class="loop-label"><span class="ln" style="background:#22d3ee"></span>Chilled Water Loop (CHW)</div>
+        <div class="loop-row" style="margin-bottom:10px;">
+          <div class="node-card glass passthrough">
+            <div class="nc-head"><span class="nc-title">Header Supply</span><span class="status-dot" style="background:#5c6579;box-shadow:none"></span></div>
+            <div class="nc-sub">HSP · ไม่มีมิเตอร์ (pass-through)</div>
+            <div class="nc-kw">—</div>
+          </div>
+          <div class="arrow-flow"><svg width="34" height="24" viewBox="0 0 34 24"><path d="M2 12 H28" stroke="#22d3ee" stroke-width="2.2" fill="none"/><path d="M22 6 L30 12 L22 18" stroke="#22d3ee" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="node-card glass chw">
+            <div class="nc-head"><span class="nc-title">SCHP</span><span class="status-dot"></span></div>
+            <div class="nc-sub">Secondary Pump · 16 หน่วย / 7 โซน</div>
+            <div class="nc-kw">482.8<span class="u">kW</span></div>
+          </div>
+          <div class="arrow-flow"><svg width="34" height="24" viewBox="0 0 34 24"><path d="M2 12 H28" stroke="#22d3ee" stroke-width="2.2" fill="none"/><path d="M22 6 L30 12 L22 18" stroke="#22d3ee" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="zone-strip">
+            <div class="zone-chip" data-zone="Front" data-kw="154.2" data-area="22040.0">
+              <div class="zn">โซนหน้า</div>
+              <div class="zk">154.2 kW</div>
+              <div class="za">11 AHU · 22040 m²</div>
+            </div>
+            <div class="zone-chip" data-zone="Back" data-kw="40.1" data-area="20320.0">
+              <div class="zn">โซนหลัง</div>
+              <div class="zk">40.1 kW</div>
+              <div class="za">6 AHU · 20320 m²</div>
+            </div>
+            <div class="zone-chip" data-zone="EH105" data-kw="66.7" data-area="11000.0">
+              <div class="zn">BEAT/LIVE</div>
+              <div class="zk">66.7 kW</div>
+              <div class="za">40 AHU · 11000 m²</div>
+            </div>
+            <div class="zone-chip" data-zone="EH106" data-kw="66.7" data-area="4000.0">
+              <div class="zn">SAMA GARDEN</div>
+              <div class="zk">66.7 kW</div>
+              <div class="za">9 AHU · 4000 m²</div>
+            </div>
+            <div class="zone-chip" data-zone="Exhibition Area" data-kw="94.2" data-area="20700.0">
+              <div class="zn">Exhibition</div>
+              <div class="zk">94.2 kW</div>
+              <div class="za">24 AHU · 20700 m²</div>
+            </div>
+            <div class="zone-chip" data-zone="Sale Area" data-kw="54.5" data-area="3300.0">
+              <div class="zn">BHIRAJ</div>
+              <div class="zk">54.5 kW</div>
+              <div class="za">6 AHU · 3300 m²</div>
+            </div>
+            <div class="zone-chip" data-zone="Support Area" data-kw="73.1" data-area="400.0">
+              <div class="zn">COSMOS</div>
+              <div class="zk">73.1 kW</div>
+              <div class="za">7 AHU · 400 m²</div>
+            </div>
+            
+          </div>
+        </div>
+        <div class="loop-row">
+          <div class="node-card glass chw" style="min-width:180px;">
+            <div class="nc-head"><span class="nc-title">Air Handling Unit</span><span class="status-dot"></span></div>
+            <div class="nc-sub">AHU · 103 หน่วย · 15 hall</div>
+            <div class="nc-kw">482.8<span class="u">kW (≈ SCHP)</span></div>
+          </div>
+          <div class="arrow-flow"><svg width="34" height="24" viewBox="0 0 34 24"><path d="M2 12 H28" stroke="#34d399" stroke-width="2.2" fill="none"/><path d="M22 6 L30 12 L22 18" stroke="#34d399" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="node-card glass passthrough">
+            <div class="nc-head"><span class="nc-title">Header Return</span><span class="status-dot" style="background:#5c6579;box-shadow:none"></span></div>
+            <div class="nc-sub">HRT · ไม่มีมิเตอร์ (pass-through)</div>
+            <div class="nc-kw">—</div>
+          </div>
+          <div class="arrow-flow"><svg width="34" height="24" viewBox="0 0 34 24"><path d="M2 12 H28" stroke="#34d399" stroke-width="2.2" fill="none"/><path d="M22 6 L30 12 L22 18" stroke="#34d399" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="node-card glass chw">
+            <div class="nc-head"><span class="nc-title">Primary Chiller Pump</span><span class="status-dot"></span></div>
+            <div class="nc-sub">PCHP · 12 หน่วย · กลับเข้า Chiller</div>
+            <div class="nc-kw">37.5<span class="u">kW</span></div>
+          </div>
+        </div>
+      </div>
 
-      <line x1="40" y1="148" x2="640" y2="148" stroke="rgba(255,255,255,0.09)" stroke-dasharray="3 4"/>
-      <text class="lbl" x="120" y="168" text-anchor="start" fill="#22d3ee">■ CHILLED WATER LOOP</text>
+    </div>
 
-      <g class="nd"><rect x="510" y="182" width="130" height="60" rx="8"/><text class="t" x="575" y="205" text-anchor="middle">Chiller</text><text class="id" x="575" y="223" text-anchor="middle">P1-CH-01~04 · H1-CH-01~08</text></g>
-      <g class="nd"><rect x="275" y="182" width="130" height="60" rx="8"/><text class="t" x="340" y="205" text-anchor="middle">Header supply</text><text class="id" x="340" y="223" text-anchor="middle">HEADER-SUPPLY</text></g>
-      <g class="nd"><rect x="40" y="182" width="130" height="60" rx="8"/><text class="t" x="105" y="205" text-anchor="middle">SCHP</text><text class="id" x="105" y="223" text-anchor="middle">SCHP-01~07 · H-SCHP-01~09</text></g>
-
-      <path class="sup" d="M510 212 L405 212" marker-end="url(#as)"/>
-      <circle cx="457" cy="212" r="3" class="jn"/>
-      <text class="rd" x="457" y="205" text-anchor="middle">CHWS 7°C</text>
-      <path class="sup" d="M275 212 L170 212" marker-end="url(#as)"/>
-      <circle cx="222" cy="212" r="3" class="jn"/>
-
-      <path class="sup" d="M105 242 L105 285 L220 285 L220 314" marker-end="url(#as)"/>
-      <circle cx="105" cy="285" r="3" class="jn"/><circle cx="450" cy="285" r="3" class="jn"/>
-      <path class="sup" d="M105 285 L450 285 L450 314" marker-end="url(#as)"/>
-      <text class="rd" x="300" y="279" text-anchor="middle">flow 1,250 m³/h</text>
-
-      <g class="nd"><rect x="150" y="314" width="140" height="56" rx="8" fill="rgba(168,85,247,0.14)" stroke="#a855f7"/><text class="t" x="220" y="336" text-anchor="middle">Phase 1 · 66 AHU</text><text class="id" x="220" y="354" text-anchor="middle">Front·Back·EH105·EH106</text></g>
-      <g class="nd"><rect x="380" y="314" width="140" height="56" rx="8" fill="rgba(168,85,247,0.14)" stroke="#a855f7"/><text class="t" x="450" y="336" text-anchor="middle">Phase 2 · 37 AHU</text><text class="id" x="450" y="354" text-anchor="middle">Exh·Sale·Support</text></g>
-
-      <path class="sup" d="M220 370 L220 396" marker-end="url(#as)"/>
-      <path class="sup" d="M450 370 L450 396" marker-end="url(#as)"/>
-
-      <rect x="70" y="396" width="560" height="58" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.16)" stroke-dasharray="4 4"/>
-      <text class="t" x="340" y="420" text-anchor="middle" font-family="Space Grotesk" font-size="12" fill="#f3f6fb">AHU · 103 units</text>
-      <text class="id" x="340" y="438" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#93a0b8">BITEC-AHU · แลกเปลี่ยนความร้อนกับอากาศ</text>
-
-      <path class="ret" d="M340 454 L340 478 L655 478 L655 212 L640 212" marker-end="url(#ar)"/>
-      <circle cx="340" cy="478" r="3" class="jn"/><circle cx="655" cy="212" r="3" class="jn"/>
-      <text class="rd" x="500" y="472" text-anchor="middle">CHWR 12.5°C · ΔT 5.3°C · return → evaporator</text>
-
-      <text class="lbl" x="340" y="520" text-anchor="middle" fill="#59657f">วงจรปิด (closed loop) — น้ำหมุนเวียนไม่มีสิ้นสุด</text>
-
-      <g font-family="JetBrains Mono" font-size="8.5">
-        <rect x="70" y="548" width="18" height="8" rx="2" fill="#38bdf8"/><text x="94" y="555" fill="#93a0b8">condenser water</text>
-        <rect x="220" y="548" width="18" height="8" rx="2" fill="#22d3ee"/><text x="244" y="555" fill="#93a0b8">chilled supply</text>
-        <rect x="360" y="548" width="18" height="8" rx="2" fill="#34d399"/><text x="384" y="555" fill="#93a0b8">chilled return</text>
-        <circle cx="490" cy="552" r="3" fill="#c9d2e3"/><text x="500" y="555" fill="#93a0b8">junction</text>
-      </g>
-    </svg></div>
-    <div class="legend">
+    <div class="legend" style="margin-top:18px;">
       <div class="li"><span class="dot" style="background:#38bdf8"></span> condenser water (ระบายความร้อน)</div>
       <div class="li"><span class="dot" style="background:#22d3ee"></span> chilled water supply</div>
       <div class="li"><span class="dot" style="background:#34d399"></span> chilled water return</div>
+      <div class="li"><span class="dot" style="background:#5c6579"></span> ไม่มีมิเตอร์ (HSP/HRT)</div>
+    </div>
+    <div class="bottom-strip" style="margin-top:10px; border-radius:12px;">
+      <span>Plant demand รวม <b>634.9 kW</b></span><span class="sep">·</span>
+      <span>Capacity <b>764.1 TR</b></span><span class="sep">·</span>
+      <span>kW/TR <b>0.8</b></span><span class="sep">·</span>
+      <span>OAT <b>33°C</b></span>
+      <span class="mockbadge" style="margin-left:auto;">ค่า kW = last known reading จาก master data จริง</span>
     </div>
   </div>
 </div>
+<div class="panel" id="panel-zone">
+  <div class="canvas-card glass" style="padding:24px;">
+    <div class="card-title">
+      <span>Zone Energy &amp; Alert — kW/ตร.ม. เทียบ threshold</span>
+      <span class="tag">ปรับ threshold ได้ทันที</span>
+    </div>
 
+    <div class="zone-toolbar">
+      <div class="level-toggle">
+        <div class="lt-btn active" data-level="zone">ระดับ SCHP_ZONE (7 โซน มีมิเตอร์จริง)</div>
+        <div class="lt-btn" data-level="hall">ระดับ Hall (15 hall · kW ประมาณตามสัดส่วน AHU)</div>
+      </div>
+      <div class="th-input">
+        Threshold:
+        <input type="number" id="threshold-input" value="20" step="1" min="1"> W/ตร.ม.
+        <span style="color:var(--text-faint)">(kW/ตร.ม. × 1000)</span>
+      </div>
+    </div>
 
+    <table class="zone-table">
+      <thead>
+        <tr><th>Zone / Hall</th><th style="text-align:right">AHU</th><th style="text-align:right">kW</th>
+        <th style="text-align:right">Area (m²)</th><th style="text-align:right">W/m²</th><th style="text-align:right">สถานะ</th></tr>
+      </thead>
+      <tbody id="zone-table-body-zone">
+        <tr class="zrow" data-level="zone" data-key="Front" data-kw="154.2" data-area="22040.0">
+          <td class="zname">โซนหน้า (Front)</td>
+          <td class="num">11</td>
+          <td class="num">154.2</td>
+          <td class="num">22040</td>
+          <td class="num wm2">7.0</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="zone" data-key="Back" data-kw="40.1" data-area="20320.0">
+          <td class="zname">โซนหลัง (Back)</td>
+          <td class="num">6</td>
+          <td class="num">40.1</td>
+          <td class="num">20320</td>
+          <td class="num wm2">1.97</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="zone" data-key="EH105" data-kw="66.7" data-area="11000.0">
+          <td class="zname">BEAT / LIVE (EH105)</td>
+          <td class="num">40</td>
+          <td class="num">66.7</td>
+          <td class="num">11000</td>
+          <td class="num wm2">6.06</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="zone" data-key="EH106" data-kw="66.7" data-area="4000.0">
+          <td class="zname">SAMA GARDEN (EH106)</td>
+          <td class="num">9</td>
+          <td class="num">66.7</td>
+          <td class="num">4000</td>
+          <td class="num wm2">16.68</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="zone" data-key="Exhibition Area" data-kw="94.2" data-area="20700.0">
+          <td class="zname">Exhibition Area</td>
+          <td class="num">24</td>
+          <td class="num">94.2</td>
+          <td class="num">20700</td>
+          <td class="num wm2">4.55</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="zone" data-key="Sale Area" data-kw="54.5" data-area="3300.0">
+          <td class="zname">BHIRAJ (Sale Area)</td>
+          <td class="num">6</td>
+          <td class="num">54.5</td>
+          <td class="num">3300</td>
+          <td class="num wm2">16.52</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="zone" data-key="Support Area" data-kw="73.1" data-area="400.0">
+          <td class="zname">COSMOS (Support Area)</td>
+          <td class="num">7</td>
+          <td class="num">73.1</td>
+          <td class="num">400</td>
+          <td class="num wm2">182.75</td>
+          <td class="badge-cell"></td>
+        </tr>
+        
+      </tbody>
+      <tbody id="zone-table-body-hall" style="display:none;">
+        <tr class="zrow" data-level="hall" data-key="BITEC-COSMOS" data-kw="73.1" data-area="400.0">
+          <td class="zname">COSMOS</td>
+          <td class="num">7</td>
+          <td class="num">73.1</td>
+          <td class="num">400</td>
+          <td class="num wm2">182.75</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-GH203" data-kw="42.1" data-area="640.0">
+          <td class="zname">GH203</td>
+          <td class="num">3</td>
+          <td class="num">42.1</td>
+          <td class="num">640</td>
+          <td class="num wm2">65.71</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-GH201" data-kw="28.0" data-area="540.0">
+          <td class="zname">GH201</td>
+          <td class="num">2</td>
+          <td class="num">28.0</td>
+          <td class="num">540</td>
+          <td class="num wm2">51.92</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-GH202" data-kw="28.0" data-area="540.0">
+          <td class="zname">GH202</td>
+          <td class="num">2</td>
+          <td class="num">28.0</td>
+          <td class="num">540</td>
+          <td class="num wm2">51.92</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-SAMA-GARDEN" data-kw="66.7" data-area="4000.0">
+          <td class="zname">SAMA-GARDEN</td>
+          <td class="num">9</td>
+          <td class="num">66.7</td>
+          <td class="num">4000</td>
+          <td class="num wm2">16.68</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-BHIRAJ" data-kw="54.5" data-area="3300.0">
+          <td class="zname">BHIRAJ</td>
+          <td class="num">6</td>
+          <td class="num">54.5</td>
+          <td class="num">3300</td>
+          <td class="num wm2">16.52</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-BEAT" data-kw="50.0" data-area="4000.0">
+          <td class="zname">BEAT</td>
+          <td class="num">30</td>
+          <td class="num">50.0</td>
+          <td class="num">4000</td>
+          <td class="num wm2">12.51</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-EH101" data-kw="34.1" data-area="5480.0">
+          <td class="zname">EH101</td>
+          <td class="num">4</td>
+          <td class="num">34.1</td>
+          <td class="num">5480</td>
+          <td class="num wm2">6.22</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-EH100" data-kw="35.3" data-area="6600.0">
+          <td class="zname">EH100</td>
+          <td class="num">9</td>
+          <td class="num">35.3</td>
+          <td class="num">6600</td>
+          <td class="num wm2">5.35</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-EH104" data-kw="20.7" data-area="4360.0">
+          <td class="zname">EH104</td>
+          <td class="num">2</td>
+          <td class="num">20.7</td>
+          <td class="num">4360</td>
+          <td class="num wm2">4.75</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-EH98" data-kw="39.2" data-area="8600.0">
+          <td class="zname">EH98</td>
+          <td class="num">10</td>
+          <td class="num">39.2</td>
+          <td class="num">8600</td>
+          <td class="num wm2">4.56</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-EH102" data-kw="20.7" data-area="5240.0">
+          <td class="zname">EH102</td>
+          <td class="num">2</td>
+          <td class="num">20.7</td>
+          <td class="num">5240</td>
+          <td class="num wm2">3.95</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-EH103" data-kw="20.7" data-area="5240.0">
+          <td class="zname">EH103</td>
+          <td class="num">2</td>
+          <td class="num">20.7</td>
+          <td class="num">5240</td>
+          <td class="num wm2">3.95</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-EH99" data-kw="19.6" data-area="5500.0">
+          <td class="zname">EH99</td>
+          <td class="num">5</td>
+          <td class="num">19.6</td>
+          <td class="num">5500</td>
+          <td class="num wm2">3.57</td>
+          <td class="badge-cell"></td>
+        </tr>
+        <tr class="zrow" data-level="hall" data-key="BITEC-LIVE" data-kw="16.7" data-area="7000.0">
+          <td class="zname">LIVE</td>
+          <td class="num">10</td>
+          <td class="num">16.7</td>
+          <td class="num">7000</td>
+          <td class="num wm2">2.38</td>
+          <td class="badge-cell"></td>
+        </tr>
+        
+      </tbody>
+    </table>
 
-<div class="footnote">BITEC master data (ยืนยัน parent_id ครบ) · Mockup 2 tab สำหรับพรีเซนต์ก่อนเชื่อมข้อมูลจริง</div>
+    <div id="alert-summary" style="margin-top:18px; padding:14px 16px; border-radius:12px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); display:none;">
+      <b style="color:#f87171; font-family:'Space Grotesk',sans-serif; font-size:12px;">⚠ Alert</b>
+      <span id="alert-text" style="font-size:11.5px; color:var(--text-muted); margin-left:8px;"></span>
+    </div>
+
+    <div class="bottom-strip" style="margin-top:14px; border-radius:12px;">
+      <span class="mockbadge">kW ระดับ hall เป็นค่าประมาณจากสัดส่วนจำนวน AHU ต่อโซน SCHP (ยังไม่มีมิเตอร์แยกรายฮอลล์)</span>
+    </div>
+  </div>
+</div>
+<div class="panel" id="panel-report">
+  <div class="canvas-card glass" style="padding:24px;">
+    <div class="card-title">
+      <span>Monthly Report — Plant kW trend</span>
+      <span class="tag">ข้อมูลจริงจาก chiller_data · 81 วัน</span>
+    </div>
+
+    <div class="month-select" id="month-select"></div>
+
+    <div class="report-stat-row" id="report-stats"></div>
+
+    <div class="chart-wrap">
+      <svg id="trend-chart" width="100%" height="260" viewBox="0 0 1100 260" preserveAspectRatio="none" style="overflow:visible;"></svg>
+    </div>
+
+    <button class="export-btn" id="export-csv-btn">Export CSV</button>
+    <span class="mockbadge" style="margin-left:10px;">Export = ดาวน์โหลดค่าเฉลี่ยรายวันของเดือนที่เลือก</span>
+  </div>
+</div>
+<div class="footnote">BITEC master data v2 · เชื่อม Masterdata__9_.xlsx จริง (chiller_data, AHU_Floor, SCHP, Location) · kW = last known reading</div>
 
 <div class="ahu-modal-backdrop" id="ahu-modal-backdrop" onclick="if(event.target===this) closeAhuDetail()">
   <div class="ahu-modal glass">
@@ -985,6 +1328,153 @@ document.querySelectorAll(".tab").forEach(tab=>{
     document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
   });
 });
+</script>
+
+<script>
+const DAILY_TREND = {"2569-04-28": 502.6, "2569-04-29": 559.9, "2569-04-30": 556.1, "2569-05-01": 585.1, "2569-05-02": 580.2, "2569-05-03": 553.7, "2569-05-04": 603.8, "2569-05-05": 563.8, "2569-05-06": 572.1, "2569-05-07": 591.8, "2569-05-08": 583.0, "2569-05-09": 502.5, "2569-05-10": 521.6, "2569-05-11": 532.0, "2569-05-12": 609.6, "2569-05-13": 568.6, "2569-05-14": 621.2, "2569-05-15": 618.5, "2569-05-16": 556.6, "2569-05-17": 461.6, "2569-05-18": 554.9, "2569-05-19": 590.2, "2569-05-20": 533.3, "2569-05-21": 529.4, "2569-05-22": 564.7, "2569-05-23": 549.8, "2569-05-24": 501.3, "2569-05-25": 605.4, "2569-05-26": 567.5, "2569-05-27": 556.2, "2569-05-28": 584.6, "2569-05-29": 606.0, "2569-05-30": 726.8, "2569-05-31": 579.1, "2569-06-01": 503.4, "2569-06-02": 477.8, "2569-06-03": 611.9, "2569-06-04": 571.0, "2569-06-05": 606.4, "2569-06-06": 586.2, "2569-06-07": 620.2, "2569-06-08": 521.5, "2569-06-09": 543.1, "2569-06-10": 437.0, "2569-06-11": 514.6, "2569-06-12": 568.6, "2569-06-13": 490.4, "2569-06-14": 515.3, "2569-06-15": 401.6, "2569-06-16": 535.9, "2569-06-17": 548.2, "2569-06-18": 588.3, "2569-06-19": 557.9, "2569-06-20": 532.6, "2569-06-21": 451.1, "2569-06-22": 444.3, "2569-06-23": 510.8, "2569-06-24": 556.1, "2569-06-25": 607.5, "2569-06-26": 579.0, "2569-06-27": 584.2, "2569-06-28": 582.0, "2569-06-29": 471.9, "2569-06-30": 572.0, "2569-07-01": 546.5, "2569-07-02": 507.1, "2569-07-03": 541.6, "2569-07-04": 542.3, "2569-07-05": 546.5, "2569-07-06": 471.7, "2569-07-07": 552.2, "2569-07-08": 553.1, "2569-07-09": 553.2, "2569-07-10": 574.0, "2569-07-11": 556.8, "2569-07-12": 535.1, "2569-07-13": 512.3, "2569-07-14": 508.1, "2569-07-15": 519.6, "2569-07-16": 560.3, "2569-07-17": 584.9};
+
+/* ===== Zone Alert tab ===== */
+(function(){
+  const levelBtns = document.querySelectorAll('.lt-btn');
+  const thInput = document.getElementById('threshold-input');
+  const tbodyZone = document.getElementById('zone-table-body-zone');
+  const tbodyHall = document.getElementById('zone-table-body-hall');
+  const alertBox = document.getElementById('alert-summary');
+  const alertText = document.getElementById('alert-text');
+
+  function recompute(){
+    const threshold = parseFloat(thInput.value) || 0;
+    const activeLevel = document.querySelector('.lt-btn.active').dataset.level;
+    const tbody = activeLevel === 'zone' ? tbodyZone : tbodyHall;
+    const overNames = [];
+    tbody.querySelectorAll('tr.zrow').forEach(function(tr){
+      const kw = parseFloat(tr.dataset.kw);
+      const area = parseFloat(tr.dataset.area);
+      const wm2 = area ? (kw/area*1000) : 0;
+      const cell = tr.querySelector('.badge-cell');
+      const isOver = wm2 > threshold;
+      tr.classList.toggle('over', isOver);
+      cell.innerHTML = isOver ? '<span class="badge-over">เกิน</span>' : '<span class="badge-ok">ปกติ</span>';
+      if(isOver) overNames.push(tr.querySelector('.zname').textContent);
+    });
+    if(overNames.length){
+      alertBox.style.display = 'block';
+      alertText.textContent = overNames.length + ' โซนเกินเกณฑ์: ' + overNames.join(', ');
+    } else {
+      alertBox.style.display = 'none';
+    }
+  }
+
+  levelBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      levelBtns.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      tbodyZone.style.display = btn.dataset.level === 'zone' ? '' : 'none';
+      tbodyHall.style.display = btn.dataset.level === 'hall' ? '' : 'none';
+      recompute();
+    });
+  });
+  if(thInput){ thInput.addEventListener('input', recompute); }
+  recompute();
+})();
+
+/* ===== Monthly Report tab ===== */
+(function(){
+  const dates = Object.keys(DAILY_TREND).sort();
+  const months = {};
+  dates.forEach(function(d){
+    const m = d.slice(0,7); // YYYY-MM (Buddhist year, but month same as Gregorian)
+    (months[m] = months[m] || []).push(d);
+  });
+  const monthKeys = Object.keys(months).sort();
+  const monthLabelTH = {'04':'เม.ย.','05':'พ.ค.','06':'มิ.ย.','07':'ก.ค.'};
+
+  const monthSelectEl = document.getElementById('month-select');
+  monthKeys.forEach(function(mk, i){
+    const mm = mk.slice(5,7);
+    const btn = document.createElement('div');
+    btn.className = 'm-btn' + (i === monthKeys.length-1 ? ' active' : '');
+    btn.dataset.month = mk;
+    btn.textContent = (monthLabelTH[mm] || mm) + ' 69';
+    monthSelectEl.appendChild(btn);
+  });
+
+  function renderMonth(mk){
+    const days = months[mk];
+    const vals = days.map(function(d){ return DAILY_TREND[d]; });
+    const min = Math.min.apply(null, vals);
+    const max = Math.max.apply(null, vals);
+    const avg = vals.reduce(function(a,b){return a+b;},0) / vals.length;
+
+    const statsEl = document.getElementById('report-stats');
+    statsEl.innerHTML =
+      '<div class="report-stat"><div class="rl">เฉลี่ย</div><div class="rv">' + avg.toFixed(1) + ' kW</div></div>' +
+      '<div class="report-stat"><div class="rl">สูงสุด</div><div class="rv" style="color:#f87171">' + max.toFixed(1) + ' kW</div></div>' +
+      '<div class="report-stat"><div class="rl">ต่ำสุด</div><div class="rv" style="color:#34d399">' + min.toFixed(1) + ' kW</div></div>' +
+      '<div class="report-stat"><div class="rl">จำนวนวันที่มีข้อมูล</div><div class="rv">' + days.length + '</div></div>';
+
+    const svg = document.getElementById('trend-chart');
+    const W = 1100, H = 260, padL = 40, padR = 10, padT = 16, padB = 26;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const yMin = Math.floor(min*0.9), yMax = Math.ceil(max*1.08);
+    function x(i){ return padL + (days.length>1 ? i/(days.length-1)*plotW : plotW/2); }
+    function y(v){ return padT + plotH - (v - yMin)/(yMax-yMin)*plotH; }
+
+    let pathD = '';
+    days.forEach(function(d,i){
+      const v = DAILY_TREND[d];
+      pathD += (i===0 ? 'M':'L') + x(i).toFixed(1) + ' ' + y(v).toFixed(1) + ' ';
+    });
+    let areaD = pathD + 'L' + x(days.length-1).toFixed(1) + ' ' + y(yMin).toFixed(1) + ' L' + x(0).toFixed(1) + ' ' + y(yMin).toFixed(1) + ' Z';
+
+    let gridLines = '';
+    for(let g=0; g<=4; g++){
+      const gv = yMin + (yMax-yMin)*g/4;
+      const gy = y(gv);
+      gridLines += '<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>';
+      gridLines += '<text x="'+(padL-8)+'" y="'+(gy+3)+'" text-anchor="end" font-family="JetBrains Mono" font-size="9" fill="#59657f">'+gv.toFixed(0)+'</text>';
+    }
+
+    let dots = '';
+    let xlabels = '';
+    days.forEach(function(d,i){
+      const v = DAILY_TREND[d];
+      dots += '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="2.6" fill="#22d3ee"><title>'+d+': '+v+' kW</title></circle>';
+      if(i % Math.ceil(days.length/10 || 1) === 0){
+        xlabels += '<text x="'+x(i).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" fill="#59657f">'+d.slice(8,10)+'</text>';
+      }
+    });
+
+    svg.innerHTML =
+      '<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#22d3ee" stop-opacity="0.28"/>' +
+      '<stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/></linearGradient></defs>' +
+      gridLines +
+      '<path d="'+areaD+'" fill="url(#areaGrad)" stroke="none"/>' +
+      '<path d="'+pathD+'" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>' +
+      dots + xlabels;
+
+    document.getElementById('export-csv-btn').onclick = function(){
+      let csv = 'date,avg_kw\n';
+      days.forEach(function(d){ csv += d + ',' + DAILY_TREND[d] + '\n'; });
+      const blob = new Blob([csv], {type:'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'bitec_monthly_report_' + mk + '.csv';
+      a.click();
+    };
+  }
+
+  monthSelectEl.addEventListener('click', function(e){
+    const btn = e.target.closest('.m-btn');
+    if(!btn) return;
+    monthSelectEl.querySelectorAll('.m-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    renderMonth(btn.dataset.month);
+  });
+
+  if(monthKeys.length){ renderMonth(monthKeys[monthKeys.length-1]); }
+})();
 </script>
 
 </body>
