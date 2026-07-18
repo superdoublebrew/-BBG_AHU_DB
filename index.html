@@ -392,18 +392,19 @@
           <span class="tag">ข้อมูลจริงจาก chiller_data (พ.ค.–ก.ค. 69)</span>
         </div>
         <div class="kpi-row"><div class="kpi-card cyan">
-      <div class="kpi-label">Total kWh (ก.ค.)</div>
-      <div class="kpi-value">220,884<span class="kpi-unit">kWh</span></div>
+      <div class="kpi-label" id="monthly-kpi-kwh-label">Total kWh</div>
+      <div class="kpi-value"><span id="monthly-kpi-kwh">—</span><span class="kpi-unit">kWh</span></div>
     </div><div class="kpi-card amber">
       <div class="kpi-label">Avg Efficiency</div>
-      <div class="kpi-value">0.884<span class="kpi-unit">kW/TR</span></div>
+      <div class="kpi-value"><span id="monthly-kpi-eff">—</span><span class="kpi-unit">kW/TR</span></div>
     </div><div class="kpi-card purple">
       <div class="kpi-label">Total TR</div>
-      <div class="kpi-value">265,289<span class="kpi-unit">TR</span></div>
+      <div class="kpi-value"><span id="monthly-kpi-tr">—</span><span class="kpi-unit">TR</span></div>
     </div><div class="kpi-card green">
       <div class="kpi-label">kWh / ตร.ม.</div>
-      <div class="kpi-value">3.6<span class="kpi-unit">kWh/m²</span></div>
+      <div class="kpi-value"><span id="monthly-kpi-kwhm2">—</span><span class="kpi-unit">kWh/m²</span></div>
     </div></div>
+        <div id="monthly-sync-status" style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint); margin-bottom:10px;">ยังไม่ได้ sync</div>
         <div class="filter-row">
           <span class="f-label">แสดงเดือน:</span>
           <div class="f-btn active" data-range="3m">3 เดือนล่าสุด</div>
@@ -411,8 +412,8 @@
           <button class="f-btn" id="export-btn" style="margin-left:auto;">Export CSV</button>
         </div>
         <table class="monthly-table">
-  <thead><tr><th class="metric-col">Monthly</th><th class="mth m1">May-69</th><th class="mth m2">Jun-69</th><th class="mth m3">Jul-69 (partial)</th></tr></thead>
-  <tbody><tr><td class="metric-name">Total (kWh)</td><td class="mth m1"><div class="cell-val">425,706</div></td><td class="mth m2"><div class="cell-val">396,321</div><span class="delta down">▼ 6.9%</span></td><td class="mth m3"><div class="cell-val">220,884</div><span class="delta down">▼ 44.3%</span></td></tr><tr><td class="metric-name">Avg (kWh/day)</td><td class="mth m1"><div class="cell-val">13,732</div></td><td class="mth m2"><div class="cell-val">13,211</div><span class="delta down">▼ 3.8%</span></td><td class="mth m3"><div class="cell-val">12,993</div><span class="delta down">▼ 1.6%</span></td></tr><tr><td class="metric-name">Total (TR·hr)</td><td class="mth m1"><div class="cell-val">566,666</div></td><td class="mth m2"><div class="cell-val">563,836</div><span class="delta down">▼ 0.5%</span></td><td class="mth m3"><div class="cell-val">265,289</div><span class="delta down">▼ 52.9%</span></td></tr><tr><td class="metric-name">Avg (TR/day)</td><td class="mth m1"><div class="cell-val">18,280</div></td><td class="mth m2"><div class="cell-val">18,794</div><span class="delta up">▲ 2.8%</span></td><td class="mth m3"><div class="cell-val">15,605</div><span class="delta down">▼ 17.0%</span></td></tr><tr><td class="metric-name">Avg Chiller Plant Efficiency (kW/TRp)</td><td class="mth m1"><div class="cell-val">0.834</div></td><td class="mth m2"><div class="cell-val">0.891</div><span class="delta up">▲ 6.8%</span></td><td class="mth m3"><div class="cell-val">0.884</div><span class="delta down">▼ 0.8%</span></td></tr><tr><td class="metric-name">Avg (kWh/m²)</td><td class="mth m1"><div class="cell-val">6.93</div></td><td class="mth m2"><div class="cell-val">6.45</div><span class="delta down">▼ 6.9%</span></td><td class="mth m3"><div class="cell-val">3.60</div><span class="delta down">▼ 44.2%</span></td></tr><tr><td class="metric-name">Avg (TR/m²)</td><td class="mth m1"><div class="cell-val">9.22</div></td><td class="mth m2"><div class="cell-val">9.18</div><span class="delta down">▼ 0.4%</span></td><td class="mth m3"><div class="cell-val">4.32</div><span class="delta down">▼ 52.9%</span></td></tr><tr><td class="metric-name">Total (THB)<span class="metric-note">ยังไม่มีอัตราค่าไฟ</span></td><td class="mth m1"><div class="cell-val na">N/A</div></td><td class="mth m2"><div class="cell-val na">N/A</div></td><td class="mth m3"><div class="cell-val na">N/A</div></td></tr><tr><td class="metric-name">Total EVENT Area Usage (m²)<span class="metric-note">ไม่มี log การใช้พื้นที่รายเดือน</span></td><td class="mth m1"><div class="cell-val na">N/A</div></td><td class="mth m2"><div class="cell-val na">N/A</div></td><td class="mth m3"><div class="cell-val na">N/A</div></td></tr></tbody>
+  <thead id="monthly-thead"><tr><th class="metric-col">Monthly</th></tr></thead>
+  <tbody id="monthly-tbody"></tbody>
 </table>
         <div class="legend" style="margin-top:14px;">
           <span class="mockbadge">Total(kWh)/Total(TR) เป็นค่าประมาณจาก avg reading × 24hr × จำนวนวัน · THB และ Event area ยังไม่มีข้อมูลจริง</span>
@@ -577,7 +578,9 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
   function setEl(id, val, digits){
     var el = document.getElementById(id);
     if(!el) return;
-    el.textContent = (typeof val === 'number') ? val.toFixed(digits===undefined?1:digits) : (val===null||val===undefined?'—':val);
+    // เซลล์ว่างจาก Sheet มาเป็น '' ไม่ใช่ null/undefined เสมอไป -> เช็คทั้งคู่ ไม่งั้นจะหลุดไปโชว์อย่างอื่นแทนที่จะเป็น "—"
+    var noData = (val === null || val === undefined || val === '');
+    el.textContent = noData ? '—' : ((typeof val === 'number') ? val.toFixed(digits===undefined?1:digits) : val);
   }
 
   async function syncNow(){
@@ -610,7 +613,10 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
       window.__latestZoneKw = zones;
       window.__latestPowerData = latest;
 
-      var dateStr = latest.date ? new Date(latest.date).toLocaleDateString('th-TH') : '';
+      // หมายเหตุ: latest.date เป็นปี พ.ศ. อยู่แล้วจาก Sheet (เช่น 2569-07-18)
+      // ห้ามใช้ toLocaleDateString('th-TH') เพราะจะไปบวก 543 ซ้ำอีกรอบ (กลายเป็นปี 3112!)
+      // ตัดเอาแค่ส่วนวันที่ YYYY-MM-DD จาก ISO string ตรงๆ แทน
+      var dateStr = latest.date ? String(latest.date).slice(0, 10) : '';
       syncStatus.textContent = '✅ sync ล่าสุด: ' + dateStr + ' ' + (latest.time||'') + ' (Chiller: ' + (latest.activeChiller||'-') + ')';
     } catch(err){
       syncStatus.textContent = '❌ sync ล้มเหลว: ' + err.message;
@@ -622,6 +628,125 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
   if(syncBtn) syncBtn.addEventListener('click', syncNow);
   // sync อัตโนมัติตอนเปิดหน้า
   syncNow();
+})();
+</script>
+
+<script>
+/* ===== Monthly Report — live sync จาก ?action=history ===== */
+(function(){
+  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
+  var statusEl = document.getElementById('monthly-sync-status');
+  var monthLabelTH = {'01':'ม.ค.','02':'ก.พ.','03':'มี.ค.','04':'เม.ย.','05':'พ.ค.','06':'มิ.ย.','07':'ก.ค.','08':'ส.ค.','09':'ก.ย.','10':'ต.ค.','11':'พ.ย.','12':'ธ.ค.'};
+
+  function fmtNum(v, digits){
+    if(v === null || v === undefined) return 'N/A';
+    return v.toLocaleString('en-US', {minimumFractionDigits:digits||0, maximumFractionDigits:digits||0});
+  }
+
+  async function loadMonthly(){
+    statusEl.textContent = 'กำลังดึงข้อมูล...';
+    try {
+      var end = new Date();
+      var start = new Date();
+      start.setMonth(start.getMonth() - 2);
+      start.setDate(1);
+      var toStr = function(d){ return d.toISOString().slice(0,10); };
+
+      var res = await fetch(API_URL + '?action=history&start=' + toStr(start) + '&end=' + toStr(end));
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var rows = await res.json();
+      if(!Array.isArray(rows) || rows.length === 0){
+        statusEl.textContent = '⚠️ ไม่พบข้อมูลในช่วงนี้';
+        return;
+      }
+
+      // จัดกลุ่มตามเดือน โดยใช้ 7 ตัวแรกของ date string (เช่น "2569-07") -- date เป็น พ.ศ. อยู่แล้วจาก Sheet ตรงๆ
+      var months = {};
+      rows.forEach(function(r){
+        if(!r.date) return;
+        var mk = String(r.date).slice(0,7);
+        (months[mk] = months[mk] || []).push(r);
+      });
+      var monthKeys = Object.keys(months).sort();
+
+      // คำนวณ Total(kWh) และ Total(TR) แบบ SUM ตรงๆ ตามที่ตกลงกัน (ไม่ x24hr ไม่ x วัน)
+      var monthData = monthKeys.map(function(mk){
+        var list = months[mk];
+        var sumKwh = 0, sumTr = 0, hasKwh = false, hasTr = false;
+        list.forEach(function(r){
+          if(typeof r.totalKw === 'number'){ sumKwh += r.totalKw; hasKwh = true; }
+          if(typeof r.chillerCapacityTr === 'number'){ sumTr += r.chillerCapacityTr; hasTr = true; }
+        });
+        return {
+          mk: mk,
+          label: (monthLabelTH[mk.slice(5,7)]||mk.slice(5,7)) + '-' + mk.slice(2,4),
+          totalKwh: hasKwh ? sumKwh : null,
+          totalTr: hasTr ? sumTr : null,
+          rowCount: list.length
+        };
+      });
+
+      // ===== วาดตาราง =====
+      var thead = document.getElementById('monthly-thead');
+      var tbody = document.getElementById('monthly-tbody');
+      var mthClasses = ['m1','m2','m3','m1','m2','m3'];
+
+      var headHtml = '<tr><th class="metric-col">Monthly</th>';
+      monthData.forEach(function(m, i){
+        headHtml += '<th class="mth ' + mthClasses[i%3] + '">' + m.label + (i===monthData.length-1?' (partial)':'') + '</th>';
+      });
+      headHtml += '</tr>';
+      thead.innerHTML = headHtml;
+
+      function deltaHtml(cur, prev){
+        if(cur === null || prev === null || !prev) return '';
+        var diff = cur - prev;
+        var pct = (diff/prev*100);
+        var cls = diff > 0 ? 'up' : (diff < 0 ? 'down' : 'flat');
+        var arrow = diff > 0 ? '▲' : (diff < 0 ? '▼' : '—');
+        return '<span class="delta ' + cls + '">' + arrow + ' ' + Math.abs(pct).toFixed(1) + '%</span>';
+      }
+
+      function metricRow(label, note, values, digits){
+        var cells = '';
+        var prev = null;
+        values.forEach(function(v, i){
+          var cls = mthClasses[i%3];
+          var valTxt = v === null ? '<div class="cell-val na">N/A</div>' : '<div class="cell-val">' + fmtNum(v, digits) + '</div>';
+          cells += '<td class="mth ' + cls + '">' + valTxt + deltaHtml(v, prev) + '</td>';
+          prev = v;
+        });
+        var noteHtml = note ? '<span class="metric-note">' + note + '</span>' : '';
+        return '<tr><td class="metric-name">' + label + noteHtml + '</td>' + cells + '</tr>';
+      }
+
+      var bodyHtml = '';
+      bodyHtml += metricRow('Total (kWh)', '', monthData.map(function(m){ return m.totalKwh; }), 0);
+      bodyHtml += metricRow('Total (TR)', 'SUM ตรงจาก Sum_CAL_Chiller Capacity(TR)', monthData.map(function(m){ return m.totalTr; }), 0);
+      bodyHtml += metricRow('Avg (kWh/day)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
+      bodyHtml += metricRow('Avg (TR/day)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
+      bodyHtml += metricRow('Avg Chiller Plant Efficiency (kW/TRp)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
+      bodyHtml += metricRow('Avg (kWh/m²)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
+      bodyHtml += metricRow('Avg (TR/m²)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
+      bodyHtml += metricRow('Total (THB)', 'ยังไม่มีอัตราค่าไฟ', monthData.map(function(){ return null; }));
+      bodyHtml += metricRow('Total EVENT Area Usage (m²)', 'ไม่มี log การใช้พื้นที่รายเดือน', monthData.map(function(){ return null; }));
+      tbody.innerHTML = bodyHtml;
+
+      // ===== KPI cards บนสุด (ใช้เดือนล่าสุด) =====
+      var latest = monthData[monthData.length - 1];
+      document.getElementById('monthly-kpi-kwh-label').textContent = 'Total kWh (' + latest.label + ')';
+      document.getElementById('monthly-kpi-kwh').textContent = latest.totalKwh !== null ? fmtNum(latest.totalKwh,0) : '—';
+      document.getElementById('monthly-kpi-tr').textContent = latest.totalTr !== null ? fmtNum(latest.totalTr,0) : '—';
+      document.getElementById('monthly-kpi-eff').textContent = '—';
+      document.getElementById('monthly-kpi-kwhm2').textContent = '—';
+
+      statusEl.textContent = '✅ sync ล่าสุด · ดึง ' + rows.length + ' แถว จาก ' + monthKeys.length + ' เดือน (' + toStr(start) + ' ถึง ' + toStr(end) + ')';
+    } catch(err){
+      statusEl.textContent = '❌ sync ล้มเหลว: ' + err.message;
+    }
+  }
+
+  loadMonthly();
 })();
 </script>
 </body>
