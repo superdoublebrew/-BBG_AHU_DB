@@ -199,22 +199,28 @@
         </div>
         <div class="kpi-row"><div class="kpi-card cyan">
       <div class="kpi-label">Plant demand รวม</div>
-      <div class="kpi-value">634.9<span class="kpi-unit">kW</span></div>
+      <div class="kpi-value"><span id="kpi-plant-demand">634.9</span><span class="kpi-unit">kW</span></div>
     </div><div class="kpi-card purple">
       <div class="kpi-label">Capacity รวม</div>
-      <div class="kpi-value">764.1<span class="kpi-unit">TR</span></div>
+      <div class="kpi-value"><span id="kpi-capacity">764.1</span><span class="kpi-unit">TR</span></div>
     </div><div class="kpi-card amber">
       <div class="kpi-label">Plant efficiency</div>
-      <div class="kpi-value">0.8<span class="kpi-unit">kW/TR</span></div>
+      <div class="kpi-value"><span id="kpi-efficiency">0.8</span><span class="kpi-unit">kW/TR</span></div>
     </div><div class="kpi-card green">
-      <div class="kpi-label">Outdoor air temp</div>
-      <div class="kpi-value">33<span class="kpi-unit">°C</span></div>
+      <div class="kpi-label">Thermal efficiency</div>
+      <div class="kpi-value"><span id="kpi-thermal-eff">—</span><span class="kpi-unit">%</span></div>
     </div></div>
-        <div class="filter-row">
-          <span class="f-label">Filter loop:</span>
-          <div class="f-btn active" data-loop="all">ทั้งหมด</div>
-          <div class="f-btn" data-loop="red">Condenser water</div>
-          <div class="f-btn" data-loop="blue">Chilled water</div>
+        <div class="filter-row" style="justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span class="f-label">Filter loop:</span>
+            <div class="f-btn active" data-loop="all">ทั้งหมด</div>
+            <div class="f-btn" data-loop="red">Condenser water</div>
+            <div class="f-btn" data-loop="blue">Chilled water</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint);">
+            <span id="sync-status">ยังไม่ได้ sync</span>
+            <button class="f-btn" id="sync-btn" type="button">🔄 Sync now</button>
+          </div>
         </div>
         <div class="overview-alert" id="overview-alert">
           <b>Alert</b><span class="txt" id="overview-alert-text"></span>
@@ -224,7 +230,7 @@
   <div class="cg-cell" style="grid-area:cdp;"><div class="circ-block" id="node-cdp">
       <div class="tb-head">
         <div class="tb-headtext"><span class="tb-title">Condenser Water Pump</span><span class="tb-count">14 หน่วย</span></div>
-        <div class="tb-total"><span class="tb-total-kw">—</span><span class="tb-total-unit">kW รวม</span></div>
+        <div class="tb-total"><span class="tb-total-kw" id="total-cdp">—</span><span class="tb-total-unit">kW รวม</span></div>
         
       </div>
       <div class="tb-grid"><div class="sbox dim"><span class="sb-id">P1-CDP-01</span></div><div class="sbox dim"><span class="sb-id">P1-CDP-02</span></div><div class="sbox dim"><span class="sb-id">P1-CDP-03</span></div><div class="sbox dim"><span class="sb-id">P1-CDP-04</span></div><div class="sbox dim"><span class="sb-id">H-CDP-01</span></div><div class="sbox dim"><span class="sb-id">H-CDP-02</span></div><div class="sbox dim"><span class="sb-id">H-CDP-03</span></div><div class="sbox dim"><span class="sb-id">H-CDP-04</span></div><div class="sbox dim"><span class="sb-id">H-CDP-05</span></div><div class="sbox dim"><span class="sb-id">H-CDP-06</span></div><div class="sbox dim"><span class="sb-id">H-CDP-07</span></div><div class="sbox dim"><span class="sb-id">H-CDP-08</span></div><div class="sbox dim"><span class="sb-id">RFUP-01</span></div><div class="sbox dim"><span class="sb-id">RFUP-02</span></div></div>
@@ -232,7 +238,7 @@
   <div class="cg-cell" style="grid-area:ct;"><div class="circ-block" id="node-ct">
       <div class="tb-head">
         <div class="tb-headtext"><span class="tb-title">Cooling Tower</span><span class="tb-count">11 หน่วย</span></div>
-        <div class="tb-total"><span class="tb-total-kw">114.2</span><span class="tb-total-unit">kW รวม</span></div>
+        <div class="tb-total"><span class="tb-total-kw" id="total-ct">114.2</span><span class="tb-total-unit">kW รวม</span></div>
         <input type="number" class="eq-th" data-type="CT" value="25" step="5">
       </div>
       <div class="tb-grid"><div class="sbox" data-type="CT" data-kw="27.5"><span class="sb-id">P1-CT-01</span><span class="sb-kw">27.5</span></div><div class="sbox" data-type="CT" data-kw="10.3"><span class="sb-id">P1-CT-02</span><span class="sb-kw">10.3</span></div><div class="sbox" data-type="CT" data-kw="10.1"><span class="sb-id">P1-CT-03</span><span class="sb-kw">10.1</span></div><div class="sbox" data-type="CT" data-kw="5.6"><span class="sb-id">P1-CT-04</span><span class="sb-kw">5.6</span></div><div class="sbox" data-type="CT" data-kw="6.3"><span class="sb-id">H-CT-01</span><span class="sb-kw">6.3</span></div><div class="sbox" data-type="CT" data-kw="10.3"><span class="sb-id">H-CT-02</span><span class="sb-kw">10.3</span></div><div class="sbox" data-type="CT" data-kw="10.2"><span class="sb-id">H-CT-03</span><span class="sb-kw">10.2</span></div><div class="sbox" data-type="CT" data-kw="6.5"><span class="sb-id">H-CT-04</span><span class="sb-kw">6.5</span></div><div class="sbox" data-type="CT" data-kw="9.2"><span class="sb-id">H-CT-05</span><span class="sb-kw">9.2</span></div><div class="sbox" data-type="CT" data-kw="9.1"><span class="sb-id">H-CT-06</span><span class="sb-kw">9.1</span></div><div class="sbox" data-type="CT" data-kw="9.1"><span class="sb-id">H-CT-07</span><span class="sb-kw">9.1</span></div></div>
@@ -240,7 +246,7 @@
   <div class="cg-cell" style="grid-area:pchp;"><div class="circ-block" id="node-pchp">
       <div class="tb-head">
         <div class="tb-headtext"><span class="tb-title">Primary Chiller Pump</span><span class="tb-count">12 หน่วย</span></div>
-        <div class="tb-total"><span class="tb-total-kw">37.5</span><span class="tb-total-unit">kW รวม</span></div>
+        <div class="tb-total"><span class="tb-total-kw" id="total-pchp">37.5</span><span class="tb-total-unit">kW รวม</span></div>
         
       </div>
       <div class="tb-grid"><div class="sbox dim"><span class="sb-id">P1-PCHP-01</span></div><div class="sbox dim"><span class="sb-id">P1-PCHP-02</span></div><div class="sbox dim"><span class="sb-id">P1-PCHP-03</span></div><div class="sbox dim"><span class="sb-id">P1-PCHP-04</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-01</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-02</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-03</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-04</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-05</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-06</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-07</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-08</span></div></div>
@@ -248,7 +254,7 @@
   <div class="cg-cell" style="grid-area:chl;"><div class="circ-block hl" id="node-chl">
       <div class="tb-head">
         <div class="tb-headtext"><span class="tb-title">Main Chiller</span><span class="tb-count">12 หน่วย</span></div>
-        <div class="tb-total"><span class="tb-total-kw">540.7</span><span class="tb-total-unit">kW รวม</span></div>
+        <div class="tb-total"><span class="tb-total-kw" id="total-chl">540.7</span><span class="tb-total-unit">kW รวม</span></div>
         <input type="number" class="eq-th" data-type="CHL" value="600" step="5">
       </div>
       <div class="tb-grid"><div class="sbox" data-type="CHL" data-kw="477.5"><span class="sb-id">P1-CH-01</span><span class="sb-kw">477.5</span></div><div class="sbox" data-type="CHL" data-kw="540.7"><span class="sb-id">P1-CH-02</span><span class="sb-kw">540.7</span></div><div class="sbox" data-type="CHL" data-kw="436"><span class="sb-id">P1-CH-03</span><span class="sb-kw">436</span></div><div class="sbox" data-type="CHL" data-kw="430.3"><span class="sb-id">P1-CH-04</span><span class="sb-kw">430.3</span></div><div class="sbox" data-type="CHL" data-kw="517.4"><span class="sb-id">H1-CH-01</span><span class="sb-kw">517.4</span></div><div class="sbox" data-type="CHL" data-kw="400"><span class="sb-id">H1-CH-02</span><span class="sb-kw">400</span></div><div class="sbox" data-type="CHL" data-kw="541.4"><span class="sb-id">H1-CH-03</span><span class="sb-kw">541.4</span></div><div class="sbox" data-type="CHL" data-kw="371.8"><span class="sb-id">H1-CH-04</span><span class="sb-kw">371.8</span></div><div class="sbox" data-type="CHL" data-kw="446.1"><span class="sb-id">H1-CH-05</span><span class="sb-kw">446.1</span></div><div class="sbox" data-type="CHL" data-kw="476.6"><span class="sb-id">H1-CH-06</span><span class="sb-kw">476.6</span></div><div class="sbox" data-type="CHL" data-kw="209.7"><span class="sb-id">H1-CH-07</span><span class="sb-kw">209.7</span></div><div class="sbox" data-type="CHL" data-kw="206.1"><span class="sb-id">H1-CH-08</span><span class="sb-kw">206.1</span></div></div>
@@ -268,7 +274,7 @@
   <div class="cg-cell" style="grid-area:schp;"><div class="circ-block" id="node-schp">
       <div class="tb-head">
         <div class="tb-headtext"><span class="tb-title">Secondary Chiller Pump</span><span class="tb-count">16 หน่วย</span></div>
-        <div class="tb-total"><span class="tb-total-kw">482.8</span><span class="tb-total-unit">kW รวม</span></div>
+        <div class="tb-total"><span class="tb-total-kw" id="total-schp">482.8</span><span class="tb-total-unit">kW รวม</span></div>
         <input type="number" class="eq-th" data-type="SCHP" value="60" step="5">
       </div>
       <div class="tb-grid"><div class="sbox" data-type="SCHP" data-kw="58.8"><span class="sb-id">SCHP-01</span><span class="sb-kw">58.8</span></div><div class="sbox" data-type="SCHP" data-kw="55"><span class="sb-id">SCHP-02</span><span class="sb-kw">55</span></div><div class="sbox" data-type="SCHP" data-kw="40.4"><span class="sb-id">SCHP-03</span><span class="sb-kw">40.4</span></div><div class="sbox" data-type="SCHP" data-kw="24.5"><span class="sb-id">SCHP-04</span><span class="sb-kw">24.5</span></div><div class="sbox" data-type="SCHP" data-kw="15.6"><span class="sb-id">SCHP-05</span><span class="sb-kw">15.6</span></div><div class="sbox" data-type="SCHP" data-kw="41.2"><span class="sb-id">SCHP-06</span><span class="sb-kw">41.2</span></div><div class="sbox" data-type="SCHP" data-kw="25.5"><span class="sb-id">SCHP-07</span><span class="sb-kw">25.5</span></div><div class="sbox" data-type="SCHP" data-kw="26.8"><span class="sb-id">H-SCHP-01</span><span class="sb-kw">26.8</span></div><div class="sbox" data-type="SCHP" data-kw="14.2"><span class="sb-id">H-SCHP-02</span><span class="sb-kw">14.2</span></div><div class="sbox" data-type="SCHP" data-kw="32.1"><span class="sb-id">H-SCHP-03</span><span class="sb-kw">32.1</span></div><div class="sbox" data-type="SCHP" data-kw="15.2"><span class="sb-id">H-SCHP-04</span><span class="sb-kw">15.2</span></div><div class="sbox" data-type="SCHP" data-kw="19.8"><span class="sb-id">H-SCHP-05</span><span class="sb-kw">19.8</span></div><div class="sbox" data-type="SCHP" data-kw="19.5"><span class="sb-id">H-SCHP-06</span><span class="sb-kw">19.5</span></div><div class="sbox" data-type="SCHP" data-kw="28.7"><span class="sb-id">H-SCHP-07</span><span class="sb-kw">28.7</span></div><div class="sbox" data-type="SCHP" data-kw="32.8"><span class="sb-id">H-SCHP-08</span><span class="sb-kw">32.8</span></div><div class="sbox" data-type="SCHP" data-kw="32.7"><span class="sb-id">H-SCHP-09</span><span class="sb-kw">32.7</span></div></div>
@@ -559,6 +565,64 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
   window.__redrawCircuitArrows = draw;
 })();
 
+</script>
+
+<script>
+/* ===== Live data sync — เชื่อม Apps Script Web App จริง ===== */
+(function(){
+  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
+  var syncBtn = document.getElementById('sync-btn');
+  var syncStatus = document.getElementById('sync-status');
+
+  function setEl(id, val, digits){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = (typeof val === 'number') ? val.toFixed(digits===undefined?1:digits) : (val===null||val===undefined?'—':val);
+  }
+
+  async function syncNow(){
+    syncStatus.textContent = 'กำลัง sync...';
+    if(syncBtn) syncBtn.disabled = true;
+    try {
+      var [latestRes, zoneRes] = await Promise.all([
+        fetch(API_URL + '?action=latest'),
+        fetch(API_URL + '?action=zonekw')
+      ]);
+      if(!latestRes.ok) throw new Error('latest HTTP ' + latestRes.status);
+      var latest = await latestRes.json();
+      var zones = zoneRes.ok ? await zoneRes.json() : [];
+
+      // KPI cards
+      setEl('kpi-plant-demand', latest.totalKw);
+      setEl('kpi-capacity', latest.totalTr, 0);
+      setEl('kpi-efficiency', latest.plantKwPerTr, 2);
+      setEl('kpi-thermal-eff', latest.thermalEfficiency != null ? latest.thermalEfficiency*100 : null, 1);
+
+      // Circuit block totals
+      setEl('total-ct', latest.ctDemandKw);
+      setEl('total-cdp', latest.cdpDemandKw);
+      setEl('total-chl', latest.chillerDemandKw);
+      setEl('total-pchp', latest.pchpDemandKw);
+      var schpTotal = (latest.schpDemandKw||0) + (latest.hSchpDemandKw||0);
+      setEl('total-schp', schpTotal);
+
+      // เก็บ zone data ไว้ใช้ต่อ (เช่น ถ้าจะทำ alert ระดับ hall ในอนาคต)
+      window.__latestZoneKw = zones;
+      window.__latestPowerData = latest;
+
+      var dateStr = latest.date ? new Date(latest.date).toLocaleDateString('th-TH') : '';
+      syncStatus.textContent = '✅ sync ล่าสุด: ' + dateStr + ' ' + (latest.time||'') + ' (Chiller: ' + (latest.activeChiller||'-') + ')';
+    } catch(err){
+      syncStatus.textContent = '❌ sync ล้มเหลว: ' + err.message;
+    } finally {
+      if(syncBtn) syncBtn.disabled = false;
+    }
+  }
+
+  if(syncBtn) syncBtn.addEventListener('click', syncNow);
+  // sync อัตโนมัติตอนเปิดหน้า
+  syncNow();
+})();
 </script>
 </body>
 </html>
