@@ -199,16 +199,16 @@
         </div>
         <div class="kpi-row"><div class="kpi-card cyan">
       <div class="kpi-label">Plant demand รวม</div>
-      <div class="kpi-value"><span id="kpi-plant-demand">634.9</span><span class="kpi-unit">kW</span></div>
+      <div class="kpi-value"><span id="kpi-plant-demand">—</span><span class="kpi-unit">kW</span></div>
     </div><div class="kpi-card purple">
-      <div class="kpi-label">Capacity รวม</div>
-      <div class="kpi-value"><span id="kpi-capacity">764.1</span><span class="kpi-unit">TR</span></div>
+      <div class="kpi-label">Chiller Capacity</div>
+      <div class="kpi-value"><span id="kpi-capacity">—</span><span class="kpi-unit">TR</span></div>
     </div><div class="kpi-card amber">
       <div class="kpi-label">Plant efficiency</div>
-      <div class="kpi-value"><span id="kpi-efficiency">0.8</span><span class="kpi-unit">kW/TR</span></div>
+      <div class="kpi-value"><span id="kpi-efficiency">—</span><span class="kpi-unit">kW/TR</span></div>
     </div><div class="kpi-card green">
-      <div class="kpi-label">Thermal efficiency</div>
-      <div class="kpi-value"><span id="kpi-thermal-eff">—</span><span class="kpi-unit">%</span></div>
+      <div class="kpi-label">Outdoor air temp</div>
+      <div class="kpi-value"><span id="kpi-oat">—</span><span class="kpi-unit">°C</span></div>
     </div></div>
         <div class="filter-row" style="justify-content:space-between;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -229,11 +229,11 @@
   <svg class="circuit-overlay" id="circuit-overlay"></svg>
   <div class="cg-cell" style="grid-area:cdp;"><div class="circ-block" id="node-cdp">
       <div class="tb-head">
-        <div class="tb-headtext"><span class="tb-title">Condenser Water Pump</span><span class="tb-count">14 หน่วย</span></div>
+        <div class="tb-headtext"><span class="tb-title">Condenser Water Pump</span><span class="tb-count">ภาพรวม</span></div>
         <div class="tb-total"><span class="tb-total-kw" id="total-cdp">—</span><span class="tb-total-unit">kW รวม</span></div>
         
       </div>
-      <div class="tb-grid"><div class="sbox dim"><span class="sb-id">P1-CDP-01</span></div><div class="sbox dim"><span class="sb-id">P1-CDP-02</span></div><div class="sbox dim"><span class="sb-id">P1-CDP-03</span></div><div class="sbox dim"><span class="sb-id">P1-CDP-04</span></div><div class="sbox dim"><span class="sb-id">H-CDP-01</span></div><div class="sbox dim"><span class="sb-id">H-CDP-02</span></div><div class="sbox dim"><span class="sb-id">H-CDP-03</span></div><div class="sbox dim"><span class="sb-id">H-CDP-04</span></div><div class="sbox dim"><span class="sb-id">H-CDP-05</span></div><div class="sbox dim"><span class="sb-id">H-CDP-06</span></div><div class="sbox dim"><span class="sb-id">H-CDP-07</span></div><div class="sbox dim"><span class="sb-id">H-CDP-08</span></div><div class="sbox dim"><span class="sb-id">RFUP-01</span></div><div class="sbox dim"><span class="sb-id">RFUP-02</span></div></div>
+      <div class="tb-single-body" style="padding:14px 6px;">รวมทุกตัว (ไม่แยกรายเครื่อง) · Sum_Cal_TT_ CDP Demand (kW)</div>
     </div></div>
   <div class="cg-cell" style="grid-area:ct;"><div class="circ-block" id="node-ct">
       <div class="tb-head">
@@ -253,11 +253,11 @@
     </div></div>
   <div class="cg-cell" style="grid-area:chl;"><div class="circ-block hl" id="node-chl">
       <div class="tb-head">
-        <div class="tb-headtext"><span class="tb-title">Main Chiller</span><span class="tb-count">12 หน่วย</span></div>
-        <div class="tb-total"><span class="tb-total-kw" id="total-chl">540.7</span><span class="tb-total-unit">kW รวม</span></div>
+        <div class="tb-headtext"><span class="tb-title">Main Chiller</span><span class="tb-count" id="chl-count">รอ sync...</span></div>
+        <div class="tb-total"><span class="tb-total-kw" id="total-chl">—</span><span class="tb-total-unit">kW สะสมวันนี้</span></div>
         <input type="number" class="eq-th" data-type="CHL" value="600" step="5">
       </div>
-      <div class="tb-grid"><div class="sbox" data-type="CHL" data-kw="477.5"><span class="sb-id">P1-CH-01</span><span class="sb-kw">477.5</span></div><div class="sbox" data-type="CHL" data-kw="540.7"><span class="sb-id">P1-CH-02</span><span class="sb-kw">540.7</span></div><div class="sbox" data-type="CHL" data-kw="436"><span class="sb-id">P1-CH-03</span><span class="sb-kw">436</span></div><div class="sbox" data-type="CHL" data-kw="430.3"><span class="sb-id">P1-CH-04</span><span class="sb-kw">430.3</span></div><div class="sbox" data-type="CHL" data-kw="517.4"><span class="sb-id">H1-CH-01</span><span class="sb-kw">517.4</span></div><div class="sbox" data-type="CHL" data-kw="400"><span class="sb-id">H1-CH-02</span><span class="sb-kw">400</span></div><div class="sbox" data-type="CHL" data-kw="541.4"><span class="sb-id">H1-CH-03</span><span class="sb-kw">541.4</span></div><div class="sbox" data-type="CHL" data-kw="371.8"><span class="sb-id">H1-CH-04</span><span class="sb-kw">371.8</span></div><div class="sbox" data-type="CHL" data-kw="446.1"><span class="sb-id">H1-CH-05</span><span class="sb-kw">446.1</span></div><div class="sbox" data-type="CHL" data-kw="476.6"><span class="sb-id">H1-CH-06</span><span class="sb-kw">476.6</span></div><div class="sbox" data-type="CHL" data-kw="209.7"><span class="sb-id">H1-CH-07</span><span class="sb-kw">209.7</span></div><div class="sbox" data-type="CHL" data-kw="206.1"><span class="sb-id">H1-CH-08</span><span class="sb-kw">206.1</span></div></div>
+      <div class="tb-grid" id="chl-daily-grid"></div>
     </div></div>
   <div class="cg-cell" style="grid-area:hsp;"><div class="circ-block pt" id="node-hsp">
       <div class="tb-head"><span class="tb-title">Header Supply</span></div>
@@ -465,6 +465,7 @@ document.querySelectorAll(".side-tab").forEach(function(tab){
     }
   }
   recompute();
+  window.__recomputeAlerts = recompute;
 })();
 
 document.querySelectorAll('[data-phase]').forEach(function(btn){
@@ -587,37 +588,53 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
     syncStatus.textContent = 'กำลัง sync...';
     if(syncBtn) syncBtn.disabled = true;
     try {
-      var [latestRes, zoneRes] = await Promise.all([
+      var [latestRes, zoneRes, chlRes] = await Promise.all([
         fetch(API_URL + '?action=latest'),
-        fetch(API_URL + '?action=zonekw')
+        fetch(API_URL + '?action=zonekw'),
+        fetch(API_URL + '?action=chillerdaily')
       ]);
       if(!latestRes.ok) throw new Error('latest HTTP ' + latestRes.status);
       var latest = await latestRes.json();
       var zones = zoneRes.ok ? await zoneRes.json() : [];
+      var chlDaily = chlRes.ok ? await chlRes.json() : {};
 
       // KPI cards
       setEl('kpi-plant-demand', latest.totalKw);
-      setEl('kpi-capacity', latest.totalTr, 0);
+      setEl('kpi-capacity', latest.chillerCapacityTr, 0);
       setEl('kpi-efficiency', latest.plantKwPerTr, 2);
-      setEl('kpi-thermal-eff', latest.thermalEfficiency != null ? latest.thermalEfficiency*100 : null, 1);
+      setEl('kpi-oat', latest.oat, 1);
 
       // Circuit block totals
       setEl('total-ct', latest.ctDemandKw);
       setEl('total-cdp', latest.cdpDemandKw);
-      setEl('total-chl', latest.chillerDemandKw);
       setEl('total-pchp', latest.pchpDemandKw);
-      var schpTotal = (latest.schpDemandKw||0) + (latest.hSchpDemandKw||0);
-      setEl('total-schp', schpTotal);
+      setEl('total-schp', latest.schpDemandKw);
+
+      // Main Chiller — เฉพาะตัวที่วิ่งวันนี้ เป็นค่าสะสม (getChillerDailyCumulative)
+      var chlIds = Object.keys(chlDaily);
+      var chlTotal = chlIds.reduce(function(sum, id){ return sum + (chlDaily[id]||0); }, 0);
+      setEl('total-chl', chlIds.length ? chlTotal : null);
+      var chlCountEl = document.getElementById('chl-count');
+      if(chlCountEl) chlCountEl.textContent = chlIds.length + ' เครื่องวิ่งวันนี้';
+      var chlGrid = document.getElementById('chl-daily-grid');
+      if(chlGrid){
+        chlGrid.innerHTML = chlIds.map(function(id){
+          var kw = chlDaily[id];
+          return '<div class="sbox" data-type="CHL" data-kw="' + kw + '"><span class="sb-id">' + id + '</span><span class="sb-kw">' + kw + '</span></div>';
+        }).join('');
+      }
 
       // เก็บ zone data ไว้ใช้ต่อ (เช่น ถ้าจะทำ alert ระดับ hall ในอนาคต)
       window.__latestZoneKw = zones;
       window.__latestPowerData = latest;
+      window.__chillerDaily = chlDaily;
 
-      // หมายเหตุ: latest.date เป็นปี พ.ศ. อยู่แล้วจาก Sheet (เช่น 2569-07-18)
-      // ห้ามใช้ toLocaleDateString('th-TH') เพราะจะไปบวก 543 ซ้ำอีกรอบ (กลายเป็นปี 3112!)
-      // ตัดเอาแค่ส่วนวันที่ YYYY-MM-DD จาก ISO string ตรงๆ แทน
+      // หมายเหตุ: latest.date เป็นปี พ.ศ. อยู่แล้วจาก Sheet (เช่น 2569-07-18) ห้ามใช้ toLocaleDateString('th-TH')
       var dateStr = latest.date ? String(latest.date).slice(0, 10) : '';
-      syncStatus.textContent = '✅ sync ล่าสุด: ' + dateStr + ' ' + (latest.time||'') + ' (Chiller: ' + (latest.activeChiller||'-') + ')';
+      syncStatus.textContent = '✅ sync ล่าสุด: ' + dateStr + ' ' + (latest.time||'') + ' (Chiller ล่าสุด: ' + (latest.activeChiller||'-') + ')';
+
+      // threshold alert ต้องรันใหม่หลังเติม chip ของ CHL เข้าไปสดๆ
+      if(window.__recomputeAlerts) window.__recomputeAlerts();
     } catch(err){
       syncStatus.textContent = '❌ sync ล้มเหลว: ' + err.message;
     } finally {
