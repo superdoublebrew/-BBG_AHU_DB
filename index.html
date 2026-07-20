@@ -298,7 +298,7 @@
         <div class="circuit-wrap">
           <svg class="pipe-overlay" id="circuit-overlay"></svg>
           <div class="circuit-grid" id="circuit-grid">
-            <div style="grid-area:cdp; align-self:end; padding-bottom:0; margin-bottom:-46px;"><div class="g-box" id="node-cdp">
+            <div style="grid-area:cdp; align-self:end; padding-bottom:0; margin-bottom:-80px;"><div class="g-box" id="node-cdp">
       <div class="g-head"><div><span class="g-title">Condenser Water Pump</span><br><span class="g-sub" id="cdp-sub">รอโหลดรายชื่อ...</span></div><span class="g-kw"><span id="total-cdp">—</span> kW</span></div>
       <div class="chip-grid idonly-grid" id="cdp-idonly-grid"></div>
     </div></div>
@@ -320,7 +320,7 @@
       <input type="number" class="eq-th" data-type="SCHP" value="60" step="5" style="margin-bottom:8px;">
       <div class="zone-grid" id="schp-daily-grid"></div>
     </div></div>
-            <div style="grid-area:pchp; align-self:start; margin-top:-46px;"><div class="g-box" id="node-pchp">
+            <div style="grid-area:pchp; align-self:start; margin-top:-80px;"><div class="g-box" id="node-pchp">
       <div class="g-head"><div><span class="g-title">Primary Chiller Pump</span><br><span class="g-sub" id="pchp-sub">รอโหลดรายชื่อ...</span></div><span class="g-kw"><span id="total-pchp">—</span> kW</span></div>
       <div class="chip-grid idonly-grid" id="pchp-idonly-grid"></div>
     </div></div>
@@ -564,7 +564,7 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
     {from:'node-hsp', to:'node-schp', fromSide:'right',  toSide:'left',  color:BLUE},
     {from:'node-schp',to:'node-ahu',  fromSide:'bottom', toSide:'top',   color:BLUE},
     {from:'node-ahu', to:'node-hrt',  fromSide:'left',   toSide:'right', color:BLUE},
-    {from:'node-hrt', to:'node-pchp', fromSide:'bottom', toSide:'right', color:BLUE},
+    {from:'node-hrt', to:'node-pchp', fromSide:'left',   toSide:'bottom', color:BLUE},
     {from:'node-pchp',to:'node-chl',  fromSide:'top',    toSide:'bottom',color:BLUE}
   ];
 
@@ -585,8 +585,6 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
       var p2 = pt(rectRel(toEl), c.toSide, c.toFrac);
       var marker = c.color === RED ? 'url(#ar-r)' : 'url(#ar-b)';
       frag += '<path d="'+pathD(p1,p2,c.fromSide,c.toSide)+'" stroke="'+c.color+'" stroke-width="1.6" fill="none" stroke-linejoin="round" marker-end="'+marker+'"/>';
-      frag += '<circle cx="'+p1.x.toFixed(1)+'" cy="'+p1.y.toFixed(1)+'" r="3" fill="#05070d" stroke="'+c.color+'" stroke-width="1.6"/>';
-      frag += '<circle cx="'+p2.x.toFixed(1)+'" cy="'+p2.y.toFixed(1)+'" r="3" fill="#05070d" stroke="'+c.color+'" stroke-width="1.6"/>';
     });
     svg.insertAdjacentHTML('beforeend', frag);
   }
