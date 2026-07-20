@@ -632,6 +632,10 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
       var res = await fetch(API_URL + '?action=structure');
       if(!res.ok) throw new Error('HTTP ' + res.status);
       var s = await res.json();
+      // Apps Script เว็บแอปตอบ HTTP 200 เสมอแม้ backend จะ error (ห่อเป็น {error:"..."} แทน)
+      // ต้องเช็คเองว่า response เป็น error object หรือ structure จริง ไม่งั้นจะพังเงียบๆ แล้วค้างที่ข้อความ "กำลังโหลด..."
+      if(s && s.error) throw new Error(s.error);
+      if(!s || !s.equipment || !s.ahu) throw new Error('response ไม่มี equipment/ahu — ตรวจ getStructure() ใน Apps Script');
       window.__structure = s;
 
       var totalEquip = s.equipment.CT.length + s.equipment.SCHP.length + s.equipment.CHL.length + s.equipment.CDP.length + s.equipment.PCHP.length;
@@ -650,9 +654,19 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
       window.__structureReadyResolve();
       if(window.__redrawCircuitArrows) setTimeout(window.__redrawCircuitArrows, 50);
     } catch(err){
+      var msg = '❌ โหลดโครงสร้างล้มเหลว: ' + err.message;
+      var plantTagEl = document.getElementById('plant-tag');
+      if(plantTagEl) plantTagEl.textContent = msg;
       var ahuTag = document.getElementById('ahu-tag');
-      if(ahuTag) ahuTag.textContent = '❌ โหลดโครงสร้างล้มเหลว: ' + err.message;
-      // resolve anyway ด้วย structure ว่าง กัน syncNow ค้างรอตลอดไป
+      if(ahuTag) ahuTag.textContent = msg;
+      var sidebarCount = document.getElementById('sidebar-ahu-count');
+      if(sidebarCount) sidebarCount.textContent = 'หน้าบ้าน · โหลดไม่สำเร็จ';
+      var cdpSub = document.getElementById('cdp-sub');
+      if(cdpSub) cdpSub.textContent = 'โหลดรายชื่อไม่สำเร็จ';
+      var pchpSub = document.getElementById('pchp-sub');
+      if(pchpSub) pchpSub.textContent = 'โหลดรายชื่อไม่สำเร็จ';
+      console.error('loadStructure failed:', err);
+      // resolve anyway ด้วย structure ว่าง กัน syncNow ค้างรอตลอดไป (แต่กล่อง CT/SCHP/CHL จะว่างเปล่าจนกว่าจะแก้ปัญหานี้)
       window.__structure = { equipment: { CT: [], SCHP: [], CHL: [], CDP: [], PCHP: [] }, schpZones: [], ahu: { totalCount: 0, phaseCount: {}, halls: [] } };
       window.__structureReadyResolve();
     }
