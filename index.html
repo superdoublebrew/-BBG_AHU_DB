@@ -818,6 +818,13 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
       // threshold alert ต้องรันใหม่หลังเติม chip สดๆ ทุกกลุ่ม
       if(window.__recomputeAlerts) window.__recomputeAlerts();
 
+      // [แก้บั๊กสำคัญ] วาดเส้นท่อใหม่ทันทีหลัง sync เติมข้อมูลจริงเสร็จ — ไม่งั้นเส้นจะค้างอยู่ตำแหน่งเดิม
+      // ตอนกล่องยังว่างเปล่า (ก่อน sync) ทั้งที่กล่องขยายใหญ่ขึ้นมากหลังมีข้อมูลจริงแล้ว
+      if(window.__redrawCircuitArrows) window.__redrawCircuitArrows();
+      // เผื่อ browser ยัง reflow ไม่เสร็จทันที วาดซ้ำอีกรอบสั้นๆ
+      setTimeout(function(){ if(window.__redrawCircuitArrows) window.__redrawCircuitArrows(); }, 50);
+      setTimeout(function(){ if(window.__redrawCircuitArrows) window.__redrawCircuitArrows(); }, 300);
+
       // trend strip + efficiency benchmark (แยก async ไม่ block sync หลัก)
       loadTrendAndBenchmark();
     } catch(err){
