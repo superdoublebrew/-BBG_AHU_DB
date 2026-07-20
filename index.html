@@ -122,7 +122,7 @@
   }
   @keyframes dashflow{ to{ stroke-dashoffset:-24; } }
   .circuit-grid{ position:relative; display:grid; z-index:1; align-items:center;
-    grid-template-columns: 0.8fr 1fr 0.35fr 1.35fr; row-gap:12px; column-gap:18px;
+    grid-template-columns: 0.8fr 1fr 0.5fr 1.35fr; row-gap:14px; column-gap:32px;
     grid-template-areas: ". cdp . ." "ct chl hsp schp" ". pchp hrt ahu"; }
   @media (max-width:700px){
     .circuit-grid{ grid-template-columns:1fr; grid-template-areas:"cdp" "ct" "chl" "hsp" "schp" "pchp" "hrt" "ahu"; }
@@ -298,7 +298,7 @@
         <div class="circuit-wrap">
           <svg class="pipe-overlay" id="circuit-overlay"></svg>
           <div class="circuit-grid" id="circuit-grid">
-            <div style="grid-area:cdp; align-self:end; padding-bottom:0; margin-bottom:-8px;"><div class="g-box" id="node-cdp">
+            <div style="grid-area:cdp; align-self:end; padding-bottom:0; margin-bottom:-26px;"><div class="g-box" id="node-cdp">
       <div class="g-head"><div><span class="g-title">Condenser Water Pump</span><br><span class="g-sub" id="cdp-sub">รอโหลดรายชื่อ...</span></div><span class="g-kw"><span id="total-cdp">—</span> kW</span></div>
       <div class="chip-grid idonly-grid" id="cdp-idonly-grid"></div>
     </div></div>
@@ -320,7 +320,7 @@
       <input type="number" class="eq-th" data-type="SCHP" value="60" step="5" style="margin-bottom:8px;">
       <div class="zone-grid" id="schp-daily-grid"></div>
     </div></div>
-            <div style="grid-area:pchp;"><div class="g-box" id="node-pchp">
+            <div style="grid-area:pchp; align-self:start; margin-top:-26px;"><div class="g-box" id="node-pchp">
       <div class="g-head"><div><span class="g-title">Primary Chiller Pump</span><br><span class="g-sub" id="pchp-sub">รอโหลดรายชื่อ...</span></div><span class="g-kw"><span id="total-pchp">—</span> kW</span></div>
       <div class="chip-grid idonly-grid" id="pchp-idonly-grid"></div>
     </div></div>
