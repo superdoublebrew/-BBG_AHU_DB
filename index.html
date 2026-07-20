@@ -116,9 +116,19 @@
 
   .circuit-wrap{ position:relative; margin:0 auto; max-width:1020px; }
   .pipe-overlay{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:0; }
+  .pipe-overlay path{ stroke-dasharray:6 6; }
+  @media (prefers-reduced-motion: no-preference){
+    .pipe-overlay path{ animation:dashflow 1s linear infinite; }
+  }
+  @keyframes dashflow{ to{ stroke-dashoffset:-24; } }
   .circuit-grid{ position:relative; display:grid; z-index:1; align-items:center;
     grid-template-columns: 0.8fr 1fr 0.35fr 1.35fr; row-gap:12px; column-gap:18px;
     grid-template-areas: ". cdp . ." "ct chl hsp schp" ". pchp hrt ahu"; }
+  @media (max-width:700px){
+    .circuit-grid{ grid-template-columns:1fr; grid-template-areas:"cdp" "ct" "chl" "hsp" "schp" "pchp" "hrt" "ahu"; }
+    .pipe-overlay{ display:none; }
+    .chip-grid, .chip-grid.cols-3, .idonly-grid{ grid-template-columns:repeat(2,1fr); }
+  }
 
   .g-box{ background:linear-gradient(160deg, rgba(56,189,248,0.06), rgba(255,255,255,0.015)); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:9px 11px; position:relative; }
   .g-box.hl{ background:linear-gradient(160deg, rgba(242,184,79,0.1), rgba(255,255,255,0.015)); border-color:rgba(242,184,79,0.45); }
@@ -133,15 +143,16 @@
   .g-pt-title{ font-weight:600; font-size:10px; color:#e7ecf5; }
   .g-pt-sub{ font-family:'JetBrains Mono',monospace; font-size:7.5px; color:var(--text-faint); margin-top:1px; }
 
-  .chip-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:3px; }
-  .chip{ border:1px solid rgba(56,189,248,0.25); border-radius:5px; padding:3px 4px; background:rgba(0,0,0,0.25); text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .chip-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+  .chip-grid.cols-3{ grid-template-columns:repeat(3,1fr); gap:6px; }
+  .chip{ border:1px solid rgba(56,189,248,0.25); border-radius:6px; padding:5px 6px; background:rgba(0,0,0,0.25); text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .chip.dim{ opacity:0.32; }
   .chip.over{ border-color:rgba(248,113,113,0.7); background:rgba(248,113,113,0.14); }
   .chip.over .kw{ color:#f87171; }
-  .chip.idonly{ padding:3px 4px; }
-  .idonly-grid{ grid-template-columns:repeat(7,1fr); }
-  .chip .id{ font-family:'JetBrains Mono',monospace; font-size:8px; color:#c3ccdb; line-height:1.3; }
-  .chip .kw{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10px; color:#7dd3fc; margin-top:1px; }
+  .chip.idonly{ padding:5px 4px; }
+  .idonly-grid{ grid-template-columns:repeat(5,1fr); gap:4px; }
+  .chip .id{ font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:600; color:#dbe2ee; line-height:1.3; white-space:nowrap; }
+  .chip .kw{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; color:#7dd3fc; margin-top:2px; }
   .g-box.hl .chip .kw{ color:#f2c580; }
 
   .zone-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
@@ -250,6 +261,11 @@
             <div class="kpi-label">Active alarms</div>
             <div class="kpi-value"><span id="kpi-alarms">—</span><span class="kpi-unit">รายการ</span></div>
           </div>
+          <div class="kpi-card purple">
+            <div class="kpi-label">Peak demand วันนี้</div>
+            <div class="kpi-value"><span id="kpi-peak">—</span><span class="kpi-unit">kW</span></div>
+            <div class="kpi-bench" id="kpi-peak-time"></div>
+          </div>
         </div>
 
         <div class="trend-strip glass" id="trend-strip">
@@ -266,8 +282,14 @@
           </div>
           <div style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint);">
             <span id="sync-status">ยังไม่ได้ sync</span>
+            <span id="stale-badge" style="display:none; color:#f2b84f; border:1px solid rgba(242,184,79,0.4); border-radius:6px; padding:2px 8px; background:rgba(242,184,79,0.08);"></span>
+            <button class="f-btn" id="copy-btn" type="button" title="Copy สรุปสถานะ">📋 Copy</button>
             <button class="f-btn" id="sync-btn" type="button">🔄 Sync now</button>
           </div>
+        </div>
+        <div class="filter-row">
+          <span class="f-label">ค้นหาเครื่อง:</span>
+          <input type="text" id="equip-search" placeholder="เช่น SCHP-04, P1-CT-01" style="flex:1; max-width:260px; padding:6px 10px; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); color:var(--text); font-family:'JetBrains Mono',monospace; font-size:11px;">
         </div>
         <div class="overview-alert" id="overview-alert">
           <b>Alert</b><span class="txt" id="overview-alert-text"></span>
@@ -276,14 +298,14 @@
         <div class="circuit-wrap">
           <svg class="pipe-overlay" id="circuit-overlay"></svg>
           <div class="circuit-grid" id="circuit-grid">
-            <div style="grid-area:cdp;"><div class="g-box" id="node-cdp">
+            <div style="grid-area:cdp; align-self:end; padding-bottom:0; margin-bottom:-8px;"><div class="g-box" id="node-cdp">
       <div class="g-head"><div><span class="g-title">Condenser Water Pump</span><br><span class="g-sub" id="cdp-sub">รอโหลดรายชื่อ...</span></div><span class="g-kw"><span id="total-cdp">—</span> kW</span></div>
       <div class="chip-grid idonly-grid" id="cdp-idonly-grid"></div>
     </div></div>
             <div style="grid-area:ct;"><div class="g-box" id="node-ct">
       <div class="g-head"><div><span class="g-title">Cooling Tower</span><br><span class="g-sub" id="ct-count">รอ sync...</span></div><span class="g-kw"><span id="total-ct">—</span> kW</span></div>
       <input type="number" class="eq-th" data-type="CT" value="25" step="5" style="margin-bottom:8px;">
-      <div class="chip-grid" id="ct-daily-grid"></div>
+      <div class="chip-grid cols-3" id="ct-daily-grid"></div>
     </div></div>
             <div style="grid-area:chl;"><div class="g-box hl" id="node-chl">
       <div class="g-head"><div><span class="g-title">Main Chiller</span><br><span class="g-sub" id="chl-count">รอ sync...</span></div><span class="g-kw"><span id="total-chl">—</span> kW</span></div>
@@ -614,7 +636,8 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
       var halls = ahu.halls.filter(function(h){ return h.wing === wingName; });
       el.innerHTML = halls.map(function(h){
         var wide = h.ahus.length > 6;
-        return '<div class="hallcard ' + h.phase + (wide ? ' wide' : '') + '">' +
+        return '<div class="hallcard ' + h.phase + (wide ? ' wide' : '') + '" data-location="BITEC-' + h.hall + '" style="position:relative;">' +
+          '<span class="hall-energy-badge" style="display:none; position:absolute; top:6px; right:6px; font-family:\'JetBrains Mono\',monospace; font-size:8px; padding:2px 5px; border-radius:5px; background:rgba(0,0,0,0.4);"></span>' +
           '<div class="hc-head"><span class="hc-name">' + h.hall + '</span><span class="hc-count">' + h.ahus.length + 'u</span></div>' +
           '<div class="hc-body' + (wide ? ' wide' : '') + '">' +
             h.ahus.map(function(id){ return '<div class="ahu-tag ' + h.phase + '">' + id + '</div>'; }).join('') +
@@ -718,6 +741,17 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
               }).join(' ');
               svg.innerHTML = '<polyline points="'+pts+'" fill="none" stroke="#38bdf8" stroke-width="2"/>';
             }
+          }
+          // ---- Peak demand วันนี้ (จาก rows เดิมที่ fetch มาแล้ว ไม่ยิง request เพิ่ม) ----
+          var peakRow = null;
+          rows.forEach(function(r){
+            if(typeof r.totalKw === 'number' && (!peakRow || r.totalKw > peakRow.totalKw)) peakRow = r;
+          });
+          var peakEl = document.getElementById('kpi-peak');
+          var peakTimeEl = document.getElementById('kpi-peak-time');
+          if(peakRow){
+            if(peakEl) peakEl.textContent = peakRow.totalKw.toFixed(1);
+            if(peakTimeEl) peakTimeEl.textContent = 'เกิดเวลา ' + (peakRow.time || '-');
           }
         }
       }
@@ -847,9 +881,45 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
         }).join('');
       }
 
+      // ---- badge kW/m² บน hall card ในแท็บ AHU (ใช้ zonekw ตัวเดียวกัน จับคู่ผ่าน data-location) ----
+      if(Array.isArray(zones)){
+        var zoneByLoc = {};
+        zones.forEach(function(z){ zoneByLoc[z.location] = z; });
+        document.querySelectorAll('.hallcard[data-location]').forEach(function(card){
+          var z = zoneByLoc[card.dataset.location];
+          var badge = card.querySelector('.hall-energy-badge');
+          if(!badge) return;
+          if(!z || z.kwPerSqm == null){ badge.style.display = 'none'; return; }
+          var wm2 = z.kwPerSqm * 1000;
+          var color = wm2 > 50 ? '#f87171' : (wm2 > 20 ? '#f2b84f' : '#34d399');
+          badge.style.display = 'block';
+          badge.style.color = color;
+          badge.textContent = wm2.toFixed(0) + ' W/m²';
+        });
+      }
+
       // หมายเหตุ: latest.date เป็นปี พ.ศ. อยู่แล้วจาก Sheet (เช่น 2569-07-18) ห้ามใช้ toLocaleDateString('th-TH')
       var dateStr = latest.date ? String(latest.date).slice(0, 10) : '';
       syncStatus.textContent = '✅ sync ล่าสุด: ' + dateStr + ' ' + (latest.time||'') + ' (Chiller ล่าสุด: ' + (latest.activeChiller||'-') + ')';
+
+      // ---- Stale data badge — เตือนถ้าข้อมูลล่าสุดเก่ากว่า 30 นาที ----
+      (function(){
+        var badge = document.getElementById('stale-badge');
+        if(!badge || !latest.date || !latest.time) return;
+        try {
+          var parts = String(latest.date).slice(0,10).split('-');
+          var gYear = parseInt(parts[0], 10) - 543; // แปลง พ.ศ. -> ค.ศ.
+          var timeParts = String(latest.time).split(':').map(Number);
+          var dataDate = new Date(gYear, parseInt(parts[1],10)-1, parseInt(parts[2],10), timeParts[0]||0, timeParts[1]||0, timeParts[2]||0);
+          var diffMin = Math.round((new Date() - dataDate) / 60000);
+          if(diffMin > 30){
+            badge.style.display = 'inline';
+            badge.textContent = '⚠️ ข้อมูลอาจไม่ real-time (ล่าสุด ' + diffMin + ' นาทีที่แล้ว)';
+          } else {
+            badge.style.display = 'none';
+          }
+        } catch(e){ badge.style.display = 'none'; }
+      })();
 
       // threshold alert ต้องรันใหม่หลังเติม chip สดๆ ทุกกลุ่ม
       if(window.__recomputeAlerts) window.__recomputeAlerts();
@@ -873,6 +943,62 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
   if(syncBtn) syncBtn.addEventListener('click', syncNow);
   // sync อัตโนมัติตอนเปิดหน้า
   syncNow();
+})();
+</script>
+
+<script>
+/* ===== Copy summary + equipment search ===== */
+(function(){
+  var copyBtn = document.getElementById('copy-btn');
+  if(copyBtn){
+    copyBtn.addEventListener('click', async function(){
+      var d = window.__latestPowerData || {};
+      var alarms = document.getElementById('kpi-alarms');
+      var lines = [
+        'BITEC Chiller Plant — สรุปสถานะ',
+        (d.date ? String(d.date).slice(0,10) : '-') + ' ' + (d.time || ''),
+        'Plant demand: ' + (d.totalKw != null ? d.totalKw.toFixed(1) : '-') + ' kW',
+        'Efficiency: ' + (d.plantKwPerTr != null ? d.plantKwPerTr.toFixed(2) : '-') + ' kW/TR',
+        'Chiller ที่วิ่งอยู่: ' + (d.activeChiller || '-'),
+        'Active alarms: ' + (alarms ? alarms.textContent : '-') + ' รายการ'
+      ];
+      var text = lines.join('\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        var original = copyBtn.textContent;
+        copyBtn.textContent = '✅ Copied';
+        setTimeout(function(){ copyBtn.textContent = original; }, 1500);
+      } catch(e){
+        copyBtn.textContent = '❌ Copy ไม่ได้';
+        setTimeout(function(){ copyBtn.textContent = '📋 Copy'; }, 1500);
+      }
+    });
+  }
+
+  var searchInput = document.getElementById('equip-search');
+  if(searchInput){
+    var highlightTimer = null;
+    searchInput.addEventListener('keydown', function(e){
+      if(e.key !== 'Enter') return;
+      var q = searchInput.value.trim().toUpperCase();
+      if(!q) return;
+      var match = null;
+      document.querySelectorAll('.chip .id, .zc-chip .id').forEach(function(idEl){
+        if(match) return;
+        if(idEl.textContent.toUpperCase().indexOf(q) !== -1) match = idEl.closest('.chip, .zc-chip');
+      });
+      if(match){
+        match.scrollIntoView({ behavior:'smooth', block:'center' });
+        match.style.outline = '2px solid #f2b84f';
+        match.style.outlineOffset = '2px';
+        if(highlightTimer) clearTimeout(highlightTimer);
+        highlightTimer = setTimeout(function(){ match.style.outline = ''; }, 2000);
+      } else {
+        searchInput.style.borderColor = '#f87171';
+        setTimeout(function(){ searchInput.style.borderColor = ''; }, 800);
+      }
+    });
+  }
 })();
 </script>
 
