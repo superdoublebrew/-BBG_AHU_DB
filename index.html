@@ -123,7 +123,7 @@
   @keyframes dashflow{ to{ stroke-dashoffset:-24; } }
   .circuit-grid{ position:relative; display:grid; z-index:1; align-items:center;
     grid-template-columns: 0.8fr 1fr 0.5fr 1.35fr; row-gap:14px; column-gap:32px;
-    grid-template-areas: ". cdp . ." "ct chl hsp schp" ". pchp hrt ahu"; }
+    grid-template-areas: ". cdp . ." "ct chl hsp schp" ". pchp . ." ". . hrt ahu"; }
   @media (max-width:700px){
     .circuit-grid{ grid-template-columns:1fr; grid-template-areas:"cdp" "ct" "chl" "hsp" "schp" "pchp" "hrt" "ahu"; }
     .pipe-overlay{ display:none; }
@@ -155,7 +155,7 @@
   .chip .kw{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; color:#7dd3fc; margin-top:2px; }
   .g-box.hl .chip .kw{ color:#f2c580; }
 
-  .zone-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .zone-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
   .zone-cluster{ border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:7px 8px; background:rgba(255,255,255,0.015); }
   .zc-head{ font-family:'JetBrains Mono',monospace; font-size:9px; color:#c3ccdb; margin-bottom:6px; }
   .zc-chips{ display:flex; gap:5px; flex-wrap:wrap; }
@@ -298,7 +298,7 @@
         <div class="circuit-wrap">
           <svg class="pipe-overlay" id="circuit-overlay"></svg>
           <div class="circuit-grid" id="circuit-grid">
-            <div style="grid-area:cdp; align-self:end; padding-bottom:0; margin-bottom:-80px;"><div class="g-box" id="node-cdp">
+            <div style="grid-area:cdp;"><div class="g-box" id="node-cdp">
       <div class="g-head"><div><span class="g-title">Condenser Water Pump</span><br><span class="g-sub" id="cdp-sub">รอโหลดรายชื่อ...</span></div><span class="g-kw"><span id="total-cdp">—</span> kW</span></div>
       <div class="chip-grid idonly-grid" id="cdp-idonly-grid"></div>
     </div></div>
@@ -320,7 +320,7 @@
       <input type="number" class="eq-th" data-type="SCHP" value="60" step="5" style="margin-bottom:8px;">
       <div class="zone-grid" id="schp-daily-grid"></div>
     </div></div>
-            <div style="grid-area:pchp; align-self:start; margin-top:-80px;"><div class="g-box" id="node-pchp">
+            <div style="grid-area:pchp;"><div class="g-box" id="node-pchp">
       <div class="g-head"><div><span class="g-title">Primary Chiller Pump</span><br><span class="g-sub" id="pchp-sub">รอโหลดรายชื่อ...</span></div><span class="g-kw"><span id="total-pchp">—</span> kW</span></div>
       <div class="chip-grid idonly-grid" id="pchp-idonly-grid"></div>
     </div></div>
@@ -564,7 +564,7 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
     {from:'node-hsp', to:'node-schp', fromSide:'right',  toSide:'left',  color:BLUE},
     {from:'node-schp',to:'node-ahu',  fromSide:'bottom', toSide:'top',   color:BLUE},
     {from:'node-ahu', to:'node-hrt',  fromSide:'left',   toSide:'right', color:BLUE},
-    {from:'node-hrt', to:'node-pchp', fromSide:'left',   toSide:'bottom', color:BLUE},
+    {from:'node-hrt', to:'node-pchp', fromSide:'top',    toSide:'right', color:BLUE},
     {from:'node-pchp',to:'node-chl',  fromSide:'top',    toSide:'bottom',color:BLUE}
   ];
 
