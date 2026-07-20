@@ -114,47 +114,47 @@
   h1{ font-family:'Space Grotesk',sans-serif; font-size:16px; margin-bottom:4px; }
   .sub{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint); margin-bottom:20px; }
 
-  .circuit-wrap{ position:relative; margin:0 auto; max-width:1180px; }
+  .circuit-wrap{ position:relative; margin:0 auto; max-width:1020px; }
   .pipe-overlay{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:0; }
   .circuit-grid{ position:relative; display:grid; z-index:1; align-items:center;
-    grid-template-columns: 1fr 1.1fr 0.5fr 1.3fr; row-gap:26px; column-gap:30px;
+    grid-template-columns: 0.8fr 1fr 0.35fr 1.35fr; row-gap:12px; column-gap:18px;
     grid-template-areas: ". cdp . ." "ct chl hsp schp" ". pchp hrt ahu"; }
 
-  .g-box{ background:linear-gradient(160deg, rgba(56,189,248,0.06), rgba(255,255,255,0.015)); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:11px 13px; position:relative; }
+  .g-box{ background:linear-gradient(160deg, rgba(56,189,248,0.06), rgba(255,255,255,0.015)); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:9px 11px; position:relative; }
   .g-box.hl{ background:linear-gradient(160deg, rgba(242,184,79,0.1), rgba(255,255,255,0.015)); border-color:rgba(242,184,79,0.45); }
-  .g-box.pt{ opacity:0.5; border-style:dashed; display:flex; flex-direction:column; justify-content:center; min-height:40px; padding:6px 12px; text-align:center; width:fit-content; margin:0 auto; }
-  .g-box::before{ content:''; position:absolute; top:8px; right:8px; width:6px; height:6px; border-radius:50%; background:#34d399; box-shadow:0 0 6px 1px rgba(52,211,153,0.7); }
+  .g-box.pt{ opacity:0.5; border-style:dashed; display:flex; flex-direction:column; justify-content:center; min-height:34px; padding:5px 10px; text-align:center; width:fit-content; margin:0 auto; }
+  .g-box::before{ content:''; position:absolute; top:7px; right:7px; width:5px; height:5px; border-radius:50%; background:#34d399; box-shadow:0 0 5px 1px rgba(52,211,153,0.7); }
   .g-box.pt::before{ display:none; }
-  .g-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px; gap:8px; flex-wrap:wrap; }
-  .g-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11px; color:#fff; }
-  .g-sub{ font-family:'JetBrains Mono',monospace; font-size:7.5px; color:#7dd3fc; }
-  .g-kw{ font-family:'Space Grotesk',sans-serif; font-weight:800; font-size:20px; color:#38bdf8; text-shadow:0 0 12px rgba(56,189,248,0.5); }
+  .g-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; gap:6px; flex-wrap:wrap; }
+  .g-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11.5px; color:#fff; }
+  .g-sub{ font-family:'JetBrains Mono',monospace; font-size:8px; color:#7dd3fc; }
+  .g-kw{ font-family:'Space Grotesk',sans-serif; font-weight:800; font-size:17px; color:#38bdf8; text-shadow:0 0 12px rgba(56,189,248,0.5); }
   .g-box.hl .g-kw{ color:#f2b84f; text-shadow:0 0 12px rgba(242,184,79,0.5); }
   .g-pt-title{ font-weight:600; font-size:10px; color:#e7ecf5; }
   .g-pt-sub{ font-family:'JetBrains Mono',monospace; font-size:7.5px; color:var(--text-faint); margin-top:1px; }
 
-  .chip-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:4px; }
-  .chip{ border:1px solid rgba(56,189,248,0.22); border-radius:6px; padding:5px 6px; background:rgba(0,0,0,0.25); text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .chip-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:3px; }
+  .chip{ border:1px solid rgba(56,189,248,0.25); border-radius:5px; padding:3px 4px; background:rgba(0,0,0,0.25); text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .chip.dim{ opacity:0.32; }
   .chip.over{ border-color:rgba(248,113,113,0.7); background:rgba(248,113,113,0.14); }
   .chip.over .kw{ color:#f87171; }
-  .chip.idonly{ padding:4px 5px; }
-  .idonly-grid{ grid-template-columns:repeat(4,1fr); }
-  .chip .id{ font-family:'JetBrains Mono',monospace; font-size:6px; color:#93a0b8; }
-  .chip .kw{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:9px; color:#7dd3fc; }
+  .chip.idonly{ padding:3px 4px; }
+  .idonly-grid{ grid-template-columns:repeat(7,1fr); }
+  .chip .id{ font-family:'JetBrains Mono',monospace; font-size:8px; color:#c3ccdb; line-height:1.3; }
+  .chip .kw{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10px; color:#7dd3fc; margin-top:1px; }
   .g-box.hl .chip .kw{ color:#f2c580; }
 
-  .zone-grid{ display:flex; flex-direction:column; gap:6px; }
-  .zone-cluster{ border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:5px 7px; background:rgba(255,255,255,0.015); }
-  .zc-head{ font-family:'JetBrains Mono',monospace; font-size:6.5px; color:#93a0b8; margin-bottom:4px; }
+  .zone-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+  .zone-cluster{ border:1px solid rgba(255,255,255,0.1); border-radius:7px; padding:5px 6px; background:rgba(255,255,255,0.015); }
+  .zc-head{ font-family:'JetBrains Mono',monospace; font-size:7.5px; color:#c3ccdb; margin-bottom:4px; }
   .zc-chips{ display:flex; gap:3px; flex-wrap:wrap; }
-  .zc-chip{ border:1px solid rgba(255,255,255,0.12); border-radius:4px; padding:4px 6px; text-align:center; background:rgba(0,0,0,0.15); min-width:42px; }
+  .zc-chip{ border:1px solid rgba(255,255,255,0.14); border-radius:4px; padding:3px 4px; text-align:center; background:rgba(0,0,0,0.2); }
   .zc-chip.dim{ opacity:0.32; }
   .zc-chip.over{ border-color:rgba(248,113,113,0.7); background:rgba(248,113,113,0.14); }
   .zc-chip.over .kw{ color:#f87171; }
-  .zc-chip .id{ font-family:'JetBrains Mono',monospace; font-size:5.5px; color:#93a0b8; }
-  .zc-chip .kw{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:7.5px; color:#7dd3fc; margin-top:1px; }
-  .zc-ahu{ font-family:'JetBrains Mono',monospace; font-size:6px; color:#7dd3fc; margin-top:3px; }
+  .zc-chip .id{ font-family:'JetBrains Mono',monospace; font-size:7.5px; color:#c3ccdb; }
+  .zc-chip .kw{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:9px; color:#7dd3fc; margin-top:1px; }
+  .zc-ahu{ font-family:'JetBrains Mono',monospace; font-size:6.5px; color:#7dd3fc; margin-top:3px; }
 
   .trend-strip{ padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; gap:16px; border-radius:14px; }
   .trend-strip svg{ flex-shrink:0; }
