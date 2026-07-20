@@ -568,7 +568,26 @@ document.querySelectorAll('[data-loop]').forEach(function(btn){
     {from:'node-pchp',to:'node-chl',  fromSide:'top',    toSide:'bottom',color:BLUE}
   ];
 
+  // จัดขอบ CDP/PCHP ให้ตรงกับขอบบน/ล่างของ SCHP แบบวัดตำแหน่งจริงทุกครั้ง (ไม่เดา margin อีกต่อไป)
+  // เพราะ align-items:center ของ .circuit-grid ทำให้กล่องแต่ละแถวสูงไม่เท่ากันไม่สามารถเดา offset คงที่ได้
+  function alignPumpEdges(){
+    var schp = document.getElementById('node-schp');
+    var cdpBox = document.getElementById('node-cdp');
+    var pchpBox = document.getElementById('node-pchp');
+    if(!schp || !cdpBox || !pchpBox) return;
+    cdpBox.style.transform = 'translateY(0px)';
+    pchpBox.style.transform = 'translateY(0px)';
+    var schpRect = schp.getBoundingClientRect();
+    var cdpRect = cdpBox.getBoundingClientRect();
+    var pchpRect = pchpBox.getBoundingClientRect();
+    var cdpDelta = schpRect.top - cdpRect.top;          // เลื่อน CDP เท่านี้ ขอบบน CDP จะตรงกับขอบบน SCHP
+    var pchpDelta = schpRect.bottom - pchpRect.bottom;  // เลื่อน PCHP เท่านี้ ขอบล่าง PCHP จะตรงกับขอบล่าง SCHP
+    cdpBox.style.transform = 'translateY(' + cdpDelta.toFixed(1) + 'px)';
+    pchpBox.style.transform = 'translateY(' + pchpDelta.toFixed(1) + 'px)';
+  }
+
   function draw(){
+    alignPumpEdges();
     svg.innerHTML =
       '<defs>' +
       '<marker id="ar-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
