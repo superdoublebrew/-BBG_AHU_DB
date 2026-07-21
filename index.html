@@ -107,6 +107,7 @@
   <div class="sidebar">
     <div class="side-tab active" data-tab="plant">Chiller circuit<span class="st-sub">ผัง flow + KPI</span></div>
     <div class="side-tab" data-tab="ahu">AHU floor plan<span class="st-sub">ปรับปรุงใหม่</span></div>
+    <div class="side-tab" data-tab="report">Monthly report<span class="st-sub">KPI + scorecard รายเดือน</span></div>
   </div>
 
   <div class="content">
@@ -120,22 +121,22 @@
         <div class="kpi-row">
           <div class="kpi-card green">
             <div class="kpi-label">Cooling Tower รวม</div>
-            <div class="kpi-value">114.2<span class="kpi-unit">kW</span></div>
+            <div class="kpi-value"><span id="kpi-ct">114.2</span><span class="kpi-unit">kW</span></div>
             <div class="kpi-sub">11 หน่วย</div>
           </div>
           <div class="kpi-card cyan">
             <div class="kpi-label">Main Chiller (เดินอยู่)</div>
-            <div class="kpi-value">540.7<span class="kpi-unit">kW</span></div>
-            <div class="kpi-sub">1 / 12 หน่วยกำลังวิ่ง</div>
+            <div class="kpi-value"><span id="kpi-chl">540.7</span><span class="kpi-unit">kW</span></div>
+            <div class="kpi-sub" id="kpi-chl-sub">1 / 12 หน่วยกำลังวิ่ง</div>
           </div>
           <div class="kpi-card cyan">
             <div class="kpi-label">SCHP Phase I รวม</div>
-            <div class="kpi-value">261.0<span class="kpi-unit">kW</span></div>
+            <div class="kpi-value"><span id="kpi-schp1">261.0</span><span class="kpi-unit">kW</span></div>
             <div class="kpi-sub">7 หน่วย</div>
           </div>
           <div class="kpi-card cyan">
             <div class="kpi-label">SCHP Phase II รวม</div>
-            <div class="kpi-value">221.8<span class="kpi-unit">kW</span></div>
+            <div class="kpi-value"><span id="kpi-schp2">221.8</span><span class="kpi-unit">kW</span></div>
             <div class="kpi-sub">9 หน่วย</div>
           </div>
           <div class="kpi-card pending">
@@ -150,6 +151,10 @@
             <div class="kpi-label">Chillers Running</div>
             <div class="kpi-value dim">รอสถานะรายเครื่อง</div>
           </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint);">
+          <span id="sync-status">ยังไม่ได้ sync</span>
+          <button class="f-btn" id="sync-btn" type="button">🔄 Sync now</button>
         </div>
       </div>
 
@@ -214,8 +219,58 @@
         </div>
       </div>
     </div>
+
+    <div class="panel" id="panel-report">
+      <div class="block glass">
+        <div class="card-title">
+          <span>Monthly report — Chiller plant KPI</span>
+          <span class="mockbadge">ข้อมูลจริงจาก chiller_data</span>
+        </div>
+        <div class="kpi-row" style="margin-bottom:12px;">
+          <div class="kpi-card cyan">
+            <div class="kpi-label" id="monthly-kpi-kwh-label">Total kWh</div>
+            <div class="kpi-value"><span id="monthly-kpi-kwh">—</span><span class="kpi-unit">kWh</span></div>
+          </div>
+          <div class="kpi-card cyan">
+            <div class="kpi-label">Avg Efficiency</div>
+            <div class="kpi-value"><span id="monthly-kpi-eff">—</span><span class="kpi-unit">kW/TR</span></div>
+          </div>
+          <div class="kpi-card cyan">
+            <div class="kpi-label">Total TR</div>
+            <div class="kpi-value"><span id="monthly-kpi-tr">—</span><span class="kpi-unit">TR</span></div>
+          </div>
+          <div class="kpi-card cyan">
+            <div class="kpi-label">kWh / ตร.ม.</div>
+            <div class="kpi-value"><span id="monthly-kpi-kwhm2">—</span><span class="kpi-unit">kWh/m²</span></div>
+          </div>
+        </div>
+        <div id="monthly-sync-status" style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint); margin-bottom:10px;">ยังไม่ได้ sync</div>
+        <div class="filter-row">
+          <span class="f-label">แสดงเดือน:</span>
+          <div class="f-btn active">3 เดือนล่าสุด</div>
+          <button class="f-btn" id="export-btn" style="margin-left:auto;">Export CSV</button>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:11.5px;">
+          <thead id="monthly-thead"><tr><th style="text-align:left; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--text-faint); text-transform:uppercase; padding:10px 14px;">Monthly</th></tr></thead>
+          <tbody id="monthly-tbody"></tbody>
+        </table>
+        <div style="margin-top:14px;"><span class="mockbadge">Total(kWh)/Total(TR) เป็นค่าประมาณจาก avg reading × 24hr × จำนวนวัน</span></div>
+      </div>
+    </div>
+
   </div>
 </div>
+
+<style>
+.monthly-table-cell{ padding:10px 14px; text-align:center; }
+.cell-val{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12.5px; color:var(--text); }
+.cell-val.na{ color:var(--text-faint); font-weight:500; }
+.metric-name{ text-align:left; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:11px; color:var(--text); padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); }
+.metric-note{ display:block; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-faint); font-weight:400; margin-top:1px; }
+.mth1{ background:rgba(242,134,122,0.1); color:#f2867a; } .mth2{ background:rgba(56,189,248,0.1); color:#38bdf8; } .mth3{ background:rgba(168,85,247,0.12); color:#c9a6f7; }
+.delta{ display:block; font-family:'JetBrains Mono',monospace; font-size:8.5px; margin-top:2px; }
+.delta.up{ color:#f87171; } .delta.down{ color:#34d399; } .delta.flat{ color:var(--text-faint); }
+</style>
 
 <script>
 document.querySelectorAll(".side-tab").forEach(function(tab){
@@ -273,6 +328,157 @@ function renderWing(containerId, halls){
 }
 renderWing('exhibition-wing', EXHIBITION);
 renderWing('convention-wing', CONVENTION);
+</script>
+
+<script>
+/* ===== Circuit KPI sync — เชื่อม Apps Script Web App จริง =====
+   หมายเหตุ: ผังวงจร (SVG) วาดจาก JS ทั้งก้อนตอนโหลดหน้า ยังไม่ได้ผูก sync แบบ live-redraw
+   ส่วนนี้ sync เฉพาะการ์ด KPI ด้านบนก่อน (CT/Chiller/SCHP1/SCHP2 รวม) */
+(function(){
+  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
+  var syncBtn = document.getElementById('sync-btn');
+  var syncStatus = document.getElementById('sync-status');
+
+  function setEl(id, val, digits){
+    var el = document.getElementById(id);
+    if(!el) return;
+    var noData = (val === null || val === undefined || val === '');
+    el.textContent = noData ? '—' : ((typeof val === 'number') ? val.toFixed(digits===undefined?1:digits) : val);
+  }
+
+  async function syncNow(){
+    syncStatus.textContent = 'กำลัง sync...';
+    if(syncBtn) syncBtn.disabled = true;
+    try {
+      var res = await fetch(API_URL + '?action=latest');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var latest = await res.json();
+
+      setEl('kpi-ct', latest.ctDemandKw);
+      setEl('kpi-chl', latest.activeChillerCumulativeKw);
+      setEl('kpi-schp1', latest.schpDemandKw);
+      setEl('kpi-schp2', latest.hSchpDemandKw);
+      var chlSub = document.getElementById('kpi-chl-sub');
+      if(chlSub && latest.activeChiller) chlSub.textContent = 'เครื่องที่วิ่งอยู่: ' + latest.activeChiller;
+
+      window.__latestPowerData = latest;
+      var dateStr = latest.date ? String(latest.date).slice(0, 10) : '';
+      syncStatus.textContent = '✅ sync ล่าสุด: ' + dateStr + ' ' + (latest.time||'');
+    } catch(err){
+      syncStatus.textContent = '❌ sync ล้มเหลว: ' + err.message;
+    } finally {
+      if(syncBtn) syncBtn.disabled = false;
+    }
+  }
+  if(syncBtn) syncBtn.addEventListener('click', syncNow);
+  syncNow();
+})();
+</script>
+
+<script>
+/* ===== Monthly Report — live sync จาก ?action=history ===== */
+(function(){
+  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
+  var statusEl = document.getElementById('monthly-sync-status');
+  var monthLabelTH = {'01':'ม.ค.','02':'ก.พ.','03':'มี.ค.','04':'เม.ย.','05':'พ.ค.','06':'มิ.ย.','07':'ก.ค.','08':'ส.ค.','09':'ก.ย.','10':'ต.ค.','11':'พ.ย.','12':'ธ.ค.'};
+
+  function fmtNum(v, digits){
+    if(v === null || v === undefined) return 'N/A';
+    return v.toLocaleString('en-US', {minimumFractionDigits:digits||0, maximumFractionDigits:digits||0});
+  }
+
+  async function loadMonthly(){
+    statusEl.textContent = 'กำลังดึงข้อมูล...';
+    try {
+      var end = new Date();
+      var start = new Date();
+      start.setMonth(start.getMonth() - 2);
+      start.setDate(1);
+      var toStr = function(d){ return d.toISOString().slice(0,10); };
+
+      var res = await fetch(API_URL + '?action=history&start=' + toStr(start) + '&end=' + toStr(end));
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var rows = await res.json();
+      if(!Array.isArray(rows) || rows.length === 0){
+        statusEl.textContent = '⚠️ ไม่พบข้อมูลในช่วงนี้';
+        return;
+      }
+
+      var months = {};
+      rows.forEach(function(r){
+        if(!r.date) return;
+        var mk = String(r.date).slice(0,7);
+        (months[mk] = months[mk] || []).push(r);
+      });
+      var monthKeys = Object.keys(months).sort();
+
+      var monthData = monthKeys.map(function(mk){
+        var list = months[mk];
+        var sumKwh = 0, sumTr = 0, hasKwh = false, hasTr = false;
+        list.forEach(function(r){
+          if(typeof r.totalKw === 'number'){ sumKwh += r.totalKw; hasKwh = true; }
+          if(typeof r.chillerCapacityTr === 'number'){ sumTr += r.chillerCapacityTr; hasTr = true; }
+        });
+        return {
+          mk: mk,
+          label: (monthLabelTH[mk.slice(5,7)]||mk.slice(5,7)) + '-' + mk.slice(2,4),
+          totalKwh: hasKwh ? sumKwh : null,
+          totalTr: hasTr ? sumTr : null,
+          rowCount: list.length
+        };
+      });
+
+      var thead = document.getElementById('monthly-thead');
+      var tbody = document.getElementById('monthly-tbody');
+      var mthClasses = ['mth1','mth2','mth3','mth1','mth2','mth3'];
+
+      var headHtml = '<tr><th style="text-align:left; font-family:\'JetBrains Mono\',monospace; font-size:9.5px; color:var(--text-faint); text-transform:uppercase; padding:10px 14px;">Monthly</th>';
+      monthData.forEach(function(m, i){
+        headHtml += '<th class="' + mthClasses[i%3] + '" style="padding:10px 14px; font-family:\'Space Grotesk\',sans-serif; font-weight:700; font-size:12px; border-radius:8px 8px 0 0;">' + m.label + (i===monthData.length-1?' (partial)':'') + '</th>';
+      });
+      headHtml += '</tr>';
+      thead.innerHTML = headHtml;
+
+      function deltaHtml(cur, prev){
+        if(cur === null || prev === null || !prev) return '';
+        var diff = cur - prev;
+        var pct = (diff/prev*100);
+        var cls = diff > 0 ? 'up' : (diff < 0 ? 'down' : 'flat');
+        var arrow = diff > 0 ? '▲' : (diff < 0 ? '▼' : '—');
+        return '<span class="delta ' + cls + '">' + arrow + ' ' + Math.abs(pct).toFixed(1) + '%</span>';
+      }
+      function metricRow(label, note, values, digits){
+        var cells = '';
+        var prev = null;
+        values.forEach(function(v, i){
+          var cls = mthClasses[i%3];
+          var valTxt = v === null ? '<div class="cell-val na">N/A</div>' : '<div class="cell-val">' + fmtNum(v, digits) + '</div>';
+          cells += '<td class="' + cls + '" style="padding:10px 14px; text-align:center; border-bottom:1px solid rgba(255,255,255,0.05);">' + valTxt + deltaHtml(v, prev) + '</td>';
+          prev = v;
+        });
+        var noteHtml = note ? '<span class="metric-note">' + note + '</span>' : '';
+        return '<tr><td class="metric-name">' + label + noteHtml + '</td>' + cells + '</tr>';
+      }
+
+      var bodyHtml = '';
+      bodyHtml += metricRow('Total (kWh)', '', monthData.map(function(m){ return m.totalKwh; }), 0);
+      bodyHtml += metricRow('Total (TR)', 'SUM ตรงจาก Sum_CAL_Chiller Capacity(TR)', monthData.map(function(m){ return m.totalTr; }), 0);
+      bodyHtml += metricRow('Avg Chiller Plant Efficiency (kW/TRp)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
+      bodyHtml += metricRow('Total (THB)', 'ยังไม่มีอัตราค่าไฟ', monthData.map(function(){ return null; }));
+      tbody.innerHTML = bodyHtml;
+
+      var latest = monthData[monthData.length - 1];
+      document.getElementById('monthly-kpi-kwh-label').textContent = 'Total kWh (' + latest.label + ')';
+      document.getElementById('monthly-kpi-kwh').textContent = latest.totalKwh !== null ? fmtNum(latest.totalKwh,0) : '—';
+      document.getElementById('monthly-kpi-tr').textContent = latest.totalTr !== null ? fmtNum(latest.totalTr,0) : '—';
+
+      statusEl.textContent = '✅ sync ล่าสุด · ดึง ' + rows.length + ' แถว จาก ' + monthKeys.length + ' เดือน (' + toStr(start) + ' ถึง ' + toStr(end) + ')';
+    } catch(err){
+      statusEl.textContent = '❌ sync ล้มเหลว: ' + err.message;
+    }
+  }
+  loadMonthly();
+})();
 </script>
 
 <script>
