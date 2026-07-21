@@ -3,25 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BITEC Dashboard — Mockup v13</title>
+<title>BITEC Chiller &amp; AHU Dashboard — Mockup v10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --p1-1:#22d3ee; --p1-2:#0e7490;
-    --p2-1:#a855f7; --p2-2:#6d28d9;
+    --p1-1:#22d3ee; --p1-2:#0e7490; --p2-1:#a855f7; --p2-2:#6d28d9;
     --text:#f3f6fb; --text-muted:#93a0b8; --text-faint:#59657f;
     --glass:rgba(255,255,255,0.035); --glass-border:rgba(255,255,255,0.10);
-    --green:#34d399; --amber:#f2b84f; --slate:#6b7690; --cyan:#38bdf8; --red:#f2867a;
+    --green:#34d399; --amber:#f2b84f; --cyan:#38bdf8; --red:#f2867a;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
-    min-height:100vh;
+    min-height:100vh; padding:18px;
     background: radial-gradient(circle at 6% 4%, rgba(34,211,238,0.13), transparent 38%),
       radial-gradient(circle at 96% 10%, rgba(168,85,247,0.12), transparent 40%),
       linear-gradient(180deg,#05070d 0%,#030408 100%);
     background-attachment:fixed;
-    color:var(--text); font-family:'Inter',sans-serif; font-size:13px; padding:18px;
+    color:var(--text); font-family:'Inter',sans-serif; font-size:13px;
   }
   .glass{ background:var(--glass); border:1px solid var(--glass-border); border-radius:18px;
     backdrop-filter:blur(26px) saturate(150%); -webkit-backdrop-filter:blur(26px) saturate(150%);
@@ -32,7 +31,7 @@
   .topbar{ padding:16px 22px; margin-bottom:14px; }
 
   .app-shell{ display:flex; gap:14px; align-items:flex-start; }
-  .sidebar{ width:210px; flex-shrink:0; display:flex; flex-direction:column; gap:7px; position:sticky; top:18px; }
+  .sidebar{ width:200px; flex-shrink:0; display:flex; flex-direction:column; gap:7px; position:sticky; top:18px; }
   .side-tab{ padding:12px 16px; border-radius:12px; cursor:pointer;
     font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12.5px;
     color:var(--text-muted); border:1px solid var(--glass-border); background:rgba(255,255,255,0.02); transition:all .18s; }
@@ -40,395 +39,181 @@
   .side-tab.active{ color:#0a0612; background:linear-gradient(120deg,var(--p1-1),var(--p2-1)); border-color:transparent; }
   .side-tab.active .st-sub{ color:rgba(10,6,18,0.65); }
   .content{ flex:1; min-width:0; }
-
   .panel{display:none;}
   .panel.active{display:block;}
-  .canvas-card{ padding:20px 22px; }
+  .block{ padding:20px 22px; margin-bottom:22px; }
   .card-title{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
     display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px; }
-  .tag{ font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--text-faint);
-    padding:4px 12px; border:1px solid var(--glass-border); border-radius:20px; }
   .mockbadge{ font-size:8.5px; letter-spacing:0.6px; text-transform:uppercase; color:#f2b84f;
     background:rgba(242,184,79,0.12); border:1px solid rgba(242,184,79,0.3); padding:2px 8px; border-radius:20px; }
 
-  .wing-label{ font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:1.4px; color:var(--text-faint); margin-bottom:10px; }
-  .hall-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(115px, 1fr)); gap:10px; grid-auto-flow:dense; }
-  .hallcard{ border-radius:10px; border:1px solid; background:rgba(0,0,0,0.22); display:flex; flex-direction:column; overflow:hidden; }
-  .hallcard.wide{ grid-column:span 2; }
-  .hallcard.p1{ border-color:rgba(56,189,248,0.35); }
-  .hallcard.p2{ border-color:rgba(242,184,79,0.35); }
-  .hc-head{ display:flex; justify-content:space-between; align-items:center; padding:8px 10px; }
-  .hallcard.p1 .hc-head{ background:rgba(56,189,248,0.08); }
-  .hallcard.p2 .hc-head{ background:rgba(242,184,79,0.1); }
-  .hc-name{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .hc-count{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint); flex-shrink:0; margin-left:6px; }
-  .hc-body{ padding:6px; display:flex; flex-direction:column; gap:4px; min-height:20px; }
-  .hc-body.wide{ display:grid; grid-template-columns:1fr 1fr; gap:4px; }
-  .ahu-tag{ font-family:'JetBrains Mono',monospace; font-size:8px; padding:4px 6px; border-radius:5px; border:1px solid; color:#e7ecf5; background:rgba(0,0,0,0.3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .ahu-tag.p1{ border-color:rgba(56,189,248,0.45); }
-  .ahu-tag.p2{ border-color:rgba(242,184,79,0.45); }
-  .hc-foot{ padding:6px 10px 8px; }
-  .hc-bar{ display:block; height:2px; width:36px; border-radius:2px; }
-  .hc-bar.p1{ background:linear-gradient(90deg,#38bdf8,#0e7490); }
-  .hc-bar.p2{ background:linear-gradient(90deg,#f2b84f,#c47f1c); }
-
-  .kpi-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px; margin-bottom:16px; }
-  .kpi-card{ padding:12px 14px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-left:3px solid; }
-  .kpi-card.cyan{ border-left-color:#38bdf8; }
-  .kpi-card.purple{ border-left-color:#a855f7; }
-  .kpi-card.amber{ border-left-color:#f2b84f; }
-  .kpi-card.green{ border-left-color:#34d399; }
+  .kpi-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:10px; }
+  .kpi-card{ padding:13px 15px; border-radius:12px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-left:3px solid; }
+  .kpi-card.green{ border-left-color:var(--green); }
+  .kpi-card.cyan{ border-left-color:var(--cyan); }
+  .kpi-card.pending{ border-left-color:var(--text-faint); border-left-style:dashed; opacity:0.6; }
   .kpi-label{ font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-faint); }
-  .kpi-value{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; color:#fff; margin-top:3px; }
+  .kpi-value{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:#fff; margin-top:4px; }
+  .kpi-value.dim{ font-size:14px; color:var(--text-faint); font-weight:500; }
   .kpi-unit{ font-size:10px; color:var(--text-faint); font-weight:500; margin-left:4px; }
+  .kpi-sub{ font-size:9px; color:var(--text-faint); margin-top:3px; }
 
+  .flow-wrap{ overflow-x:auto; padding:6px 2px 14px; }
+  svg#svg1{ width:100%; height:auto; display:block; min-width:1700px; }
+
+  .ahu-shell{ display:flex; gap:14px; align-items:flex-start; }
+  .ahu-side{ width:220px; flex-shrink:0; display:flex; flex-direction:column; gap:14px; }
+  .side-card{ padding:16px; }
+  .side-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11.5px; margin-bottom:12px; color:#fff; }
+  .legend-row{ display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text-muted); margin-bottom:8px; }
+  .legend-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .donut-wrap{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .donut-center{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; fill:#fff; }
+  .donut-sub{ font-family:'JetBrains Mono',monospace; font-size:8px; fill:var(--text-faint); }
+  .ahu-main{ flex:1; min-width:0; }
   .filter-row{ display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
-  .filter-row .f-label{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint); }
+  .f-label{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint); }
   .f-btn{ padding:6px 14px; border-radius:8px; font-size:10.5px; font-weight:600; font-family:'Space Grotesk',sans-serif;
     color:var(--text-muted); border:1px solid var(--glass-border); cursor:pointer; background:rgba(255,255,255,0.02); }
   .f-btn.active{ color:#0a0612; background:linear-gradient(120deg,var(--p1-1),var(--p2-1)); border-color:transparent; }
-
-  .monthly-table{ width:100%; border-collapse:collapse; font-size:11.5px; }
-  .monthly-table th, .monthly-table td{ padding:10px 14px; text-align:center; }
-  .metric-col{ text-align:left !important; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--text-faint); text-transform:uppercase; }
-  .metric-name{ text-align:left; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:11px; color:var(--text); border-bottom:1px solid rgba(255,255,255,0.05); }
-  .metric-note{ display:block; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-faint); font-weight:400; margin-top:1px; }
-  .monthly-table th.mth{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12px; border-radius:8px 8px 0 0; }
-  .monthly-table td.mth{ border-bottom:1px solid rgba(255,255,255,0.05); }
-  th.m1, td.m1{ background:rgba(242,134,122,0.1); color:#f2867a; }
-  th.m2, td.m2{ background:rgba(56,189,248,0.1); color:#38bdf8; }
-  th.m3, td.m3{ background:rgba(168,85,247,0.12); color:#c9a6f7; }
-  .cell-val{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12.5px; color:var(--text); }
-  .cell-val.na{ color:var(--text-faint); font-weight:500; }
-  .delta{ display:block; font-family:'JetBrains Mono',monospace; font-size:8.5px; margin-top:2px; }
-  .delta.up{ color:#f87171; }
-  .delta.down{ color:#34d399; }
-  .delta.flat{ color:var(--text-faint); }
-
-  /* ===== Flow diagram v3 — เครื่องจริงไม่แบ่งเฟส (ยกเว้น SCHP) + เส้น return แบบ Mockup 2 ===== */
-  .flow-wrap{ overflow-x:auto; padding:6px 2px 14px; }
-  .flow-diagram{ position:relative; display:flex; align-items:stretch; gap:26px; min-width:1660px; padding:8px 40px 8px 4px; }
-  .flow-overlay{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:visible; }
-
-  .flow-node{ position:relative; z-index:1; border-radius:10px; border:1px solid; padding:9px 12px; }
-  .fn-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10.5px; color:#fff; line-height:1.25; }
-  .fn-sub{ display:block; font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text-faint); margin-top:3px; }
-  .fn-kw{ display:block; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--text-muted); margin-top:3px; }
-  .flow-node.amber{ background:rgba(242,184,79,0.09); border-color:rgba(242,184,79,0.4); }
-  .flow-node.amber .fn-kw{ color:#f2b84f; }
-  .flow-node.cyan-outline{ background:rgba(56,189,248,0.08); border-color:rgba(56,189,248,0.4); }
-  .flow-node.cyan-outline .fn-kw{ color:#38bdf8; }
-
-  .equip-card{ flex-shrink:0; width:240px; border-radius:12px; padding:10px 12px; position:relative; z-index:1; }
-  .equip-card.green{ border:1px solid rgba(52,211,153,0.4); background:rgba(52,211,153,0.07); }
-  .equip-card.amber{ border:1px solid rgba(242,184,79,0.4); background:rgba(242,184,79,0.08); }
-  .equip-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; gap:6px; }
-  .equip-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11px; color:#fff; }
-  .equip-count{ display:block; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-faint); margin-top:2px; }
-  .equip-kw{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:14px; color:#38bdf8; white-space:nowrap; }
-  .equip-card.green .equip-kw{ color:#34d399; }
-  .equip-card.amber .equip-kw{ color:#f2b84f; }
-  .mini-grid{ display:grid; gap:3px; }
-  .sbox{ border:1px solid rgba(56,189,248,0.32); border-radius:5px; padding:3px 2px; text-align:center;
-    background:rgba(0,0,0,0.25); display:flex; flex-direction:column; gap:0; }
-  .sbox.dim{ border-color:rgba(255,255,255,0.16); opacity:0.75; }
-  .sbox.over{ border-color:rgba(248,113,113,0.65); background:rgba(248,113,113,0.12); }
-  .sb-id{ font-family:'JetBrains Mono',monospace; font-size:5.6px; color:#e7ecf5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
-  .sb-kw{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:8px; color:#38bdf8; }
-  .sbox.dim .sb-kw{ color:var(--text-faint); font-weight:500; }
-  .sbox.over .sb-kw{ color:#f87171; }
-
-  .flow-rail{ flex-shrink:0; width:240px; display:flex; flex-direction:column; justify-content:space-between; gap:14px; }
-  .flow-rail .rail-group{ display:flex; flex-direction:column; gap:10px; }
-
-  .flow-col-chiller{ flex-shrink:0; width:300px; display:flex; flex-direction:column; justify-content:center; gap:12px; }
-  .chiller-plant-card{ border-radius:14px; border:1px solid rgba(56,189,248,0.45); background:rgba(56,189,248,0.05); padding:12px 14px; position:relative; z-index:1; }
-  .cp-port{ font-family:'JetBrains Mono',monospace; font-size:7.5px; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-faint); text-align:center; }
-  .cp-port.top{ margin-bottom:8px; color:#34d399; }
-  .cp-port.bottom{ margin-top:9px; color:#38bdf8; }
-  .cp-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
-  .cp-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12px; color:#fff; }
-  .cp-sub{ display:block; font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-faint); margin-top:2px; }
-  .cp-kw{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:16px; color:#38bdf8; }
-
-  .flow-phases{ flex:1; min-width:0; display:flex; flex-direction:column; justify-content:space-around; gap:22px; }
-  .phase-row{ display:flex; align-items:center; gap:18px; }
-  .phase-box{ flex-shrink:0; width:180px; align-self:stretch; border-radius:12px; border:1px solid rgba(56,189,248,0.45); background:rgba(56,189,248,0.07); padding:10px 11px; }
-  .phase-box .fn-title{ font-size:11px; text-align:center; display:block; }
-  .phase-box .fn-sub{ text-align:center; }
-  .phase-box .fn-kw{ text-align:center; font-size:12px; margin:4px 0 8px; }
-  .zone-list{ flex:1; min-width:0; display:flex; flex-direction:column; gap:7px; }
-  .zone-node{ width:200px; background:rgba(255,255,255,0.03); border-color:var(--glass-border); }
-  .zone-node.pending{ opacity:0.55; border-style:dashed; }
-  .zone-chain-row{ display:flex; align-items:center; gap:16px; }
-  .zone-node.chain{ width:172px; }
-
-  @media (max-width:900px){ .flow-wrap{ overflow-x:auto; } }
+  .wing-label{ font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:1.4px; color:var(--text-faint); margin:18px 0 10px; }
+  .hall-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:12px; }
+  .hall-card{ border-radius:12px; background:rgba(255,255,255,0.025); border:1px solid var(--glass-border); overflow:hidden; }
+  .hall-card.p1{ border-top:3px solid var(--p1-1); }
+  .hall-card.p2{ border-top:3px solid var(--p2-1); }
+  .hc-head{ padding:12px 14px 8px; display:flex; justify-content:space-between; align-items:baseline; }
+  .hc-name{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; color:#fff; }
+  .hc-phase{ font-family:'JetBrains Mono',monospace; font-size:9px; padding:2px 7px; border-radius:20px; }
+  .hall-card.p1 .hc-phase{ color:var(--p1-1); background:rgba(34,211,238,0.12); }
+  .hall-card.p2 .hc-phase{ color:var(--p2-1); background:rgba(168,85,247,0.12); }
+  .hc-count{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint); padding:0 14px 10px; }
+  .hc-tags{ padding:0 10px 12px; display:flex; flex-wrap:wrap; gap:5px; }
+  .ahu-tag{ font-family:'JetBrains Mono',monospace; font-size:8px; padding:4px 6px; border-radius:5px; border:1px solid; color:#e7ecf5; background:rgba(0,0,0,0.3); }
+  .hall-card.p1 .ahu-tag{ border-color:rgba(34,211,238,0.4); }
+  .hall-card.p2 .ahu-tag{ border-color:rgba(168,85,247,0.4); }
+  .hc-status{ padding:8px 14px; border-top:1px solid var(--glass-border); font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text-faint); font-style:italic; }
+  .note-line{ font-size:11px; color:var(--text-faint); margin-bottom:14px; line-height:1.6; }
+  .note-line b{ color:#7dd3a8; }
 </style>
-
 </head>
 <body>
 
 <div class="topbar glass">
-  <h1>BITEC Chiller &amp; AHU Dashboard — Mockup v13</h1>
-  <div class="sub">Chiller circuit: เส้น return แบบ Mockup 2 (จางแตะ + เส้นหลักเข้ม) · แบ่งเฟสเฉพาะ SCHP · เครื่องอื่นโชว์รายตัวไม่แบ่งเฟส</div>
+  <h1>BITEC Chiller &amp; AHU Dashboard — Mockup v10</h1>
+  <div class="sub">KPI strip (เฉพาะข้อมูลจริง) + ผังวงจรตาม theme เดียวกับทั้งระบบ + หน้า AHU ปรับปรุงใหม่</div>
 </div>
 
 <div class="app-shell">
   <div class="sidebar">
-    <div class="side-tab active" data-tab="plant">Chiller circuit<span class="st-sub">ผัง flow + เครื่องจริง</span></div>
-    <div class="side-tab" data-tab="ahu">AHU floor plan<span class="st-sub">หน้าบ้าน · 103 หน่วย</span></div>
-    <div class="side-tab" data-tab="report">Monthly report<span class="st-sub">KPI + scorecard รายเดือน</span></div>
+    <div class="side-tab active" data-tab="plant">Chiller circuit<span class="st-sub">ผัง flow + KPI</span></div>
+    <div class="side-tab" data-tab="ahu">AHU floor plan<span class="st-sub">ปรับปรุงใหม่</span></div>
   </div>
 
   <div class="content">
-
     <div class="panel active" id="panel-plant">
-      <div class="canvas-card glass">
+
+      <div class="block glass">
         <div class="card-title">
-          <span>Chiller circuit — เครื่องจริง 65 หน่วย + เส้น return แบบใหม่</span>
-          <span class="mockbadge">AHU running ยังเป็น mock · CDP/PCHP รอ mapping log kW</span>
+          <span>Chiller Plant Overview</span>
+          <span class="mockbadge">ใส่เฉพาะค่าที่มีข้อมูลจริง</span>
         </div>
-        <div class="kpi-row"><div class="kpi-card cyan">
-      <div class="kpi-label">Plant demand รวม</div>
-      <div class="kpi-value"><span id="kpi-plant-demand">634.9</span><span class="kpi-unit">kW</span></div>
-    </div><div class="kpi-card purple">
-      <div class="kpi-label">Capacity รวม</div>
-      <div class="kpi-value"><span id="kpi-capacity">764.1</span><span class="kpi-unit">TR</span></div>
-    </div><div class="kpi-card amber">
-      <div class="kpi-label">Plant efficiency</div>
-      <div class="kpi-value"><span id="kpi-efficiency">0.8</span><span class="kpi-unit">kW/TR</span></div>
-    </div><div class="kpi-card green">
-      <div class="kpi-label">Thermal efficiency</div>
-      <div class="kpi-value"><span id="kpi-thermal-eff">—</span><span class="kpi-unit">%</span></div>
-    </div></div>
-
-        <div class="filter-row" style="justify-content:space-between;">
-          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint);">
-            <span class="f-label">Threshold (kW):</span>
-            <span>CT</span><input type="number" class="eq-th" data-type="CT" value="25" step="5" style="width:52px;padding:5px 6px;border-radius:6px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);color:var(--text);font-family:inherit;">
-            <span>Chiller</span><input type="number" class="eq-th" data-type="CHL" value="600" step="5" style="width:52px;padding:5px 6px;border-radius:6px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);color:var(--text);font-family:inherit;">
-            <span>SCHP</span><input type="number" class="eq-th" data-type="SCHP" value="60" step="5" style="width:52px;padding:5px 6px;border-radius:6px;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);color:var(--text);font-family:inherit;">
+        <div class="kpi-row">
+          <div class="kpi-card green">
+            <div class="kpi-label">Cooling Tower รวม</div>
+            <div class="kpi-value">114.2<span class="kpi-unit">kW</span></div>
+            <div class="kpi-sub">11 หน่วย</div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint);">
-            <span id="sync-status">ยังไม่ได้ sync</span>
-            <button class="f-btn" id="sync-btn" type="button">🔄 Sync now</button>
+          <div class="kpi-card cyan">
+            <div class="kpi-label">Main Chiller (เดินอยู่)</div>
+            <div class="kpi-value">540.7<span class="kpi-unit">kW</span></div>
+            <div class="kpi-sub">1 / 12 หน่วยกำลังวิ่ง</div>
           </div>
-        </div>
-        <div class="overview-alert" id="overview-alert" style="margin-bottom:16px; padding:12px 16px; border-radius:12px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); display:none;">
-          <b style="color:#f87171; font-family:'Space Grotesk',sans-serif; font-size:12px;">Alert</b><span class="txt" id="overview-alert-text" style="font-size:11.5px; color:var(--text-muted); margin-left:8px;"></span>
-        </div>
-
-        <div class="flow-wrap">
-        <div class="flow-diagram" id="flow-diagram">
-          <svg class="flow-overlay" id="flow-overlay"></svg>
-
-          <div class="flow-rail">
-            <div class="rail-group">
-              <div class="equip-card green" id="fn-ct">
-                <div class="equip-head"><div><span class="equip-title">Cooling Tower</span><span class="equip-count">11 หน่วย</span></div><span class="equip-kw" id="total-ct">114.2</span></div>
-                <div class="mini-grid" style="grid-template-columns:repeat(4,1fr);"><div class="sbox" data-type="CT" data-kw="27.5"><span class="sb-id">P1-CT-01</span><span class="sb-kw">27.5</span></div><div class="sbox" data-type="CT" data-kw="10.3"><span class="sb-id">P1-CT-02</span><span class="sb-kw">10.3</span></div><div class="sbox" data-type="CT" data-kw="10.1"><span class="sb-id">P1-CT-03</span><span class="sb-kw">10.1</span></div><div class="sbox" data-type="CT" data-kw="5.6"><span class="sb-id">P1-CT-04</span><span class="sb-kw">5.6</span></div><div class="sbox" data-type="CT" data-kw="6.3"><span class="sb-id">H-CT-01</span><span class="sb-kw">6.3</span></div><div class="sbox" data-type="CT" data-kw="10.3"><span class="sb-id">H-CT-02</span><span class="sb-kw">10.3</span></div><div class="sbox" data-type="CT" data-kw="10.2"><span class="sb-id">H-CT-03</span><span class="sb-kw">10.2</span></div><div class="sbox" data-type="CT" data-kw="6.5"><span class="sb-id">H-CT-04</span><span class="sb-kw">6.5</span></div><div class="sbox" data-type="CT" data-kw="9.2"><span class="sb-id">H-CT-05</span><span class="sb-kw">9.2</span></div><div class="sbox" data-type="CT" data-kw="9.1"><span class="sb-id">H-CT-06</span><span class="sb-kw">9.1</span></div><div class="sbox" data-type="CT" data-kw="9.1"><span class="sb-id">H-CT-07</span><span class="sb-kw">9.1</span></div></div>
-              </div>
-              <div class="equip-card green" id="fn-cdp">
-                <div class="equip-head"><div><span class="equip-title">CDP Pump</span><span class="equip-count">14 หน่วย · รอ mapping log</span></div><span class="equip-kw" id="total-cdp">—</span></div>
-                <div class="mini-grid" style="grid-template-columns:repeat(4,1fr);"><div class="sbox dim"><span class="sb-id">P1-CDP-01</span></div><div class="sbox dim"><span class="sb-id">P1-CDP-02</span></div><div class="sbox dim"><span class="sb-id">P1-CDP-03</span></div><div class="sbox dim"><span class="sb-id">P1-CDP-04</span></div><div class="sbox dim"><span class="sb-id">H-CDP-01</span></div><div class="sbox dim"><span class="sb-id">H-CDP-02</span></div><div class="sbox dim"><span class="sb-id">H-CDP-03</span></div><div class="sbox dim"><span class="sb-id">H-CDP-04</span></div><div class="sbox dim"><span class="sb-id">H-CDP-05</span></div><div class="sbox dim"><span class="sb-id">H-CDP-06</span></div><div class="sbox dim"><span class="sb-id">H-CDP-07</span></div><div class="sbox dim"><span class="sb-id">H-CDP-08</span></div><div class="sbox dim"><span class="sb-id">RFUP-01</span></div><div class="sbox dim"><span class="sb-id">RFUP-02</span></div></div>
-              </div>
-            </div>
-            <div class="rail-group">
-              <div class="equip-card amber" id="fn-pchp">
-                <div class="equip-head"><div><span class="equip-title">PCHP</span><span class="equip-count">12 หน่วย · รอ mapping log</span></div><span class="equip-kw" id="total-pchp">—</span></div>
-                <div class="mini-grid" style="grid-template-columns:repeat(4,1fr);"><div class="sbox dim"><span class="sb-id">P1-PCHP-01</span></div><div class="sbox dim"><span class="sb-id">P1-PCHP-02</span></div><div class="sbox dim"><span class="sb-id">P1-PCHP-03</span></div><div class="sbox dim"><span class="sb-id">P1-PCHP-04</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-01</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-02</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-03</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-04</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-05</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-06</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-07</span></div><div class="sbox dim"><span class="sb-id">H-PCHP-08</span></div></div>
-              </div>
-              <div class="flow-node amber" id="fn-return"><span class="fn-title">CH Return Header</span><span class="fn-sub">pass-through · ไม่มีมิเตอร์</span></div>
-            </div>
+          <div class="kpi-card cyan">
+            <div class="kpi-label">SCHP Phase I รวม</div>
+            <div class="kpi-value">261.0<span class="kpi-unit">kW</span></div>
+            <div class="kpi-sub">7 หน่วย</div>
           </div>
-
-          <div class="flow-col-chiller">
-            <div class="chiller-plant-card" id="fn-chiller">
-              <div class="cp-port top">↑ Condenser side (CDP → CT)</div>
-              <div class="cp-head"><div><span class="cp-title">Chiller Plant</span><span class="cp-sub">12 หน่วย · โชว์เฉพาะที่วิ่งจริง</span></div><span class="cp-kw" id="total-chl">540.7</span></div>
-              <div class="mini-grid" style="grid-template-columns:repeat(4,1fr);"><div class="sbox" data-type="CHL" data-kw="477.5"><span class="sb-id">P1-CH-01</span><span class="sb-kw">477.5</span></div><div class="sbox" data-type="CHL" data-kw="540.7"><span class="sb-id">P1-CH-02</span><span class="sb-kw">540.7</span></div><div class="sbox" data-type="CHL" data-kw="436"><span class="sb-id">P1-CH-03</span><span class="sb-kw">436</span></div><div class="sbox" data-type="CHL" data-kw="430.3"><span class="sb-id">P1-CH-04</span><span class="sb-kw">430.3</span></div><div class="sbox" data-type="CHL" data-kw="517.4"><span class="sb-id">H1-CH-01</span><span class="sb-kw">517.4</span></div><div class="sbox" data-type="CHL" data-kw="400"><span class="sb-id">H1-CH-02</span><span class="sb-kw">400</span></div><div class="sbox" data-type="CHL" data-kw="541.4"><span class="sb-id">H1-CH-03</span><span class="sb-kw">541.4</span></div><div class="sbox" data-type="CHL" data-kw="371.8"><span class="sb-id">H1-CH-04</span><span class="sb-kw">371.8</span></div><div class="sbox" data-type="CHL" data-kw="446.1"><span class="sb-id">H1-CH-05</span><span class="sb-kw">446.1</span></div><div class="sbox" data-type="CHL" data-kw="476.6"><span class="sb-id">H1-CH-06</span><span class="sb-kw">476.6</span></div><div class="sbox" data-type="CHL" data-kw="209.7"><span class="sb-id">H1-CH-07</span><span class="sb-kw">209.7</span></div><div class="sbox" data-type="CHL" data-kw="206.1"><span class="sb-id">H1-CH-08</span><span class="sb-kw">206.1</span></div></div>
-              <div class="cp-port bottom">↓ Evaporator side (→ Supply Header)</div>
-            </div>
-            <div class="flow-node cyan-outline" id="fn-supply"><span class="fn-title">CH Supply Header</span><span class="fn-sub">pass-through · ไม่มีมิเตอร์</span></div>
+          <div class="kpi-card cyan">
+            <div class="kpi-label">SCHP Phase II รวม</div>
+            <div class="kpi-value">221.8<span class="kpi-unit">kW</span></div>
+            <div class="kpi-sub">9 หน่วย</div>
           </div>
-
-          <div class="flow-phases">
-            <div class="phase-row" id="row-phase2">
-              <div class="phase-box" id="fn-schp2">
-                <span class="fn-title">SCHP Phase II</span><span class="fn-sub">Secondary Pump · 9 หน่วย (H-SCHP)</span><span class="fn-kw" id="total-schp2">221.8 kW</span>
-                <div class="mini-grid" style="grid-template-columns:repeat(3,1fr);"><div class="sbox" data-type="SCHP" data-kw="26.8"><span class="sb-id">H-SCHP-01</span><span class="sb-kw">26.8</span></div><div class="sbox" data-type="SCHP" data-kw="14.2"><span class="sb-id">H-SCHP-02</span><span class="sb-kw">14.2</span></div><div class="sbox" data-type="SCHP" data-kw="32.1"><span class="sb-id">H-SCHP-03</span><span class="sb-kw">32.1</span></div><div class="sbox" data-type="SCHP" data-kw="15.2"><span class="sb-id">H-SCHP-04</span><span class="sb-kw">15.2</span></div><div class="sbox" data-type="SCHP" data-kw="19.8"><span class="sb-id">H-SCHP-05</span><span class="sb-kw">19.8</span></div><div class="sbox" data-type="SCHP" data-kw="19.5"><span class="sb-id">H-SCHP-06</span><span class="sb-kw">19.5</span></div><div class="sbox" data-type="SCHP" data-kw="28.7"><span class="sb-id">H-SCHP-07</span><span class="sb-kw">28.7</span></div><div class="sbox" data-type="SCHP" data-kw="32.8"><span class="sb-id">H-SCHP-08</span><span class="sb-kw">32.8</span></div><div class="sbox" data-type="SCHP" data-kw="32.7"><span class="sb-id">H-SCHP-09</span><span class="sb-kw">32.7</span></div></div>
-              </div>
-              <div class="zone-list">
-                <div class="flow-node zone-node pending" id="zn-welcome"><span class="fn-title">Welcome Hall</span><span class="fn-sub">ยังไม่มีข้อมูล AHU ในชีต — รอ mapping</span></div>
-                <div class="flow-node zone-node" id="zn-cosmos"><span class="fn-title">COSMOS Convention</span><span class="fn-sub">2/7 AHU running</span></div>
-                <div class="flow-node zone-node" id="zn-eh98100"><span class="fn-title">EH98-100 Exhibition</span><span class="fn-sub">11/24 AHU running</span></div>
-                <div class="flow-node zone-node" id="zn-bhiraj"><span class="fn-title">BHIRAJBURI Convention</span><span class="fn-sub">4/6 AHU running</span></div>
-              </div>
-            </div>
-            <div class="phase-row" id="row-phase1">
-              <div class="phase-box" id="fn-schp1">
-                <span class="fn-title">SCHP Phase I</span><span class="fn-sub">Secondary Pump · 7 หน่วย (SCHP)</span><span class="fn-kw" id="total-schp1">261.0 kW</span>
-                <div class="mini-grid" style="grid-template-columns:repeat(3,1fr);"><div class="sbox" data-type="SCHP" data-kw="58.8"><span class="sb-id">SCHP-01</span><span class="sb-kw">58.8</span></div><div class="sbox" data-type="SCHP" data-kw="55"><span class="sb-id">SCHP-02</span><span class="sb-kw">55</span></div><div class="sbox" data-type="SCHP" data-kw="40.4"><span class="sb-id">SCHP-03</span><span class="sb-kw">40.4</span></div><div class="sbox" data-type="SCHP" data-kw="24.5"><span class="sb-id">SCHP-04</span><span class="sb-kw">24.5</span></div><div class="sbox" data-type="SCHP" data-kw="15.6"><span class="sb-id">SCHP-05</span><span class="sb-kw">15.6</span></div><div class="sbox" data-type="SCHP" data-kw="41.2"><span class="sb-id">SCHP-06</span><span class="sb-kw">41.2</span></div><div class="sbox" data-type="SCHP" data-kw="25.5"><span class="sb-id">SCHP-07</span><span class="sb-kw">25.5</span></div></div>
-              </div>
-              <div class="zone-list">
-                <div class="flow-node zone-node pending" id="zn-hqf2"><span class="fn-title">HQF2</span><span class="fn-sub">ยังไม่มีข้อมูล AHU ในชีต — รอ mapping</span></div>
-                <div class="flow-node zone-node" id="zn-eh101104"><span class="fn-title">EH101-104</span><span class="fn-sub">6/10 AHU running</span></div>
-                <div class="flow-node zone-node" id="zn-gh201203"><span class="fn-title">GH201-203</span><span class="fn-sub">3/7 AHU running</span></div>
-                <div class="zone-chain-row">
-                  <div class="flow-node zone-node" id="zn-beat" style="width:150px;"><span class="fn-title">BEAT</span><span class="fn-sub">9/30 AHU running</span></div>
-                  <div class="flow-node zone-node chain" id="zn-sama"><span class="fn-title">SAMA Garden</span><span class="fn-sub">5/9 AHU running</span></div>
-                </div>
-                <div class="flow-node zone-node" id="zn-live"><span class="fn-title">LIVE</span><span class="fn-sub">4/10 AHU running</span></div>
-              </div>
-            </div>
+          <div class="kpi-card pending">
+            <div class="kpi-label">Total Capacity</div>
+            <div class="kpi-value dim">รอข้อมูล TR</div>
           </div>
-
-        </div>
-        </div>
-
-        <div class="legend" style="display:flex; gap:14px; margin-top:14px; font-size:10px; color:var(--text-muted); flex-wrap:wrap;">
-          <div class="li" style="display:flex; align-items:center; gap:6px;"><span class="dot" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#34d399"></span> Condenser water loop</div>
-          <div class="li" style="display:flex; align-items:center; gap:6px;"><span class="dot" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#38bdf8"></span> Chilled water supply</div>
-          <div class="li" style="display:flex; align-items:center; gap:6px;"><span class="dot" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#f2b84f"></span> Chilled water return (จางแตะ + เส้นหลักเข้ม)</div>
-          <span class="mockbadge">Phase แบ่งเฉพาะ SCHP (prefix P1-/H-) · AHU Location จะ map จาก AHU_Floor คอลัมน์ C · SCHP phase จาก SCHP คอลัมน์ D</span>
+          <div class="kpi-card pending">
+            <div class="kpi-label">Plant Efficiency</div>
+            <div class="kpi-value dim">รอข้อมูล kW/TR</div>
+          </div>
+          <div class="kpi-card pending">
+            <div class="kpi-label">Chillers Running</div>
+            <div class="kpi-value dim">รอสถานะรายเครื่อง</div>
+          </div>
         </div>
       </div>
+
+      <div class="block glass">
+        <div class="card-title">
+          <span>Chiller circuit — เดินเส้นตาม Flow Arrow Mapping</span>
+          <span class="mockbadge">เพิ่มระยะเส้นในจุดที่เคยแน่นแล้ว</span>
+        </div>
+        <div class="flow-wrap"><svg id="svg1" viewBox="0 0 2720 1260" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      </div>
+
     </div>
 
     <div class="panel" id="panel-ahu">
-      <div class="canvas-card glass">
-        <div class="card-title">
-          <span>AHU floor plan — จัดกลุ่มตาม hall การ์ด</span>
-          <span class="tag">103 AHU ครบทุกตัว</span>
+      <div class="block glass">
+        <div class="note-line">
+          โครงเดิม (KPI แถวบน + hall grid แยก wing) อยู่ครบ เพิ่มการ์ดรายฮอลล์ชัดเจนขึ้น + sidebar legend/quick view (คำนวณจากข้อมูลจริง 66/37) —
+          <b>ไม่ได้ใส่</b> Running/Standby/Alarm รายตัวหรือปุ่มควบคุม เพราะยังไม่มีข้อมูล real-time ต่ออยู่
         </div>
-        <div class="kpi-row"><div class="kpi-card cyan">
-      <div class="kpi-label">AHU ทั้งหมด</div>
-      <div class="kpi-value">103<span class="kpi-unit">หน่วย</span></div>
-    </div><div class="kpi-card purple">
-      <div class="kpi-label">Phase 1</div>
-      <div class="kpi-value">66<span class="kpi-unit">หน่วย</span></div>
-    </div><div class="kpi-card amber">
-      <div class="kpi-label">Phase 2</div>
-      <div class="kpi-value">37<span class="kpi-unit">หน่วย</span></div>
-    </div><div class="kpi-card green">
-      <div class="kpi-label">Hall ทั้งหมด</div>
-      <div class="kpi-value">15<span class="kpi-unit">hall</span></div>
-    </div></div>
-        <div class="filter-row">
-          <span class="f-label">Filter phase:</span>
-          <div class="f-btn active" data-phase="all">ทั้งหมด</div>
-          <div class="f-btn" data-phase="p1">Phase 1</div>
-          <div class="f-btn" data-phase="p2">Phase 2</div>
-        </div>
-        <div class="wing-label">EXHIBITION WING</div>
-<div class="hall-grid"><div class="hallcard p1 wide">
-      <div class="hc-head"><span class="hc-name">SAMA GAR...</span><span class="hc-count">9u</span></div>
-      <div class="hc-body wide"><div class="ahu-tag p1">SMGARDEN-01</div><div class="ahu-tag p1">SMGARDEN-02</div><div class="ahu-tag p1">SMGARDEN-03</div><div class="ahu-tag p1">SMGARDEN-04</div><div class="ahu-tag p1">SMGARDEN-05</div><div class="ahu-tag p1">SMGARDEN-06</div><div class="ahu-tag p1">SMGARDEN-07</div><div class="ahu-tag p1">SMGARDEN-08</div><div class="ahu-tag p1">SMGARDEN-09</div></div>
-      <div class="hc-foot"><span class="hc-bar p1"></span></div>
-    </div><div class="hallcard p1 wide">
-      <div class="hc-head"><span class="hc-name">BEAT</span><span class="hc-count">30u</span></div>
-      <div class="hc-body wide"><div class="ahu-tag p1">BEAT-01</div><div class="ahu-tag p1">BEAT-02</div><div class="ahu-tag p1">BEAT-03</div><div class="ahu-tag p1">BEAT-04</div><div class="ahu-tag p1">BEAT-05</div><div class="ahu-tag p1">BEAT-06</div><div class="ahu-tag p1">BEAT-07</div><div class="ahu-tag p1">BEAT-08</div><div class="ahu-tag p1">BEAT-09</div><div class="ahu-tag p1">BEAT-10</div><div class="ahu-tag p1">BEAT-11</div><div class="ahu-tag p1">BEAT-12</div><div class="ahu-tag p1">BEAT-13</div><div class="ahu-tag p1">BEAT-14</div><div class="ahu-tag p1">BEAT-15</div><div class="ahu-tag p1">BEAT-16</div><div class="ahu-tag p1">BEAT-17</div><div class="ahu-tag p1">BEAT-18</div><div class="ahu-tag p1">BEAT-19</div><div class="ahu-tag p1">BEAT-20</div><div class="ahu-tag p1">BEAT-21</div><div class="ahu-tag p1">BEAT-22</div><div class="ahu-tag p1">BEAT-23</div><div class="ahu-tag p1">BEAT-24</div><div class="ahu-tag p1">BEAT-25</div><div class="ahu-tag p1">BEAT-26</div><div class="ahu-tag p1">BEAT-27</div><div class="ahu-tag p1">BEAT-28</div><div class="ahu-tag p1">BEAT-29</div><div class="ahu-tag p1">BEAT-30</div></div>
-      <div class="hc-foot"><span class="hc-bar p1"></span></div>
-    </div><div class="hallcard p1">
-      <div class="hc-head"><span class="hc-name">EH104</span><span class="hc-count">2u</span></div>
-      <div class="hc-body"><div class="ahu-tag p1">EH104-F</div><div class="ahu-tag p1">EH104-B</div></div>
-      <div class="hc-foot"><span class="hc-bar p1"></span></div>
-    </div><div class="hallcard p1">
-      <div class="hc-head"><span class="hc-name">EH103</span><span class="hc-count">2u</span></div>
-      <div class="hc-body"><div class="ahu-tag p1">EH103-F</div><div class="ahu-tag p1">EH103-B</div></div>
-      <div class="hc-foot"><span class="hc-bar p1"></span></div>
-    </div><div class="hallcard p1">
-      <div class="hc-head"><span class="hc-name">EH102</span><span class="hc-count">2u</span></div>
-      <div class="hc-body"><div class="ahu-tag p1">EH102-F</div><div class="ahu-tag p1">EH102-B</div></div>
-      <div class="hc-foot"><span class="hc-bar p1"></span></div>
-    </div><div class="hallcard p1">
-      <div class="hc-head"><span class="hc-name">EH101</span><span class="hc-count">4u</span></div>
-      <div class="hc-body"><div class="ahu-tag p1">EH101-F</div><div class="ahu-tag p1">EH101-B</div><div class="ahu-tag p1">SEH101-01</div><div class="ahu-tag p1">SEH101-02</div></div>
-      <div class="hc-foot"><span class="hc-bar p1"></span></div>
-    </div><div class="hallcard p2 wide">
-      <div class="hc-head"><span class="hc-name">EH100</span><span class="hc-count">9u</span></div>
-      <div class="hc-body wide"><div class="ahu-tag p2">9-2MAHU-01</div><div class="ahu-tag p2">9-2MAHU-02</div><div class="ahu-tag p2">9-2MAHU-03</div><div class="ahu-tag p2">9-2MAHU-04</div><div class="ahu-tag p2">1-2MAHU-01</div><div class="ahu-tag p2">1-2MAHU-02</div><div class="ahu-tag p2">1-2MAHU-03</div><div class="ahu-tag p2">1-2MAHU-04</div><div class="ahu-tag p2">1-2MAHU-05</div></div>
-      <div class="hc-foot"><span class="hc-bar p2"></span></div>
-    </div><div class="hallcard p2">
-      <div class="hc-head"><span class="hc-name">EH99</span><span class="hc-count">5u</span></div>
-      <div class="hc-body"><div class="ahu-tag p2">2-2MAHU-01</div><div class="ahu-tag p2">2-2MAHU-02</div><div class="ahu-tag p2">2-2MAHU-03</div><div class="ahu-tag p2">2-2MAHU-04</div><div class="ahu-tag p2">2-2MAHU-05</div></div>
-      <div class="hc-foot"><span class="hc-bar p2"></span></div>
-    </div><div class="hallcard p2 wide">
-      <div class="hc-head"><span class="hc-name">EH98</span><span class="hc-count">10u</span></div>
-      <div class="hc-body wide"><div class="ahu-tag p2">2-2MAHU-06</div><div class="ahu-tag p2">3-2MAHU-01</div><div class="ahu-tag p2">3-2MAHU-02</div><div class="ahu-tag p2">3-2MAHU-03</div><div class="ahu-tag p2">3-2MAHU-04</div><div class="ahu-tag p2">3-2MAHU-05</div><div class="ahu-tag p2">4-2MAHU-04</div><div class="ahu-tag p2">4-2MAHU-05</div><div class="ahu-tag p2">4-2MAHU-06</div><div class="ahu-tag p2">4-2MAHU-07</div></div>
-      <div class="hc-foot"><span class="hc-bar p2"></span></div>
-    </div></div>
-<div class="wing-label" style="margin-top:22px;">CONVENTION WING</div>
-<div class="hall-grid conv"><div class="hallcard p1 wide">
-      <div class="hc-head"><span class="hc-name">LIVE</span><span class="hc-count">10u</span></div>
-      <div class="hc-body wide"><div class="ahu-tag p1">BTLIVE-01</div><div class="ahu-tag p1">BTLIVE-02</div><div class="ahu-tag p1">BTLIVE-03</div><div class="ahu-tag p1">BTLIVE-04</div><div class="ahu-tag p1">BTLIVE-05</div><div class="ahu-tag p1">BTLIVE-06</div><div class="ahu-tag p1">BTLIVE-07</div><div class="ahu-tag p1">BTLIVE-08</div><div class="ahu-tag p1">BTLIVE-09</div><div class="ahu-tag p1">BTLIVE-10</div></div>
-      <div class="hc-foot"><span class="hc-bar p1"></span></div>
-    </div><div class="hallcard p1">
-      <div class="hc-head"><span class="hc-name">GH201</span><span class="hc-count">2u</span></div>
-      <div class="hc-body"><div class="ahu-tag p1">GH201-01</div><div class="ahu-tag p1">GH201-02</div></div>
-      <div class="hc-foot"><span class="hc-bar p1"></span></div>
-    </div><div class="hallcard p1">
-      <div class="hc-head"><span class="hc-name">GH202</span><span class="hc-count">2u</span></div>
-      <div class="hc-body"><div class="ahu-tag p1">GH202-01</div><div class="ahu-tag p1">GH202-02</div></div>
-      <div class="hc-foot"><span class="hc-bar p1"></span></div>
-    </div><div class="hallcard p1">
-      <div class="hc-head"><span class="hc-name">GH203</span><span class="hc-count">3u</span></div>
-      <div class="hc-body"><div class="ahu-tag p1">GH203-01</div><div class="ahu-tag p1">GH203-02</div><div class="ahu-tag p1">OAU-203-03</div></div>
-      <div class="hc-foot"><span class="hc-bar p1"></span></div>
-    </div><div class="hallcard p2">
-      <div class="hc-head"><span class="hc-name">BHIRAJ</span><span class="hc-count">6u</span></div>
-      <div class="hc-body"><div class="ahu-tag p2">6-3MAHU-07</div><div class="ahu-tag p2">6-3MAHU-08</div><div class="ahu-tag p2">6-3MAHU-02</div><div class="ahu-tag p2">6-3MAHU-03</div><div class="ahu-tag p2">5-3MAHU-01</div><div class="ahu-tag p2">5-3MAHU-02</div></div>
-      <div class="hc-foot"><span class="hc-bar p2"></span></div>
-    </div><div class="hallcard p2 wide">
-      <div class="hc-head"><span class="hc-name">COSMOS</span><span class="hc-count">7u</span></div>
-      <div class="hc-body wide"><div class="ahu-tag p2">6-GSAHU-01</div><div class="ahu-tag p2">6-GSAHU-02</div><div class="ahu-tag p2">6-GSAHU-03</div><div class="ahu-tag p2">6-GSAHU-04</div><div class="ahu-tag p2">6-GSAHU-05</div><div class="ahu-tag p2">6-GSAHU-06</div><div class="ahu-tag p2">6-GSAHU-07</div></div>
-      <div class="hc-foot"><span class="hc-bar p2"></span></div>
-    </div></div>
-        <div class="legend">
-          <div class="li"><span class="dot" style="background:linear-gradient(120deg,#38bdf8,#0e7490)"></span> Phase 1</div>
-          <div class="li"><span class="dot" style="background:linear-gradient(120deg,#f2b84f,#c47f1c)"></span> Phase 2</div>
-          <span class="mockbadge">hall ที่มีมากกว่า 6 หน่วย ขึ้น 2 คอลัมน์อัตโนมัติ</span>
+        <div class="ahu-shell">
+          <div class="ahu-side">
+            <div class="side-card glass">
+              <div class="side-title">LEGEND</div>
+              <div class="legend-row"><span class="legend-dot" style="background:var(--p1-1)"></span>Phase 1 · 66 หน่วย</div>
+              <div class="legend-row"><span class="legend-dot" style="background:var(--p2-1)"></span>Phase 2 · 37 หน่วย</div>
+            </div>
+            <div class="side-card glass">
+              <div class="side-title">QUICK VIEW</div>
+              <div class="donut-wrap">
+                <svg width="140" height="140" viewBox="0 0 140 140">
+                  <circle cx="70" cy="70" r="54" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="16"/>
+                  <circle cx="70" cy="70" r="54" fill="none" stroke="var(--p1-1)" stroke-width="16"
+                    stroke-dasharray="213.9 339.3" stroke-dashoffset="0" transform="rotate(-90 70 70)" stroke-linecap="round"/>
+                  <circle cx="70" cy="70" r="54" fill="none" stroke="var(--p2-1)" stroke-width="16"
+                    stroke-dasharray="119.7 339.3" stroke-dashoffset="-213.9" transform="rotate(-90 70 70)" stroke-linecap="round"/>
+                  <text x="70" y="66" text-anchor="middle" class="donut-center">103</text>
+                  <text x="70" y="82" text-anchor="middle" class="donut-sub">TOTAL AHU</text>
+                </svg>
+                <div style="font-size:10px; color:var(--text-faint); text-align:center;">66 Phase 1 · 37 Phase 2</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ahu-main">
+            <div class="kpi-row" style="margin-bottom:16px;">
+              <div class="kpi-card cyan"><div class="kpi-label">AHU ทั้งหมด</div><div class="kpi-value">103<span class="kpi-unit">หน่วย</span></div></div>
+              <div class="kpi-card cyan"><div class="kpi-label">Phase 1</div><div class="kpi-value">66<span class="kpi-unit">หน่วย</span></div></div>
+              <div class="kpi-card cyan"><div class="kpi-label">Phase 2</div><div class="kpi-value">37<span class="kpi-unit">หน่วย</span></div></div>
+              <div class="kpi-card cyan"><div class="kpi-label">Hall ทั้งหมด</div><div class="kpi-value">15<span class="kpi-unit">hall</span></div></div>
+            </div>
+            <div class="filter-row">
+              <span class="f-label">Filter:</span>
+              <div class="f-btn active" data-phase="all">ทั้งหมด</div>
+              <div class="f-btn" data-phase="p1">Phase 1</div>
+              <div class="f-btn" data-phase="p2">Phase 2</div>
+            </div>
+            <div class="wing-label">EXHIBITION WING</div>
+            <div class="hall-cards" id="exhibition-wing"></div>
+            <div class="wing-label">CONVENTION WING</div>
+            <div class="hall-cards" id="convention-wing"></div>
+          </div>
         </div>
       </div>
     </div>
-
-    <div class="panel" id="panel-report">
-      <div class="canvas-card glass">
-        <div class="card-title">
-          <span>Monthly report — Chiller plant KPI</span>
-          <span class="tag">ข้อมูลจริงจาก chiller_data (พ.ค.–ก.ค. 69)</span>
-        </div>
-        <div class="kpi-row"><div class="kpi-card cyan">
-      <div class="kpi-label" id="monthly-kpi-kwh-label">Total kWh</div>
-      <div class="kpi-value"><span id="monthly-kpi-kwh">—</span><span class="kpi-unit">kWh</span></div>
-    </div><div class="kpi-card amber">
-      <div class="kpi-label">Avg Efficiency</div>
-      <div class="kpi-value"><span id="monthly-kpi-eff">—</span><span class="kpi-unit">kW/TR</span></div>
-    </div><div class="kpi-card purple">
-      <div class="kpi-label">Total TR</div>
-      <div class="kpi-value"><span id="monthly-kpi-tr">—</span><span class="kpi-unit">TR</span></div>
-    </div><div class="kpi-card green">
-      <div class="kpi-label">kWh / ตร.ม.</div>
-      <div class="kpi-value"><span id="monthly-kpi-kwhm2">—</span><span class="kpi-unit">kWh/m²</span></div>
-    </div></div>
-        <div id="monthly-sync-status" style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint); margin-bottom:10px;">ยังไม่ได้ sync</div>
-        <div class="filter-row">
-          <span class="f-label">แสดงเดือน:</span>
-          <div class="f-btn active" data-range="3m">3 เดือนล่าสุด</div>
-          <div class="f-btn" data-range="1m">เดือนล่าสุด</div>
-          <button class="f-btn" id="export-btn" style="margin-left:auto;">Export CSV</button>
-        </div>
-        <table class="monthly-table">
-  <thead id="monthly-thead"><tr><th class="metric-col">Monthly</th></tr></thead>
-  <tbody id="monthly-tbody"></tbody>
-</table>
-        <div class="legend" style="margin-top:14px;">
-          <span class="mockbadge">Total(kWh)/Total(TR) เป็นค่าประมาณจาก avg reading × 24hr × จำนวนวัน · THB และ Event area ยังไม่มีข้อมูลจริง</span>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -439,342 +224,242 @@ document.querySelectorAll(".side-tab").forEach(function(tab){
     document.querySelectorAll(".panel").forEach(function(p){ p.classList.remove("active"); });
     tab.classList.add("active");
     document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
-    if(tab.dataset.tab === 'plant' && window.__redrawFlowArrows) window.__redrawFlowArrows();
   });
 });
-
 document.querySelectorAll('[data-phase]').forEach(function(btn){
   btn.addEventListener('click', function(){
     document.querySelectorAll('[data-phase]').forEach(function(b){ b.classList.remove('active'); });
     btn.classList.add('active');
     var phase = btn.dataset.phase;
-    document.querySelectorAll('.hallcard').forEach(function(card){
+    document.querySelectorAll('.hall-card').forEach(function(card){
       var show = phase === 'all' || card.classList.contains(phase);
       card.style.display = show ? '' : 'none';
     });
   });
 });
-</script>
 
-<script>
-/* ===== Threshold + over-limit alert ===== */
-(function(){
-  var thresholds = { CHL: 600, CT: 25, SCHP: 60 };
-  document.querySelectorAll('.eq-th').forEach(function(inp){
-    thresholds[inp.dataset.type] = parseFloat(inp.value);
-    inp.addEventListener('input', function(){
-      thresholds[inp.dataset.type] = parseFloat(inp.value) || 0;
-      recompute();
-    });
+var EXHIBITION = [
+  {name:'SAMA GARDEN', phase:1, units:['SMGARDEN-01','SMGARDEN-02','SMGARDEN-03','SMGARDEN-04','SMGARDEN-05','SMGARDEN-06','SMGARDEN-07','SMGARDEN-08','SMGARDEN-09']},
+  {name:'BEAT', phase:1, units:Array.from({length:30},function(_,i){return 'BEAT-'+String(i+1).padStart(2,'0');})},
+  {name:'EH104', phase:1, units:['EH104-F','EH104-B']},
+  {name:'EH103', phase:1, units:['EH103-F','EH103-B']},
+  {name:'EH102', phase:1, units:['EH102-F','EH102-B']},
+  {name:'EH101', phase:1, units:['EH101-F','EH101-B','SEH101-01','SEH101-02']},
+  {name:'EH100', phase:2, units:['9-2MAHU-01','9-2MAHU-02','9-2MAHU-03','9-2MAHU-04','1-2MAHU-01','1-2MAHU-02','1-2MAHU-03','1-2MAHU-04','1-2MAHU-05']},
+  {name:'EH99', phase:2, units:['2-2MAHU-01','2-2MAHU-02','2-2MAHU-03','2-2MAHU-04','2-2MAHU-05']},
+  {name:'EH98', phase:2, units:['2-2MAHU-06','3-2MAHU-01','3-2MAHU-02','3-2MAHU-03','3-2MAHU-04','3-2MAHU-05','4-2MAHU-04','4-2MAHU-05','4-2MAHU-06','4-2MAHU-07']}
+];
+var CONVENTION = [
+  {name:'LIVE', phase:1, units:Array.from({length:10},function(_,i){return 'BTLIVE-'+String(i+1).padStart(2,'0');})},
+  {name:'GH201', phase:1, units:['GH201-01','GH201-02']},
+  {name:'GH202', phase:1, units:['GH202-01','GH202-02']},
+  {name:'GH203', phase:1, units:['GH203-01','GH203-02','OAU-203-03']},
+  {name:'BHIRAJ', phase:2, units:['6-3MAHU-07','6-3MAHU-08','6-3MAHU-02','6-3MAHU-03','5-3MAHU-01','5-3MAHU-02']},
+  {name:'COSMOS', phase:2, units:['6-GSAHU-01','6-GSAHU-02','6-GSAHU-03','6-GSAHU-04','6-GSAHU-05','6-GSAHU-06','6-GSAHU-07']}
+];
+function renderWing(containerId, halls){
+  var el = document.getElementById(containerId);
+  var html = '';
+  halls.forEach(function(h){
+    var pcls = 'p'+h.phase;
+    html += '<div class="hall-card '+pcls+'">'+
+      '<div class="hc-head"><span class="hc-name">'+h.name+'</span><span class="hc-phase">P'+h.phase+'</span></div>'+
+      '<div class="hc-count">'+h.units.length+' หน่วย</div>'+
+      '<div class="hc-tags">'+h.units.map(function(u){ return '<span class="ahu-tag">'+u+'</span>'; }).join('')+'</div>'+
+      '<div class="hc-status">รอข้อมูลสถานะ running/standby</div>'+
+      '</div>';
   });
-  function recompute(){
-    var overList = [];
-    document.querySelectorAll('.sbox[data-type]').forEach(function(box){
-      var type = box.dataset.type;
-      var kwRaw = box.dataset.kw;
-      if(!type || kwRaw === ''){ return; }
-      var kw = parseFloat(kwRaw);
-      var isOver = thresholds[type] !== undefined && kw > thresholds[type];
-      box.classList.toggle('over', isOver);
-      if(isOver) overList.push(box.querySelector('.sb-id').textContent);
-    });
-    var alertBox = document.getElementById('overview-alert');
-    var alertText = document.getElementById('overview-alert-text');
-    if(overList.length){
-      alertBox.style.display = 'block';
-      alertText.textContent = overList.length + ' เครื่องเกิน threshold: ' + overList.join(', ');
-    } else {
-      alertBox.style.display = 'none';
-    }
-  }
-  recompute();
-})();
+  el.innerHTML = html;
+}
+renderWing('exhibition-wing', EXHIBITION);
+renderWing('convention-wing', CONVENTION);
 </script>
 
 <script>
-/* ===== Flow diagram arrows — Mockup 2: เส้นแตะจากแต่ละโซนแบบจาง/บาง + เส้นหลัก (trunk) หนา/เข้ม
-   พร้อม chevron บอกทิศทางไหล และมีหัวลูกศรจุดเดียวตอนเข้า CH Return Header จริงๆ เท่านั้น ===== */
+var GREEN = '#34d399', BLUE = '#38bdf8', AMBER = '#f2b84f';
+function sp(pts){ return pts.map(function(p,i){ return (i===0?'M':'L')+p.x.toFixed(1)+' '+p.y.toFixed(1); }).join(' '); }
+function box(x,y,w,h){ return {x:x,y:y,w:w,h:h}; }
+function topPt(n,f){ f=f===undefined?0.5:f; return {x:n.x+n.w*f,y:n.y}; }
+function botPt(n,f){ f=f===undefined?0.5:f; return {x:n.x+n.w*f,y:n.y+n.h}; }
+function leftPt(n,f){ f=f===undefined?0.5:f; return {x:n.x,y:n.y+n.h*f}; }
+function rightPt(n,f){ f=f===undefined?0.5:f; return {x:n.x+n.w,y:n.y+n.h*f}; }
+
+function defsMarkers(svgId){
+  return '<defs>' + ['g','b','a'].map(function(k){
+    var c = k==='g'?GREEN:(k==='b'?BLUE:AMBER);
+    return '<marker id="'+svgId+'-fa-'+k+'" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">'+
+      '<path d="M1 1L8 5L1 9" fill="none" stroke="'+c+'" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></marker>';
+  }).join('') + '</defs>';
+}
+function stroke(frag, pts, color, key, svgId, w){
+  frag.d += '<path d="'+sp(pts)+'" stroke="'+color+'" stroke-width="'+(w||2.2)+'" fill="none" stroke-linecap="round" stroke-linejoin="round"'+(key?' marker-end="url(#'+svgId+'-fa-'+key+')"':'')+'/>';
+}
+function panelBox(frag, n, title, kwText, color, accentRgb){
+  accentRgb = accentRgb || '56,189,248';
+  frag.d += '<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="10" fill="rgba(255,255,255,.02)" stroke="'+color+'" stroke-width="1"/>';
+  frag.d += '<path d="M'+n.x+' '+(n.y+10)+' a10,10 0 0 1 10,-10 h'+(n.w-20)+' a10,10 0 0 1 10,10 v34 h-'+n.w+' Z" fill="'+color+'" fill-opacity="0.16"/>';
+  frag.d += '<text x="'+(n.x+12)+'" y="'+(n.y+18)+'" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="12" fill="#fff">'+title+'</text>';
+  if(kwText) frag.d += '<text x="'+(n.x+n.w-14)+'" y="'+(n.y+38)+'" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="22" fill="rgb('+accentRgb+')" text-anchor="end">'+kwText+'</text>';
+}
+function equipGrid(frag, n, units, cols, headH, cellH, accentRgb){
+  headH = headH||34;
+  var pad=10;
+  var rows = Math.ceil(units.length/cols);
+  if(!cellH) cellH = (n.h - headH - pad - (rows-1)*6) / rows;
+  var cellW=(n.w-pad*2-(cols-1)*6)/cols;
+  accentRgb = accentRgb || '56,189,248';
+  var kwVals = units.map(function(u){ return typeof u[1]==='number' ? u[1] : 0; });
+  var maxKw = Math.max.apply(null, kwVals.concat([0.0001]));
+  units.forEach(function(u,i){
+    var col=i%cols, row=Math.floor(i/cols);
+    var px=n.x+pad+col*(cellW+6), py=n.y+headH+row*(cellH+6);
+    var hasKw = typeof u[1]==='number';
+    var t = hasKw ? u[1]/maxKw : 0;
+    frag.d += '<rect x="'+px+'" y="'+py+'" width="'+cellW+'" height="'+cellH+'" rx="4" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.08)"/>';
+    if(hasKw) frag.d += '<rect x="'+px+'" y="'+py+'" width="4" height="'+cellH+'" rx="2" fill="rgba('+accentRgb+','+(0.35+t*0.65).toFixed(2)+')"/>';
+    frag.d += '<text x="'+(px+cellW/2+2)+'" y="'+(py+cellH*0.42)+'" font-family="JetBrains Mono,monospace" font-size="8" fill="#e7ecf5" text-anchor="middle">'+u[0]+'</text>';
+    frag.d += '<text x="'+(px+cellW/2+2)+'" y="'+(py+cellH*0.78)+'" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="10" fill="'+(hasKw?'rgb('+accentRgb+')':'var(--text-faint)')+'" text-anchor="middle">'+(hasKw?u[1]+' kW':'\u2013')+'</text>';
+  });
+}
+function zoneBox(frag, n, title, units){
+  frag.d += '<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="9" fill="rgba(255,255,255,.02)" stroke="rgba(56,189,248,.5)" stroke-width="1"/>';
+  frag.d += '<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="24" rx="9" fill="#38bdf8" fill-opacity="0.18"/>';
+  frag.d += '<rect x="'+n.x+'" y="'+(n.y+14)+'" width="'+n.w+'" height="10" fill="#38bdf8" fill-opacity="0.18"/>';
+  frag.d += '<text x="'+(n.x+n.w/2)+'" y="'+(n.y+16)+'" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="10.5" fill="#fff" text-anchor="middle">'+title+'</text>';
+  equipGrid(frag, n, units, 2, 24, 55, '56,189,248');
+}
+function smallNode(frag, n, title, sub, kwText, color, accentRgb){
+  accentRgb = accentRgb || '56,189,248';
+  frag.d += '<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="9" fill="rgba(255,255,255,.02)" stroke="'+color+'" stroke-width="1"/>';
+  frag.d += '<rect x="'+n.x+'" y="'+n.y+'" width="6" height="'+n.h+'" rx="3" fill="'+color+'"/>';
+  frag.d += '<text x="'+(n.x+16)+'" y="'+(n.y+19)+'" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="11.5" fill="#fff">'+title+'</text>';
+  if(kwText) frag.d += '<text x="'+(n.x+n.w-12)+'" y="'+(n.y+n.h*0.65)+'" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="17" fill="rgb('+accentRgb+')" text-anchor="end">'+kwText+'</text>';
+  if(sub) frag.d += '<text x="'+(n.x+16)+'" y="'+(n.y+n.h-10)+'" font-family="JetBrains Mono,monospace" font-size="7.5" fill="var(--text-faint)">'+sub+'</text>';
+}
+var AHULOC_H = 30+4*24; // uniform height for every AHU Location box, matching the tallest one (Front, 4 buildings)
+function ahuLocationBox(frag, n, buildings){
+  frag.d += '<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+AHULOC_H+'" rx="8" fill="rgba(255,255,255,.015)" stroke="rgba(56,189,248,.3)" stroke-width="1" stroke-dasharray="3 3"/>';
+  var maxU = Math.max.apply(null, buildings.map(function(b){ return b[1]||0; }).concat([0.0001]));
+  buildings.forEach(function(b,i){
+    var ry = n.y+14+i*24;
+    var t = (b[1]||0)/maxU;
+    frag.d += '<rect x="'+(n.x+6)+'" y="'+(ry-4)+'" width="'+(n.w-12)+'" height="20" rx="4" fill="rgba(255,255,255,.03)"/>';
+    frag.d += '<rect x="'+(n.x+6)+'" y="'+(ry-4)+'" width="4" height="20" rx="2" fill="rgba(56,189,248,'+(0.3+t*0.6).toFixed(2)+')"/>';
+    frag.d += '<text x="'+(n.x+10)+'" y="'+(ry+9)+'" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="9.5" fill="#fff">'+b[0]+'</text>';
+    frag.d += '<text x="'+(n.x+n.w-8)+'" y="'+(ry+9)+'" font-family="JetBrains Mono,monospace" font-size="8" fill="#38bdf8" text-anchor="end">'+b[1]+'u</text>';
+  });
+}
+
 (function(){
-  var GREEN = '#34d399', BLUE = '#38bdf8', AMBER = '#f2b84f';
-  var container = document.getElementById('flow-diagram');
-  var svg = document.getElementById('flow-overlay');
-  if(!container || !svg) return;
+  var svgId='svg1';
+  var frag = {d: defsMarkers(svgId)};
 
-  function rectRel(el){
-    var r = el.getBoundingClientRect();
-    var c = container.getBoundingClientRect();
-    return { left:r.left-c.left, top:r.top-c.top, right:r.right-c.left, bottom:r.bottom-c.top,
-      width:r.width, height:r.height, cy:(r.top-c.top)+r.height/2, cx:(r.left-c.left)+r.width/2 };
-  }
-  function pt(rect, side, frac){
-    frac = (frac===undefined) ? 0.5 : frac;
-    if(side==='top') return { x: rect.left + rect.width*frac, y: rect.top };
-    if(side==='bottom') return { x: rect.left + rect.width*frac, y: rect.bottom };
-    if(side==='left') return { x: rect.left, y: rect.top + rect.height*frac };
-    return { x: rect.right, y: rect.top + rect.height*frac };
-  }
-  function elbowD(p1, p2){
-    if(Math.abs(p1.x-p2.x) < 2 || Math.abs(p1.y-p2.y) < 2){
-      return 'M'+p1.x.toFixed(1)+' '+p1.y.toFixed(1)+' L'+p2.x.toFixed(1)+' '+p2.y.toFixed(1);
-    }
-    var midx = (p1.x+p2.x)/2;
-    return 'M'+p1.x.toFixed(1)+' '+p1.y.toFixed(1)+
-      ' L'+midx.toFixed(1)+' '+p1.y.toFixed(1)+
-      ' L'+midx.toFixed(1)+' '+p2.y.toFixed(1)+
-      ' L'+p2.x.toFixed(1)+' '+p2.y.toFixed(1);
-  }
-  function polyD(points){
-    return points.map(function(p,i){ return (i===0?'M':'L')+p.x.toFixed(1)+' '+p.y.toFixed(1); }).join(' ');
-  }
-  function el(id){ return document.getElementById(id); }
+  var CT_UNITS = [["P1-CT-01",27.5],["P1-CT-02",10.3],["P1-CT-03",10.1],["P1-CT-04",5.6],["H-CT-01",6.3],["H-CT-02",10.3],["H-CT-03",10.2],["H-CT-04",6.5],["H-CT-05",9.2],["H-CT-06",9.1],["H-CT-07",9.1]];
+  var CWP_UNITS = [["P1-CDP-01",null],["P1-CDP-02",null],["P1-CDP-03",null],["P1-CDP-04",null],["H-CDP-01",null],["H-CDP-02",null],["H-CDP-03",null],["H-CDP-04",null],["H-CDP-05",null],["H-CDP-06",null],["H-CDP-07",null],["H-CDP-08",null],["RFUP-01",null],["RFUP-02",null]];
+  var CHL_UNITS = [["P1-CH-01",477.5],["P1-CH-02",540.7],["P1-CH-03",436],["P1-CH-04",430.3],["H1-CH-01",517.4],["H1-CH-02",400],["H1-CH-03",541.4],["H1-CH-04",371.8],["H1-CH-05",446.1],["H1-CH-06",476.6],["H1-CH-07",209.7],["H1-CH-08",206.1]];
+  var PCHP_UNITS = [["P1-PCHP-01",null],["P1-PCHP-02",null],["P1-PCHP-03",null],["P1-PCHP-04",null],["H-PCHP-01",null],["H-PCHP-02",null],["H-PCHP-03",null],["H-PCHP-04",null],["H-PCHP-05",null],["H-PCHP-06",null],["H-PCHP-07",null],["H-PCHP-08",null]];
+  var FRONT_UNITS=[["SCHP-01",58.8],["SCHP-02",55],["SCHP-03",40.4]];
+  var BACK_UNITS=[["SCHP-04",24.5],["SCHP-05",15.6]];
+  var EH105_UNITS=[["SCHP-06",41.2],["SCHP-07",25.5]];
+  var SUPPORT_UNITS=[["H-SCHP-01",26.8],["H-SCHP-02",14.2],["H-SCHP-03",32.1]];
+  var SALE_UNITS=[["H-SCHP-04",15.2],["H-SCHP-05",19.8],["H-SCHP-06",19.5]];
+  var EXHIB_UNITS=[["H-SCHP-07",28.7],["H-SCHP-08",32.8],["H-SCHP-09",32.7]];
 
-  function draw(){
-    svg.innerHTML =
-      '<defs>' +
-      ['g','b','a'].map(function(k){
-        var c = k==='g'?GREEN:(k==='b'?BLUE:AMBER);
-        return '<marker id="fa-'+k+'" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
-          '<path d="M1 1L8 5L1 9" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>';
-      }).join('') + '</defs>';
+  // ---- ตำแหน่งกล่อง (verify_v5.py ยืนยันแล้วว่าเส้นทั้ง 8 เส้นไม่ตัดผ่านกล่องใดเลย) ----
+  var ct    = box(20,20,460,280);
+  var cdp   = box(520,20,460,280);
+  var chl   = box(520,340,460,280);
+  var hsup  = box(1725,280,220,56);
+  var pchp  = box(520,660,460,280);
+  var hret  = box(1725,1106,220,56);
 
-    var frag = '';
-    function stroke(d, color, markerKey, width, opts){
-      opts = opts || {};
-      frag += '<path d="'+d+'" stroke="'+color+'" stroke-width="'+(width||2)+'" fill="none" stroke-linejoin="round" stroke-linecap="round"' +
-        (opts.dash ? ' stroke-dasharray="'+opts.dash+'"' : '') +
-        (opts.opacity!==undefined ? ' opacity="'+opts.opacity+'"' : '') +
-        (markerKey ? ' marker-end="url(#fa-'+markerKey+')"' : '') + '/>';
-    }
+  var schp1 = box(1285,460,220,56);
+  var schp2 = box(2165,460,220,56);
 
-    // ---- Condenser loop (green) ----
-    var rCt = rectRel(el('fn-ct')), rCdp = rectRel(el('fn-cdp')), rChiller = rectRel(el('fn-chiller'));
-    stroke(elbowD(pt(rCt,'bottom'), pt(rCdp,'top')), GREEN, 'g', 1.8);
-    stroke(elbowD(pt(rCdp,'right'), pt(rChiller,'left',0.15)), GREEN, 'g', 1.8);
-    var loopX = -16;
-    stroke(polyD([pt(rChiller,'left',0.15), {x:loopX, y:rChiller.top+rChiller.height*0.15}, {x:loopX, y:rCt.cy}, pt(rCt,'left')]), GREEN, 'g', 1.8);
+  var front  = box(1020,640,230,160);
+  var back   = box(1280,640,230,160);
+  var eh105  = box(1540,640,230,160);
+  var support= box(1900,640,230,160);
+  var sale   = box(2160,640,230,160);
+  var exhib  = box(2420,640,230,160);
 
-    // ---- Chilled water supply (blue) ----
-    var rSupply = rectRel(el('fn-supply'));
-    stroke(elbowD(pt(rChiller,'bottom',0.85), pt(rSupply,'top')), BLUE, 'b', 1.8);
-    var rSchp2 = rectRel(el('fn-schp2')), rSchp1 = rectRel(el('fn-schp1'));
-    stroke(elbowD(pt(rSupply,'right'), pt(rSchp2,'left')), BLUE, 'b', 1.8);
-    stroke(elbowD(pt(rSupply,'right'), pt(rSchp1,'left')), BLUE, 'b', 1.8);
+  var frontLoc  = box(1020,850,230,126);
+  var backLoc   = box(1280,850,230,126);
+  var eh105Loc  = box(1540,850,230,126);
+  var supportLoc= box(1900,850,230,126);
+  var saleLoc   = box(2160,850,230,126);
+  var exhibLoc  = box(2420,850,230,126);
 
-    var zonesPhase2 = ['zn-welcome','zn-cosmos','zn-eh98100','zn-bhiraj'];
-    zonesPhase2.forEach(function(id){
-      stroke(elbowD(pt(rSchp2,'right'), pt(rectRel(el(id)),'left')), BLUE, 'b', 1.8);
-    });
-    var zonesPhase1 = ['zn-hqf2','zn-eh101104','zn-gh201203','zn-beat','zn-live'];
-    zonesPhase1.forEach(function(id){
-      stroke(elbowD(pt(rSchp1,'right'), pt(rectRel(el(id)),'left')), BLUE, 'b', 1.8);
-    });
-    stroke(elbowD(pt(rectRel(el('zn-beat')),'right'), pt(rectRel(el('zn-sama')),'left')), BLUE, 'b', 1.8);
+  var convergeY = 1056, bendXctret = 400, bendXhs = 1130, midy5 = 398, trunkY5 = 590;
 
-    // ---- Return (amber) — Mockup 2: จางแตะรายโซน + trunk หลักหนา/เข้ม + chevron + หัวลูกศรจุดเดียว ----
-    var allZoneIds = zonesPhase2.concat(zonesPhase1).concat(['zn-sama']);
-    var allZoneRects = allZoneIds.map(function(id){ return rectRel(el(id)); });
-    var trunkX = Math.max.apply(null, allZoneRects.map(function(r){ return r.right; })) + 30;
-    var rReturn = rectRel(el('fn-return'));
-    var trunkTopY = Math.min.apply(null, allZoneRects.map(function(r){ return r.cy; }));
-    var trunkBottomY = rReturn.cy;
+  // 1. Cooling Loop: CT <-> CDP — ตรงเป๊ะ ไม่มีมุมหัก (กล่องขนาดเท่ากัน ศูนย์กลางตรงกันพอดี)
+  stroke(frag,[rightPt(ct),leftPt(cdp)],GREEN,'g',svgId);
+  // 2. Condenser Loop: CDP -> Main Chiller — ตรงลงเป๊ะ ไม่มีมุมหัก
+  stroke(frag,[botPt(cdp),topPt(chl)],GREEN,'g',svgId);
+  // 1b. Condenser Loop return: Main Chiller -> Cooling Tower — ออกซ้าย หักแล้ว "ตรงขึ้น" เข้า CT ด้านล่าง (ปลายเส้นเป็นแนวดิ่ง หัวลูกศรชี้ขึ้นจริง)
+  stroke(frag,[leftPt(chl,0.7),{x:bendXctret,y:leftPt(chl,0.7).y},{x:bendXctret,y:botPt(ct).y}],GREEN,'g',svgId);
+  // 3. Water Supply: Main Chiller -> Header Supply — ออกขวา ขึ้น แล้วเข้า "ด้านซ้ายค่อนไปทางล่าง" ของ Header Supply
+  stroke(frag,[rightPt(chl,0.3),{x:bendXhs,y:rightPt(chl,0.3).y},{x:bendXhs,y:leftPt(hsup,0.3).y},leftPt(hsup,0.3)],BLUE,'b',svgId);
+  // 4. Phase Split: Header Supply -> SCHP Phase 1 & 2
+  stroke(frag,[botPt(hsup,0.25),{x:botPt(hsup,0.25).x,y:midy5},{x:topPt(schp1).x,y:midy5},topPt(schp1)],BLUE,'b',svgId);
+  stroke(frag,[botPt(hsup,0.75),{x:botPt(hsup,0.75).x,y:midy5},{x:topPt(schp2).x,y:midy5},topPt(schp2)],BLUE,'b',svgId);
+  // 5. Zone Distribution: SCHP -> โซน (ลง)
+  stroke(frag,[botPt(schp1),{x:botPt(schp1).x,y:trunkY5}],BLUE,0,svgId);
+  [front,back,eh105].forEach(function(n){
+    stroke(frag,[{x:botPt(schp1).x,y:trunkY5},{x:topPt(n).x,y:trunkY5},topPt(n)],BLUE,'b',svgId);
+  });
+  stroke(frag,[botPt(schp2),{x:botPt(schp2).x,y:trunkY5}],BLUE,0,svgId);
+  [support,sale,exhib].forEach(function(n){
+    stroke(frag,[{x:botPt(schp2).x,y:trunkY5},{x:topPt(n).x,y:trunkY5},topPt(n)],BLUE,'b',svgId);
+  });
+  stroke(frag,[botPt(front),topPt(frontLoc)],BLUE,'b',svgId);
+  stroke(frag,[botPt(back),topPt(backLoc)],BLUE,'b',svgId);
+  stroke(frag,[botPt(eh105),topPt(eh105Loc)],BLUE,'b',svgId);
+  stroke(frag,[botPt(support),topPt(supportLoc)],BLUE,'b',svgId);
+  stroke(frag,[botPt(sale),topPt(saleLoc)],BLUE,'b',svgId);
+  stroke(frag,[botPt(exhib),topPt(exhibLoc)],BLUE,'b',svgId);
+  // 6. Water Return: ทุกโซน -> Header Return (ลงรวม) — Header Return อยู่กึ่งกลางใต้ Header Supply แล้ว
+  [frontLoc,backLoc,eh105Loc,supportLoc,saleLoc,exhibLoc].forEach(function(n){
+    stroke(frag,[botPt(n),{x:botPt(n).x,y:convergeY}],AMBER,0,svgId,1.4);
+    frag.d += '<circle cx="'+botPt(n).x+'" cy="'+convergeY+'" r="2" fill="'+AMBER+'"/>';
+  });
+  stroke(frag,[{x:frontLoc.x+frontLoc.w/2,y:convergeY},{x:exhibLoc.x+exhibLoc.w/2,y:convergeY}],AMBER,0,svgId,2.6);
+  stroke(frag,[{x:topPt(hret).x,y:convergeY},topPt(hret)],AMBER,'a',svgId,2.6);
+  // 7. Loop Recycle: Header Return -> PCHP — อ้อมลงไปใต้กล่องโซนทั้งหมด แล้วเข้า PCHP ทางด้านล่าง (เลี่ยงไม่ให้ตัดผ่าน Front/Back)
+  var ylow = hret.y + hret.h + 40;
+  stroke(frag,[botPt(hret),{x:botPt(hret).x,y:ylow},{x:botPt(pchp,0.5).x,y:ylow},botPt(pchp,0.5)],AMBER,'a',svgId,2.6);
+  // 8. Re-chilling: PCHP -> Main Chiller — ตรงขึ้นเป๊ะ ไม่มีมุมหัก (กล่องซ้อนกันพอดี)
+  stroke(frag,[topPt(pchp),botPt(chl)],AMBER,'a',svgId,2.6);
 
-    // เส้นแตะรายโซน: บางมาก จางมาก ไม่มีหัวลูกศร (แค่บอกจุดเชื่อม ไม่ใช่เส้นทางหลัก)
-    allZoneRects.forEach(function(r){
-      stroke(polyD([pt(r,'right'), {x:trunkX, y:r.cy}]), AMBER, 0, 1, {dash:'2 3', opacity:0.45});
-    });
+  panelBox(frag, ct, 'Cooling Tower · 11 หน่วย', '114.2 kW', GREEN, '52,211,153');
+  equipGrid(frag, ct, CT_UNITS, 4, null, null, '52,211,153');
+  panelBox(frag, cdp, 'Condenser Water Pump · 14 หน่วย', 'รอ mapping', GREEN, '52,211,153');
+  equipGrid(frag, cdp, CWP_UNITS, 4, null, null, '52,211,153');
+  panelBox(frag, chl, 'Main Chiller · 12 หน่วย · เดินอยู่', '540.7 kW', BLUE, '56,189,248');
+  equipGrid(frag, chl, CHL_UNITS, 4, null, null, '56,189,248');
+  panelBox(frag, pchp, 'Primary Chilled Water (PCHP) · 12 หน่วย', 'รอ mapping', AMBER, '242,184,79');
+  equipGrid(frag, pchp, PCHP_UNITS, 4, null, null, '242,184,79');
 
-    // trunk หลัก: หนา เข้ม ทึบ พร้อม chevron บอกทิศทางไหลลง
-    stroke(polyD([{x:trunkX, y:trunkTopY}, {x:trunkX, y:trunkBottomY}]), AMBER, 0, 3.2);
-    for(var yy = trunkTopY + 16; yy < trunkBottomY - 10; yy += 34){
-      frag += '<path d="M'+(trunkX-3.6).toFixed(1)+' '+(yy-3).toFixed(1)+' L'+trunkX.toFixed(1)+' '+(yy+4).toFixed(1)+
-        ' L'+(trunkX+3.6).toFixed(1)+' '+(yy-3).toFixed(1)+'" fill="none" stroke="#241a05" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>';
-    }
+  smallNode(frag, hsup, 'Header Supply', 'pass-through · ไม่มีมิเตอร์', null, BLUE, '56,189,248');
+  smallNode(frag, hret, 'Header Return', 'pass-through · ไม่มีมิเตอร์', null, AMBER, '242,184,79');
+  smallNode(frag, schp1, 'SCHP Phase I', '7 หน่วย', '261.0 kW', BLUE, '56,189,248');
+  smallNode(frag, schp2, 'SCHP Phase II', '9 หน่วย', '221.8 kW', BLUE, '56,189,248');
 
-    // trunk -> Return Header -> PCHP -> Chiller: เส้นหลักต่อเนื่อง หนาเท่ากันหมด มีหัวลูกศรจริงตอนเข้าปลายทางเท่านั้น
-    var rPchp = rectRel(el('fn-pchp'));
-    stroke(polyD([{x:trunkX, y:trunkBottomY}, {x:trunkX, y:trunkBottomY+15}, {x:pt(rReturn,'right').x, y:trunkBottomY+15}, pt(rReturn,'right')]), AMBER, 'a', 3.2);
-    stroke(elbowD(pt(rReturn,'top'), pt(rPchp,'bottom')), AMBER, 'a', 3.2);
-    stroke(elbowD(pt(rPchp,'top'), pt(rChiller,'left',0.85)), AMBER, 'a', 3.2);
+  zoneBox(frag, front, 'Front · 154.2 kW', FRONT_UNITS);
+  zoneBox(frag, back, 'Back · 40.1 kW', BACK_UNITS);
+  zoneBox(frag, eh105, 'EH105-106 · 66.7 kW', EH105_UNITS);
+  zoneBox(frag, support, 'Support Area · 73.1 kW', SUPPORT_UNITS);
+  zoneBox(frag, sale, 'Sale Area · 54.5 kW', SALE_UNITS);
+  zoneBox(frag, exhib, 'Exhibition Area · 94.2 kW', EXHIB_UNITS);
 
-    svg.insertAdjacentHTML('beforeend', frag);
-  }
+  ahuLocationBox(frag, frontLoc, [['GH201',2],['GH202',2],['GH203',3],['EH101-104 (F)',4]]);
+  ahuLocationBox(frag, backLoc, [['EH101-104 (B)',6]]);
+  ahuLocationBox(frag, eh105Loc, [['BEAT',30],['LIVE',10],['SAMA GARDEN',9]]);
+  ahuLocationBox(frag, supportLoc, [['COSMOS',7]]);
+  ahuLocationBox(frag, saleLoc, [['BHIRAJ',6]]);
+  ahuLocationBox(frag, exhibLoc, [['EH98',10],['EH99',5],['EH100',9]]);
 
-  draw();
-  window.addEventListener('resize', draw);
-  setTimeout(draw, 150);
-  window.__redrawFlowArrows = draw;
-})();
-</script>
-
-<script>
-/* ===== Live data sync — เชื่อม Apps Script Web App จริง =====
-   TODO (รอ backend เพิ่ม): AHU Location -> AHU_Floor คอลัมน์ C, SCHP phase -> SCHP คอลัมน์ D
-   ตอนต่อจริงจะ map zone-list กับ SCHP phase-box ตรงนี้แทนเลขที่ hardcode ไว้ตอนนี้ */
-(function(){
-  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
-  var syncBtn = document.getElementById('sync-btn');
-  var syncStatus = document.getElementById('sync-status');
-
-  function setEl(id, val, digits){
-    var el = document.getElementById(id);
-    if(!el) return;
-    var noData = (val === null || val === undefined || val === '');
-    el.textContent = noData ? '—' : ((typeof val === 'number') ? val.toFixed(digits===undefined?1:digits) : val);
-  }
-
-  async function syncNow(){
-    syncStatus.textContent = 'กำลัง sync...';
-    if(syncBtn) syncBtn.disabled = true;
-    try {
-      var [latestRes, zoneRes] = await Promise.all([
-        fetch(API_URL + '?action=latest'),
-        fetch(API_URL + '?action=zonekw')
-      ]);
-      if(!latestRes.ok) throw new Error('latest HTTP ' + latestRes.status);
-      var latest = await latestRes.json();
-      var zones = zoneRes.ok ? await zoneRes.json() : [];
-
-      setEl('kpi-plant-demand', latest.totalKw);
-      setEl('kpi-capacity', latest.totalTr, 0);
-      setEl('kpi-efficiency', latest.plantKwPerTr, 2);
-      setEl('kpi-thermal-eff', latest.thermalEfficiency != null ? latest.thermalEfficiency*100 : null, 1);
-
-      setEl('total-ct', latest.ctDemandKw);
-      setEl('total-cdp', latest.cdpDemandKw);
-      setEl('total-pchp', latest.pchpDemandKw);
-      setEl('total-chl', latest.activeChillerCumulativeKw);
-      setEl('total-schp1', latest.schpDemandKw);
-      setEl('total-schp2', latest.hSchpDemandKw);
-
-      window.__latestZoneKw = zones;
-      window.__latestPowerData = latest;
-
-      var dateStr = latest.date ? String(latest.date).slice(0, 10) : '';
-      syncStatus.textContent = '✅ sync ล่าสุด: ' + dateStr + ' ' + (latest.time||'') + ' (Chiller: ' + (latest.activeChiller||'-') + ')';
-    } catch(err){
-      syncStatus.textContent = '❌ sync ล้มเหลว: ' + err.message;
-    } finally {
-      if(syncBtn) syncBtn.disabled = false;
-    }
-  }
-
-  if(syncBtn) syncBtn.addEventListener('click', syncNow);
-  syncNow();
-})();
-</script>
-
-<script>
-/* ===== Monthly Report — live sync จาก ?action=history ===== */
-(function(){
-  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
-  var statusEl = document.getElementById('monthly-sync-status');
-  var monthLabelTH = {'01':'ม.ค.','02':'ก.พ.','03':'มี.ค.','04':'เม.ย.','05':'พ.ค.','06':'มิ.ย.','07':'ก.ค.','08':'ส.ค.','09':'ก.ย.','10':'ต.ค.','11':'พ.ย.','12':'ธ.ค.'};
-
-  function fmtNum(v, digits){
-    if(v === null || v === undefined) return 'N/A';
-    return v.toLocaleString('en-US', {minimumFractionDigits:digits||0, maximumFractionDigits:digits||0});
-  }
-
-  async function loadMonthly(){
-    statusEl.textContent = 'กำลังดึงข้อมูล...';
-    try {
-      var end = new Date();
-      var start = new Date();
-      start.setMonth(start.getMonth() - 2);
-      start.setDate(1);
-      var toStr = function(d){ return d.toISOString().slice(0,10); };
-
-      var res = await fetch(API_URL + '?action=history&start=' + toStr(start) + '&end=' + toStr(end));
-      if(!res.ok) throw new Error('HTTP ' + res.status);
-      var rows = await res.json();
-      if(!Array.isArray(rows) || rows.length === 0){
-        statusEl.textContent = '⚠️ ไม่พบข้อมูลในช่วงนี้';
-        return;
-      }
-
-      var months = {};
-      rows.forEach(function(r){
-        if(!r.date) return;
-        var mk = String(r.date).slice(0,7);
-        (months[mk] = months[mk] || []).push(r);
-      });
-      var monthKeys = Object.keys(months).sort();
-
-      var monthData = monthKeys.map(function(mk){
-        var list = months[mk];
-        var sumKwh = 0, sumTr = 0, hasKwh = false, hasTr = false;
-        list.forEach(function(r){
-          if(typeof r.totalKw === 'number'){ sumKwh += r.totalKw; hasKwh = true; }
-          if(typeof r.chillerCapacityTr === 'number'){ sumTr += r.chillerCapacityTr; hasTr = true; }
-        });
-        return {
-          mk: mk,
-          label: (monthLabelTH[mk.slice(5,7)]||mk.slice(5,7)) + '-' + mk.slice(2,4),
-          totalKwh: hasKwh ? sumKwh : null,
-          totalTr: hasTr ? sumTr : null,
-          rowCount: list.length
-        };
-      });
-
-      var thead = document.getElementById('monthly-thead');
-      var tbody = document.getElementById('monthly-tbody');
-      var mthClasses = ['m1','m2','m3','m1','m2','m3'];
-
-      var headHtml = '<tr><th class="metric-col">Monthly</th>';
-      monthData.forEach(function(m, i){
-        headHtml += '<th class="mth ' + mthClasses[i%3] + '">' + m.label + (i===monthData.length-1?' (partial)':'') + '</th>';
-      });
-      headHtml += '</tr>';
-      thead.innerHTML = headHtml;
-
-      function deltaHtml(cur, prev){
-        if(cur === null || prev === null || !prev) return '';
-        var diff = cur - prev;
-        var pct = (diff/prev*100);
-        var cls = diff > 0 ? 'up' : (diff < 0 ? 'down' : 'flat');
-        var arrow = diff > 0 ? '▲' : (diff < 0 ? '▼' : '—');
-        return '<span class="delta ' + cls + '">' + arrow + ' ' + Math.abs(pct).toFixed(1) + '%</span>';
-      }
-
-      function metricRow(label, note, values, digits){
-        var cells = '';
-        var prev = null;
-        values.forEach(function(v, i){
-          var cls = mthClasses[i%3];
-          var valTxt = v === null ? '<div class="cell-val na">N/A</div>' : '<div class="cell-val">' + fmtNum(v, digits) + '</div>';
-          cells += '<td class="mth ' + cls + '">' + valTxt + deltaHtml(v, prev) + '</td>';
-          prev = v;
-        });
-        var noteHtml = note ? '<span class="metric-note">' + note + '</span>' : '';
-        return '<tr><td class="metric-name">' + label + noteHtml + '</td>' + cells + '</tr>';
-      }
-
-      var bodyHtml = '';
-      bodyHtml += metricRow('Total (kWh)', '', monthData.map(function(m){ return m.totalKwh; }), 0);
-      bodyHtml += metricRow('Total (TR)', 'SUM ตรงจาก Sum_CAL_Chiller Capacity(TR)', monthData.map(function(m){ return m.totalTr; }), 0);
-      bodyHtml += metricRow('Avg (kWh/day)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
-      bodyHtml += metricRow('Avg (TR/day)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
-      bodyHtml += metricRow('Avg Chiller Plant Efficiency (kW/TRp)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
-      bodyHtml += metricRow('Avg (kWh/m²)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
-      bodyHtml += metricRow('Avg (TR/m²)', 'รอ logic เพิ่มเติม', monthData.map(function(){ return null; }));
-      bodyHtml += metricRow('Total (THB)', 'ยังไม่มีอัตราค่าไฟ', monthData.map(function(){ return null; }));
-      bodyHtml += metricRow('Total EVENT Area Usage (m²)', 'ไม่มี log การใช้พื้นที่รายเดือน', monthData.map(function(){ return null; }));
-      tbody.innerHTML = bodyHtml;
-
-      var latest = monthData[monthData.length - 1];
-      document.getElementById('monthly-kpi-kwh-label').textContent = 'Total kWh (' + latest.label + ')';
-      document.getElementById('monthly-kpi-kwh').textContent = latest.totalKwh !== null ? fmtNum(latest.totalKwh,0) : '—';
-      document.getElementById('monthly-kpi-tr').textContent = latest.totalTr !== null ? fmtNum(latest.totalTr,0) : '—';
-      document.getElementById('monthly-kpi-eff').textContent = '—';
-      document.getElementById('monthly-kpi-kwhm2').textContent = '—';
-
-      statusEl.textContent = '✅ sync ล่าสุด · ดึง ' + rows.length + ' แถว จาก ' + monthKeys.length + ' เดือน (' + toStr(start) + ' ถึง ' + toStr(end) + ')';
-    } catch(err){
-      statusEl.textContent = '❌ sync ล้มเหลว: ' + err.message;
-    }
-  }
-
-  loadMonthly();
+  document.getElementById('svg1').innerHTML = frag.d;
 })();
 </script>
 </body>
