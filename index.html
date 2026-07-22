@@ -73,34 +73,34 @@
   .kpi-card.green{ border-left-color:var(--green); }
   .kpi-card.cyan{ border-left-color:var(--cyan); }
   .kpi-card.pending{ border-left-color:var(--text-faint); border-left-style:dashed; opacity:0.6; }
-  .kpi-label{ font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-faint); }
-  .kpi-value{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; color:#fff; margin-top:4px; }
-  .kpi-value.dim{ font-size:13px; color:var(--text-faint); font-weight:500; }
-  .kpi-unit{ font-size:10px; color:var(--text-faint); font-weight:500; margin-left:4px; }
-  .kpi-sub{ font-size:9px; color:var(--text-faint); margin-top:3px; }
+  .kpi-label{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-faint); }
+  .kpi-value{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:24px; color:#fff; margin-top:5px; }
+  .kpi-value.dim{ font-size:15px; color:var(--text-faint); font-weight:500; }
+  .kpi-unit{ font-size:12px; color:var(--text-faint); font-weight:500; margin-left:5px; }
+  .kpi-sub{ font-size:10.5px; color:var(--text-faint); margin-top:4px; }
 
   .legend-row{ display:flex; gap:16px; margin-bottom:14px; flex-wrap:wrap; }
   .legend-item{ display:flex; align-items:center; gap:6px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); }
   .legend-swatch{ width:18px; height:3px; border-radius:2px; }
 
   .flow-wrap{ display:flex; justify-content:center; padding:6px 2px 14px; position:relative; }
-  .flow-inner{ position:relative; width:100%; max-width:1000px; }
+  .flow-inner{ position:relative; width:100%; max-width:1500px; } /* [ใหญ่ขึ้น 22/7/69] เดิม 1000px เล็กไป */
   svg#svg1{ width:100%; height:auto; display:block; }
 
   .hz{ position:absolute; cursor:default; }
-  .tip{ position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%) translateY(4px); width:225px; background:#0a0e17; border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:10px; box-shadow:0 16px 34px rgba(0,0,0,0.5); z-index:40; opacity:0; pointer-events:none; transition:opacity .12s, transform .12s; }
+  .tip{ position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%) translateY(4px); width:290px; background:#0a0e17; border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:12px; box-shadow:0 16px 34px rgba(0,0,0,0.5); z-index:40; opacity:0; pointer-events:none; transition:opacity .12s, transform .12s; }
   .hz:hover .tip{ opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto; }
   .hz.top .tip{ top:auto; bottom:calc(100% + 6px); transform:translateX(-50%) translateY(-4px); }
   .hz.top:hover .tip{ transform:translateX(-50%) translateY(0); }
-  .tip-title{ font-family:'JetBrains Mono',monospace; font-size:8.5px; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-faint); margin-bottom:6px; }
-  .tip-row{ display:flex; align-items:center; justify-content:space-between; padding:4px 2px; font-family:'JetBrains Mono',monospace; font-size:10.5px; border-top:1px solid rgba(255,255,255,.08); }
+  .tip-title{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px; }
+  .tip-row{ display:flex; align-items:center; justify-content:space-between; padding:6px 3px; font-family:'JetBrains Mono',monospace; font-size:13px; border-top:1px solid rgba(255,255,255,.08); }
   .tip-row:first-of-type{ border-top:none; }
   .tip-id{ color:var(--text-muted); display:flex; align-items:center; gap:6px; }
-  .stat-dot{ width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .stat-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
   .stat-dot.run{ background:var(--green); box-shadow:0 0 5px var(--green); }
   .stat-dot.standby{ background:#5b6478; }
-  .tip-val{ color:var(--text); }
-  .tip-scroll{ max-height:260px; overflow-y:auto; }
+  .tip-val{ color:var(--text); font-weight:600; }
+  .tip-scroll{ max-height:340px; overflow-y:auto; }
 
   /* ---- AHU floor plan (เดิม ไม่แก้) ---- */
   .ahu-shell{ display:flex; gap:14px; align-items:flex-start; }
@@ -492,10 +492,9 @@ renderWing('convention-wing', CONVENTION);
      - Total kW / Total kW Plant / Main Chiller / CT รวม / SCHP1 รวม / SCHP2 รวม = sum สะสมของวัน
      - Plant Efficiency = average ของวัน
      - รายตัวในกล่อง tooltip (CT, SCHP, CDP, PCHP) = average ของวัน ต่อเครื่อง — โชว์ครบทุกตัว ไม่มี "+N เพิ่มเติม"
-     - Main Chiller รายเครื่อง (Condenser/Evaporator tooltip): API ไม่มี breakdown รายเครื่อง
-       มีแค่ totals.mainChillerKw (รวม) + latest.chillerRunning (เครื่องที่วิ่งอยู่)
-       จึงไฮไลต์ stat-dot เป็น "run" เฉพาะเครื่องที่ตรงกับ chillerRunning และใส่ค่า kW รวม
-       ไปที่เครื่องนั้นเครื่องเดียว (ฝั่ง Evaporator) ส่วนเครื่องอื่นเป็น Standby / 0 kW
+     - Main Chiller รายเครื่อง (Condenser/Evaporator tooltip) = SUM สะสมของวัน แยกตามเครื่อง
+       (perUnit.CHL) — ถ้าวันนั้นสลับกันวิ่งหลายตัว จะบวกสะสมแยกตามตัว ไม่ใช่โชว์แค่เครื่องล่าสุด
+       ตัวเดียวแบบที่เคยทำผิดไปก่อนหน้า sum(perUnit.CHL ทุกตัว) ควรเท่ากับ totals.mainChillerKw
 */
 (function(){
   var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
@@ -527,21 +526,27 @@ renderWing('convention-wing', CONVENTION);
     });
   }
 
-  // อัปเดตกล่อง Condenser (running/standby) + Evaporator (kW) ของ Main Chiller ตาม latest.chillerRunning
-  function updateChillerRows(activeChillerId, mainChillerKw){
+  // [แก้ 22/7/69] อัปเดตกล่อง Condenser + Evaporator ของ Main Chiller ด้วย perUnit.CHL
+  // (sum สะสมของวัน แยกตามเครื่อง) แทนการไฮไลต์แค่เครื่องล่าสุดตัวเดียวแบบเดิม (เป็น bug ที่แก้แล้ว)
+  // เครื่องไหนมีค่าใน perUnit.CHL แปลว่า "เดินวันนี้" (อาจสลับกันวิ่งหลายตัวในวันเดียว)
+  function updateChillerRows(perUnitCHL){
     document.querySelectorAll('#tip-chl-cond [data-chl]').forEach(function(row){
-      var isRunning = activeChillerId && row.getAttribute('data-chl') === activeChillerId;
+      var id = row.getAttribute('data-chl');
+      var v = perUnitCHL ? perUnitCHL[id] : undefined;
+      var ranToday = (v !== undefined && v !== null);
       var dot = row.querySelector('.stat-dot');
       var val = row.querySelector('.tip-val');
-      if(dot){ dot.classList.toggle('run', isRunning); dot.classList.toggle('standby', !isRunning); }
-      if(val) val.textContent = isRunning ? 'Running' : 'Standby';
+      if(dot){ dot.classList.toggle('run', ranToday); dot.classList.toggle('standby', !ranToday); }
+      if(val) val.textContent = ranToday ? 'เดินวันนี้' : 'ไม่ได้เดิน';
     });
     document.querySelectorAll('#tip-chl-evap [data-chl]').forEach(function(row){
-      var isRunning = activeChillerId && row.getAttribute('data-chl') === activeChillerId;
+      var id = row.getAttribute('data-chl');
+      var v = perUnitCHL ? perUnitCHL[id] : undefined;
+      var hasVal = (v !== undefined && v !== null);
       var dot = row.querySelector('.stat-dot');
       var val = row.querySelector('.tip-val');
-      if(dot){ dot.classList.toggle('run', isRunning); dot.classList.toggle('standby', !isRunning); }
-      if(val) val.textContent = isRunning && typeof mainChillerKw === 'number' ? (mainChillerKw.toFixed(1) + ' kW') : '0 kW';
+      if(dot){ dot.classList.toggle('run', hasVal); dot.classList.toggle('standby', !hasVal); }
+      if(val) val.textContent = hasVal ? (v.toFixed(1) + ' kW (สะสมวันนี้)') : '0 kW';
     });
   }
 
@@ -586,8 +591,8 @@ renderWing('convention-wing', CONVENTION);
 
       // tooltip รายตัวทั้งหมด: CT / SCHP (roster + โซน) / CDP / PCHP
       updateUnitSpans(perUnit);
-      // tooltip Main Chiller (Condenser/Evaporator) — ไฮไลต์เครื่องที่วิ่งอยู่
-      updateChillerRows(latest.chillerRunning, totals.mainChillerKw);
+      // tooltip Main Chiller (Condenser/Evaporator) — sum สะสมของวัน แยกตามเครื่อง
+      updateChillerRows(perUnit.CHL);
 
       var dateStr = summary.date || '';
       var timeStr = latest.time || '';
