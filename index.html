@@ -100,6 +100,7 @@
   .stat-dot.run{ background:var(--green); box-shadow:0 0 5px var(--green); }
   .stat-dot.standby{ background:#5b6478; }
   .tip-val{ color:var(--text); }
+  .tip-scroll{ max-height:260px; overflow-y:auto; }
 
   /* ---- AHU floor plan (เดิม ไม่แก้) ---- */
   .ahu-shell{ display:flex; gap:14px; align-items:flex-start; }
@@ -187,6 +188,21 @@
           <div class="kpi-value"><span id="kpi-schp2">221.8</span><span class="kpi-unit">kW</span></div>
           <div class="kpi-label" style="margin-top:-1px;">SCHP Phase II รวม</div>
         </div>
+        <div class="kpi-card cyan">
+          <div class="kpi-value"><span id="kpi-totalkw">—</span><span class="kpi-unit">kW</span></div>
+          <div class="kpi-label" style="margin-top:-1px;">Total kW</div>
+          <div class="kpi-sub">sum สะสมของวัน</div>
+        </div>
+        <div class="kpi-card cyan">
+          <div class="kpi-value"><span id="kpi-totalkwplant">—</span><span class="kpi-unit">kW</span></div>
+          <div class="kpi-label" style="margin-top:-1px;">Total kW Plant</div>
+          <div class="kpi-sub">sum สะสมของวัน</div>
+        </div>
+        <div class="kpi-card cyan">
+          <div class="kpi-value"><span id="kpi-eff">—</span><span class="kpi-unit">kW/TR</span></div>
+          <div class="kpi-label" style="margin-top:-1px;">Plant Efficiency</div>
+          <div class="kpi-sub">average ของวัน</div>
+        </div>
       </div>
       <div style="display:flex; align-items:center; gap:8px; margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-faint);">
         <span id="sync-status">ยังไม่ได้ sync</span>
@@ -197,7 +213,7 @@
     <div class="block glass">
       <div class="card-title">
         <span>Chiller circuit — compact loop</span>
-        <span class="mockbadge">Hover กล่องเพื่อดูสถานะรายเครื่อง</span>
+        <span class="mockbadge">Hover กล่องเพื่อดูสถานะรายเครื่อง (ครบทุกตัว)</span>
       </div>
       <div class="legend-row">
         <div class="legend-item"><span class="legend-swatch" style="background:#34d399;"></span>Condenser Water Loop</div>
@@ -210,68 +226,140 @@
 
           <div class="hz top" style="left:1.50%; top:3.28%; width:13.53%; height:11.48%;">
             <div class="tip"><div class="tip-title">COOLING TOWER · 11 UNITS</div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>P1-CT-01</span><span class="tip-val">27.5 kW</span></div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-CT-01</span><span class="tip-val">6.3 kW</span></div>
-              <div class="tip-row" style="color:var(--text-faint); justify-content:center;">+9 หน่วยเพิ่มเติม</div>
+              <div class="tip-scroll">
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>P1-CT-01</span><span class="tip-val" data-group="CT" data-unit="P1-CT-01">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>P1-CT-02</span><span class="tip-val" data-group="CT" data-unit="P1-CT-02">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>P1-CT-03</span><span class="tip-val" data-group="CT" data-unit="P1-CT-03">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>P1-CT-04</span><span class="tip-val" data-group="CT" data-unit="P1-CT-04">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-CT-01</span><span class="tip-val" data-group="CT" data-unit="H-CT-01">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-CT-02</span><span class="tip-val" data-group="CT" data-unit="H-CT-02">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-CT-03</span><span class="tip-val" data-group="CT" data-unit="H-CT-03">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-CT-04</span><span class="tip-val" data-group="CT" data-unit="H-CT-04">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-CT-05</span><span class="tip-val" data-group="CT" data-unit="H-CT-05">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-CT-06</span><span class="tip-val" data-group="CT" data-unit="H-CT-06">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-CT-07</span><span class="tip-val" data-group="CT" data-unit="H-CT-07">–</span></div>
+              </div>
             </div>
           </div>
           <div class="hz top" style="left:18.05%; top:3.28%; width:13.53%; height:11.48%;">
             <div class="tip"><div class="tip-title">CONDENSER PUMP · 14 UNITS</div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-CDP-01</span><span class="tip-val">—</span></div>
-              <div class="tip-row" style="color:var(--text-faint); justify-content:center;">รอข้อมูล running/standby จริง</div>
+              <div class="tip-scroll">
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-CDP-01</span><span class="tip-val" data-group="CDP" data-unit="P1-CDP-01">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-CDP-02</span><span class="tip-val" data-group="CDP" data-unit="P1-CDP-02">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-CDP-03</span><span class="tip-val" data-group="CDP" data-unit="P1-CDP-03">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-CDP-04</span><span class="tip-val" data-group="CDP" data-unit="P1-CDP-04">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-CDP-01</span><span class="tip-val" data-group="CDP" data-unit="H-CDP-01">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-CDP-02</span><span class="tip-val" data-group="CDP" data-unit="H-CDP-02">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-CDP-03</span><span class="tip-val" data-group="CDP" data-unit="H-CDP-03">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-CDP-04</span><span class="tip-val" data-group="CDP" data-unit="H-CDP-04">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-CDP-05</span><span class="tip-val" data-group="CDP" data-unit="H-CDP-05">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-CDP-06</span><span class="tip-val" data-group="CDP" data-unit="H-CDP-06">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-CDP-07</span><span class="tip-val" data-group="CDP" data-unit="H-CDP-07">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-CDP-08</span><span class="tip-val" data-group="CDP" data-unit="H-CDP-08">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>RFUP-01</span><span class="tip-val" data-group="CDP" data-unit="RFUP-01">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>RFUP-02</span><span class="tip-val" data-group="CDP" data-unit="RFUP-02">–</span></div>
+              </div>
             </div>
           </div>
           <div class="hz" style="left:18.05%; top:17.21%; width:13.53%; height:7.38%;">
             <div class="tip"><div class="tip-title">CONDENSER · น้ำร้อน · 12 UNITS</div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>P1-CH-02</span><span class="tip-val">Running</span></div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-CH-01</span><span class="tip-val">Standby</span></div>
-              <div class="tip-row" style="color:var(--text-faint); justify-content:center;">+10 หน่วยเพิ่มเติม</div>
+              <div class="tip-scroll" id="tip-chl-cond">
+                <div class="tip-row" data-chl="P1-CH-01"><span class="tip-id"><span class="stat-dot standby"></span>P1-CH-01</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="P1-CH-02"><span class="tip-id"><span class="stat-dot standby"></span>P1-CH-02</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="P1-CH-03"><span class="tip-id"><span class="stat-dot standby"></span>P1-CH-03</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="P1-CH-04"><span class="tip-id"><span class="stat-dot standby"></span>P1-CH-04</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="H1-CH-01"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-01</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="H1-CH-02"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-02</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="H1-CH-03"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-03</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="H1-CH-04"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-04</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="H1-CH-05"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-05</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="H1-CH-06"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-06</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="H1-CH-07"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-07</span><span class="tip-val">Standby</span></div>
+                <div class="tip-row" data-chl="H1-CH-08"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-08</span><span class="tip-val">Standby</span></div>
+              </div>
             </div>
           </div>
           <div class="hz" style="left:18.05%; top:24.59%; width:13.53%; height:7.38%;">
             <div class="tip"><div class="tip-title">EVAPORATOR · น้ำเย็น · 12 UNITS</div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>P1-CH-02</span><span class="tip-val" id="tip-chl-active">540.7 kW</span></div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-CH-01</span><span class="tip-val">0 kW</span></div>
-              <div class="tip-row" style="color:var(--text-faint); justify-content:center;">+10 หน่วยเพิ่มเติม</div>
+              <div class="tip-scroll" id="tip-chl-evap">
+                <div class="tip-row" data-chl="P1-CH-01"><span class="tip-id"><span class="stat-dot standby"></span>P1-CH-01</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="P1-CH-02"><span class="tip-id"><span class="stat-dot standby"></span>P1-CH-02</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="P1-CH-03"><span class="tip-id"><span class="stat-dot standby"></span>P1-CH-03</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="P1-CH-04"><span class="tip-id"><span class="stat-dot standby"></span>P1-CH-04</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="H1-CH-01"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-01</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="H1-CH-02"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-02</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="H1-CH-03"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-03</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="H1-CH-04"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-04</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="H1-CH-05"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-05</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="H1-CH-06"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-06</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="H1-CH-07"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-07</span><span class="tip-val">0 kW</span></div>
+                <div class="tip-row" data-chl="H1-CH-08"><span class="tip-id"><span class="stat-dot standby"></span>H1-CH-08</span><span class="tip-val">0 kW</span></div>
+              </div>
             </div>
           </div>
           <div class="hz" style="left:18.05%; top:34.43%; width:13.53%; height:11.48%;">
             <div class="tip"><div class="tip-title">PRIMARY CHW PUMP · 12 UNITS</div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-PCHP-01</span><span class="tip-val">—</span></div>
-              <div class="tip-row" style="color:var(--text-faint); justify-content:center;">รอข้อมูล running/standby จริง</div>
+              <div class="tip-scroll">
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-PCHP-01</span><span class="tip-val" data-group="PCHP" data-unit="P1-PCHP-01">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-PCHP-02</span><span class="tip-val" data-group="PCHP" data-unit="P1-PCHP-02">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-PCHP-03</span><span class="tip-val" data-group="PCHP" data-unit="P1-PCHP-03">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>P1-PCHP-04</span><span class="tip-val" data-group="PCHP" data-unit="P1-PCHP-04">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-PCHP-01</span><span class="tip-val" data-group="PCHP" data-unit="H-PCHP-01">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-PCHP-02</span><span class="tip-val" data-group="PCHP" data-unit="H-PCHP-02">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-PCHP-03</span><span class="tip-val" data-group="PCHP" data-unit="H-PCHP-03">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-PCHP-04</span><span class="tip-val" data-group="PCHP" data-unit="H-PCHP-04">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-PCHP-05</span><span class="tip-val" data-group="PCHP" data-unit="H-PCHP-05">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-PCHP-06</span><span class="tip-val" data-group="PCHP" data-unit="H-PCHP-06">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-PCHP-07</span><span class="tip-val" data-group="PCHP" data-unit="H-PCHP-07">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot standby"></span>H-PCHP-08</span><span class="tip-val" data-group="PCHP" data-unit="H-PCHP-08">–</span></div>
+              </div>
             </div>
           </div>
           <div class="hz" style="left:45.86%; top:41.80%; width:10.53%; height:6.56%;">
             <div class="tip"><div class="tip-title">SCHP PHASE I · 7 UNITS</div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-01</span><span class="tip-val">58.8 kW</span></div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-02</span><span class="tip-val">55.0 kW</span></div>
-              <div class="tip-row" style="color:var(--text-faint); justify-content:center;">+5 หน่วยเพิ่มเติม</div>
+              <div class="tip-scroll">
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-01</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-01">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-02</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-02">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-03</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-03">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-04</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-04">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-05</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-05">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-06</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-06">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-07</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-07">–</span></div>
+              </div>
             </div>
           </div>
           <div class="hz" style="left:77.44%; top:41.80%; width:10.53%; height:6.56%;">
             <div class="tip"><div class="tip-title">SCHP PHASE II · 9 UNITS</div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-01</span><span class="tip-val">26.8 kW</span></div>
-              <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-04</span><span class="tip-val">15.2 kW</span></div>
-              <div class="tip-row" style="color:var(--text-faint); justify-content:center;">+7 หน่วยเพิ่มเติม</div>
+              <div class="tip-scroll">
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-01</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-01">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-02</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-02">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-03</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-03">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-04</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-04">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-05</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-05">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-06</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-06">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-07</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-07">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-08</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-08">–</span></div>
+                <div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-09</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-09">–</span></div>
+              </div>
             </div>
           </div>
           <div class="hz" style="left:36.09%; top:53.28%; width:9.02%; height:8.20%;">
-            <div class="tip"><div class="tip-title">FRONT ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-01</span><span class="tip-val">58.8 kW</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-02</span><span class="tip-val">55.0 kW</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-03</span><span class="tip-val">40.4 kW</span></div></div>
+            <div class="tip"><div class="tip-title">FRONT ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-01</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-01">–</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-02</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-02">–</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-03</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-03">–</span></div></div>
           </div>
           <div class="hz" style="left:46.62%; top:53.28%; width:9.02%; height:8.20%;">
-            <div class="tip"><div class="tip-title">BACK ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-04</span><span class="tip-val">24.5 kW</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-05</span><span class="tip-val">15.6 kW</span></div></div>
+            <div class="tip"><div class="tip-title">BACK ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-04</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-04">–</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-05</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-05">–</span></div></div>
           </div>
           <div class="hz" style="left:57.14%; top:53.28%; width:9.02%; height:8.20%;">
-            <div class="tip"><div class="tip-title">EH105-106 ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-06</span><span class="tip-val">41.2 kW</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-07</span><span class="tip-val">25.5 kW</span></div></div>
+            <div class="tip"><div class="tip-title">EH105-106 ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-06</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-06">–</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>SCHP-07</span><span class="tip-val" data-group="SCHP" data-unit="SCHP-07">–</span></div></div>
           </div>
           <div class="hz" style="left:67.67%; top:53.28%; width:9.02%; height:8.20%;">
-            <div class="tip"><div class="tip-title">SUPPORT ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-01</span><span class="tip-val">26.8 kW</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-02</span><span class="tip-val">14.2 kW</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-03</span><span class="tip-val">32.1 kW</span></div></div>
+            <div class="tip"><div class="tip-title">SUPPORT ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-01</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-01">–</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-02</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-02">–</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-03</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-03">–</span></div></div>
           </div>
           <div class="hz" style="left:78.20%; top:53.28%; width:9.02%; height:8.20%;">
-            <div class="tip"><div class="tip-title">SALE ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-04</span><span class="tip-val">15.2 kW</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-05</span><span class="tip-val">19.8 kW</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-06</span><span class="tip-val">19.5 kW</span></div></div>
+            <div class="tip"><div class="tip-title">SALE ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-04</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-04">–</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-05</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-05">–</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-06</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-06">–</span></div></div>
           </div>
           <div class="hz" style="left:88.72%; top:53.28%; width:9.02%; height:8.20%;">
-            <div class="tip"><div class="tip-title">EXHIBITION ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-07</span><span class="tip-val">28.7 kW</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-08</span><span class="tip-val">32.8 kW</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-09</span><span class="tip-val">32.7 kW</span></div></div>
+            <div class="tip"><div class="tip-title">EXHIBITION ZONE</div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-07</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-07">–</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-08</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-08">–</span></div><div class="tip-row"><span class="tip-id"><span class="stat-dot run"></span>H-SCHP-09</span><span class="tip-val" data-group="SCHP" data-unit="H-SCHP-09">–</span></div></div>
           </div>
         </div>
       </div>
@@ -399,49 +487,114 @@ renderWing('convention-wing', CONVENTION);
 </script>
 
 <script>
-/* ===== Circuit KPI sync — เชื่อม Apps Script Web App จริง (โครงเดิมจาก index.html ต้นฉบับ) =====
-   ตอนนี้ sync ทั้งการ์ด KPI ด้านบน และค่าตัวเลขในผังวงจรไปพร้อมกัน */
+/* ===== [ใหม่ 22/7/69] Circuit + KPI sync — เชื่อม ?action=summary =====
+   หลักการค่า (ยืนยันแล้วในแชท):
+     - Total kW / Total kW Plant / Main Chiller / CT รวม / SCHP1 รวม / SCHP2 รวม = sum สะสมของวัน
+     - Plant Efficiency = average ของวัน
+     - รายตัวในกล่อง tooltip (CT, SCHP, CDP, PCHP) = average ของวัน ต่อเครื่อง — โชว์ครบทุกตัว ไม่มี "+N เพิ่มเติม"
+     - Main Chiller รายเครื่อง (Condenser/Evaporator tooltip): API ไม่มี breakdown รายเครื่อง
+       มีแค่ totals.mainChillerKw (รวม) + latest.chillerRunning (เครื่องที่วิ่งอยู่)
+       จึงไฮไลต์ stat-dot เป็น "run" เฉพาะเครื่องที่ตรงกับ chillerRunning และใส่ค่า kW รวม
+       ไปที่เครื่องนั้นเครื่องเดียว (ฝั่ง Evaporator) ส่วนเครื่องอื่นเป็น Standby / 0 kW
+*/
 (function(){
   var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
   var syncBtn = document.getElementById('sync-btn');
   var syncStatus = document.getElementById('sync-status');
 
-  function setEl(id, val, digits){
+  function setText(id, val, digits){
     var el = document.getElementById(id);
     if(!el) return;
     var noData = (val === null || val === undefined || val === '');
     el.textContent = noData ? '—' : ((typeof val === 'number') ? val.toFixed(digits===undefined?1:digits) : val);
   }
 
+  // อัปเดตทุก tooltip ที่มี data-group/data-unit (CT, SCHP, CDP, PCHP) — ครอบคลุมทั้งกล่อง roster
+  // และกล่องโซน SCHP ที่ใช้ id ซ้ำกัน (querySelectorAll หาเจอทุก element ที่ตรง)
+  function updateUnitSpans(perUnit){
+    document.querySelectorAll('[data-group][data-unit]').forEach(function(el){
+      var group = el.getAttribute('data-group');
+      var unitId = el.getAttribute('data-unit');
+      var groupObj = perUnit ? perUnit[group] : null;
+      var v = groupObj ? groupObj[unitId] : undefined;
+      var hasVal = (v !== undefined && v !== null);
+      el.textContent = hasVal ? (v.toFixed(1) + ' kW') : '–';
+      var dot = el.closest('.tip-row') ? el.closest('.tip-row').querySelector('.stat-dot') : null;
+      if(dot){
+        dot.classList.toggle('run', hasVal);
+        dot.classList.toggle('standby', !hasVal);
+      }
+    });
+  }
+
+  // อัปเดตกล่อง Condenser (running/standby) + Evaporator (kW) ของ Main Chiller ตาม latest.chillerRunning
+  function updateChillerRows(activeChillerId, mainChillerKw){
+    document.querySelectorAll('#tip-chl-cond [data-chl]').forEach(function(row){
+      var isRunning = activeChillerId && row.getAttribute('data-chl') === activeChillerId;
+      var dot = row.querySelector('.stat-dot');
+      var val = row.querySelector('.tip-val');
+      if(dot){ dot.classList.toggle('run', isRunning); dot.classList.toggle('standby', !isRunning); }
+      if(val) val.textContent = isRunning ? 'Running' : 'Standby';
+    });
+    document.querySelectorAll('#tip-chl-evap [data-chl]').forEach(function(row){
+      var isRunning = activeChillerId && row.getAttribute('data-chl') === activeChillerId;
+      var dot = row.querySelector('.stat-dot');
+      var val = row.querySelector('.tip-val');
+      if(dot){ dot.classList.toggle('run', isRunning); dot.classList.toggle('standby', !isRunning); }
+      if(val) val.textContent = isRunning && typeof mainChillerKw === 'number' ? (mainChillerKw.toFixed(1) + ' kW') : '0 kW';
+    });
+  }
+
   async function syncNow(){
     syncStatus.textContent = 'กำลัง sync...';
     if(syncBtn) syncBtn.disabled = true;
     try {
-      var res = await fetch(API_URL + '?action=latest');
+      var res = await fetch(API_URL + '?action=summary');
       if(!res.ok) throw new Error('HTTP ' + res.status);
-      var latest = await res.json();
+      var summary = await res.json();
+      window.__latestPowerSummary = summary;
 
-      // การ์ด KPI ด้านบน (เหมือนเดิม)
-      setEl('kpi-ct', latest.ctDemandKw);
-      setEl('kpi-chl', latest.activeChillerCumulativeKw);
-      setEl('kpi-schp1', latest.schpDemandKw);
-      setEl('kpi-schp2', latest.hSchpDemandKw);
+      var totals = summary.totals || {};
+      var averages = summary.averages || {};
+      var perUnit = summary.perUnit || {};
+      var latest = summary.latest || {};
+
+      // การ์ด KPI ด้านบน (ทั้งหมด = sum สะสมของวัน ยกเว้น Plant Efficiency = average)
+      setText('kpi-ct', totals.ctTotal);
+      setText('kpi-chl', totals.mainChillerKw);
+      setText('kpi-schp1', totals.schpPhase1Total);
+      setText('kpi-schp2', totals.schpPhase2Total);
+      setText('kpi-totalkw', totals.totalKwAll);
+      setText('kpi-totalkwplant', totals.totalKwPlant);
+      setText('kpi-eff', averages.plantEfficiency, 3);
+
       var chlSub = document.getElementById('kpi-chl-sub');
-      if(chlSub && latest.activeChiller) chlSub.textContent = 'เครื่องที่วิ่งอยู่: ' + latest.activeChiller;
+      if(chlSub){
+        chlSub.textContent = latest.chillerRunning
+          ? 'เครื่องที่วิ่งอยู่ล่าสุด: ' + latest.chillerRunning
+          : 'ยังไม่มีข้อมูลเครื่องที่วิ่งอยู่';
+      }
 
-      // ค่าตัวเลขในผังวงจร (เพิ่มใหม่ — อัปเดตพร้อมกับ KPI ด้านบน)
-      updateCircuitValues(latest);
+      // ตัวเลขในผังวงจร (กล่อง panel หลัก) — ใช้ compatibility object ให้ renderCircuit เดิมไม่ต้องแก้
+      var vals = {
+        ctDemandKw: totals.ctTotal,
+        activeChillerCumulativeKw: totals.mainChillerKw,
+        schpDemandKw: totals.schpPhase1Total,
+        hSchpDemandKw: totals.schpPhase2Total
+      };
+      updateCircuitValues(vals);
 
-      // ค่าใน tooltip ของ Evaporator (โชว์เครื่องที่วิ่งอยู่จริง)
-      var tipChl = document.getElementById('tip-chl-active');
-      if(tipChl && typeof latest.activeChillerCumulativeKw === 'number') tipChl.textContent = latest.activeChillerCumulativeKw.toFixed(1) + ' kW';
+      // tooltip รายตัวทั้งหมด: CT / SCHP (roster + โซน) / CDP / PCHP
+      updateUnitSpans(perUnit);
+      // tooltip Main Chiller (Condenser/Evaporator) — ไฮไลต์เครื่องที่วิ่งอยู่
+      updateChillerRows(latest.chillerRunning, totals.mainChillerKw);
 
-      window.__latestPowerData = latest;
-      var dateStr = latest.date ? String(latest.date).slice(0, 10) : '';
-      var syncedText = '✅ sync ล่าสุด: ' + dateStr + ' ' + (latest.time||'');
+      var dateStr = summary.date || '';
+      var timeStr = latest.time || '';
+      var syncedText = '✅ sync ล่าสุด (sum/average ของวัน ' + dateStr + '), แถวล่าสุด ' + timeStr;
       syncStatus.textContent = syncedText;
       var sbFoot = document.getElementById('sbFoot');
-      if(sbFoot) sbFoot.textContent = 'Last sync ' + (latest.time || dateStr);
+      if(sbFoot) sbFoot.textContent = 'Last sync ' + (timeStr || dateStr);
     } catch(err){
       syncStatus.textContent = '❌ sync ล้มเหลว: ' + err.message;
     } finally {
@@ -495,7 +648,9 @@ renderWing('convention-wing', CONVENTION);
 
 <script>
 /* ===== ผังวงจร: กล่องพอดีข้อความ + hover + เส้นทางที่ยืนยันถูกต้องแล้ว =====
-   updateCircuitValues(latest) ถูกเรียกจากสคริปต์ sync ด้านบน เพื่ออัปเดตตัวเลขในผังให้ตรงกับ KPI จริง */
+   updateCircuitValues(vals) ถูกเรียกจากสคริปต์ sync ด้านบน เพื่ออัปเดตตัวเลขในผังให้ตรงกับ KPI จริง
+   หมายเหตุ: ฟังก์ชันนี้ไม่ได้แก้ ยังรับ vals ในรูปแบบเดิม (ctDemandKw / activeChillerCumulativeKw /
+   schpDemandKw / hSchpDemandKw) — สคริปต์ sync ด้านบนแปลงข้อมูลจาก ?action=summary ให้อยู่ในรูปนี้ก่อนส่งเข้ามา */
 var GREEN = '#34d399', BLUE = '#38bdf8', AMBER = '#f2b84f';
 function sp(pts){ return pts.map(function(p,i){ return (i===0?'M':'L')+p.x.toFixed(1)+' '+p.y.toFixed(1); }).join(' '); }
 function box(x,y,w,h){ return {x:x,y:y,w:w,h:h}; }
