@@ -9,11 +9,15 @@
 <style>
   :root{
     --p1-1:#22d3ee; --p2-1:#a855f7;
-    --text:#f3f6fb; --text-muted:#93a0b8; --text-faint:#59657f;
+    --text:#f3f6fb; --text-muted:#a3b0c7; --text-faint:#6d7b96;
     --glass:rgba(255,255,255,0.035); --glass-border:rgba(255,255,255,0.10);
     --hot:#f2867a; --cold:#38bdf8; --return:#f2b84f; --green:#34d399;
     --sidebar-w:180px; --sidebar-w-collapsed:60px; --topbar-h:52px;
   }
+  @keyframes flowdash{ to{ stroke-dashoffset:-56; } }
+  .flow-line{ stroke-dasharray:9 7; animation:flowdash 1.4s linear infinite; }
+  @keyframes livepulse{ 0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(52,211,153,0.55); } 50%{ opacity:.55; box-shadow:0 0 0 4px rgba(52,211,153,0); } }
+  .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--green); display:inline-block; margin-right:5px; animation:livepulse 1.8s ease-in-out infinite; }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{ height:100%; overflow:hidden; }
   body{
@@ -89,18 +93,21 @@
   /* [ใหม่] Side Panel ทึบ แทน hover tooltip ลอย — คลิกกล่องเพื่อเปิด */
   .diagram-col{ flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; }
   .side-panel{ width:0; overflow:hidden; flex-shrink:0; transition:width .2s ease; background:#0d1017; border-left:1px solid var(--glass-border); border-radius:0 14px 14px 0; }
-  .side-panel.open{ width:260px; }
-  .sp-inner{ width:260px; height:100%; padding:14px; display:flex; flex-direction:column; min-height:0; }
+  .side-panel.open{ width:300px; }
+  .sp-inner{ width:300px; height:100%; padding:14px; display:flex; flex-direction:column; min-height:0; }
+  .sp-status{ display:inline-block; font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; letter-spacing:.3px; padding:2px 7px; border-radius:20px; }
+  .sp-status.on{ color:var(--green); background:rgba(52,211,153,0.14); }
+  .sp-status.off{ color:var(--text-faint); background:rgba(255,255,255,0.05); }
   .sp-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12.5px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; margin-bottom:2px; }
   .sp-close{ background:none; border:none; color:var(--text-faint); cursor:pointer; font-size:13px; padding:2px 5px; border-radius:5px; }
   .sp-close:hover{ background:rgba(255,255,255,0.08); color:#fff; }
   .sp-sub{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint); margin-bottom:10px; flex-shrink:0; }
   .sp-head-row{ display:flex; justify-content:space-between; padding:2px; font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text-faint); text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,.14); padding-bottom:5px; margin-bottom:3px; flex-shrink:0; }
-  .sp-rows{ flex:1; min-height:0; overflow-y:auto; }
-  .sp-row{ display:flex; align-items:center; justify-content:space-between; padding:6px 2px; font-family:'JetBrains Mono',monospace; font-size:11px; border-top:1px solid rgba(255,255,255,.06); gap:6px; border-radius:4px; }
+  .sp-rows{ flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; justify-content:flex-start; }
+  .sp-row{ display:flex; align-items:center; justify-content:space-between; padding:5px 2px; font-family:'JetBrains Mono',monospace; font-size:10.5px; border-top:1px solid rgba(255,255,255,.06); gap:6px; border-radius:4px; }
   .sp-row:first-child{ border-top:none; }
   .sp-row.row-hit{ background:rgba(250,199,117,0.18); }
-  .sp-id{ color:var(--text-muted); display:flex; align-items:center; gap:5px; flex:1; }
+  .sp-id{ color:var(--text); font-weight:600; flex:1; }
   .sp-val{ color:var(--text); font-weight:600; width:58px; text-align:right; }
   .sp-tr{ color:var(--text-faint); width:38px; text-align:right; }
   .sp-empty{ display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:8px; color:var(--text-faint); text-align:center; padding:16px; font-size:11px; }
@@ -166,20 +173,20 @@
       <span class="f-btn active" data-range="today">วันนี้</span>
       <span class="f-btn" data-range="yesterday">เมื่อวาน</span>
       <input type="date" id="dateFilter">
-      <span id="sync-status" class="sync-note">ยังไม่ได้ sync</span>
+      <span id="sync-status" class="sync-note"><span class="live-dot" id="liveDot" style="display:none;"></span><span id="syncText">ยังไม่ได้ sync</span></span>
     </div>
   </div>
 
   <div class="panel active" id="panel-plant">
     <div class="kpi-strip">
-      <div class="kpi-chip hot"><div class="lbl">Cooling Tower</div><div class="val"><span id="kpi-ct">—</span><span class="unit">kW</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip green"><div class="lbl">Main Chiller</div><div class="val"><span id="kpi-chl">—</span><span class="unit">kW</span></div><div class="sub" id="kpi-chl-sub">ยังไม่มีข้อมูล</div></div>
-      <div class="kpi-chip green"><div class="lbl">Chiller Capacity</div><div class="val"><span id="kpi-tr">—</span><span class="unit">TR</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip"><div class="lbl">SCHP Phase I</div><div class="val"><span id="kpi-schp1">—</span><span class="unit">kW</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip"><div class="lbl">SCHP Phase II</div><div class="val"><span id="kpi-schp2">—</span><span class="unit">kW</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip"><div class="lbl">Total kW</div><div class="val"><span id="kpi-totalkw">—</span><span class="unit">kW</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip"><div class="lbl">Total kW Plant</div><div class="val"><span id="kpi-totalkwplant">—</span><span class="unit">kW</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip"><div class="lbl">Plant Efficiency</div><div class="val"><span id="kpi-eff">—</span><span class="unit">kW/TR</span></div><div class="sub">average วันนี้</div></div>
+      <div class="kpi-chip hot"><div class="lbl">Cooling Tower</div><div class="val"><span id="kpi-ct">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip green"><div class="lbl">Main Chiller</div><div class="val"><span id="kpi-chl">—</span><span class="unit">(kW)</span></div><div class="sub" id="kpi-chl-sub">ยังไม่มีข้อมูล</div></div>
+      <div class="kpi-chip green"><div class="lbl">Chiller Capacity</div><div class="val"><span id="kpi-tr">—</span><span class="unit">(TR)</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">SCHP Phase I</div><div class="val"><span id="kpi-schp1">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">SCHP Phase II</div><div class="val"><span id="kpi-schp2">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">Total kW</div><div class="val"><span id="kpi-totalkw">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">Total kW Plant</div><div class="val"><span id="kpi-totalkwplant">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">Plant Efficiency</div><div class="val"><span id="kpi-eff">—</span><span class="unit">(kW/TR)</span></div><div class="sub">average วันนี้</div></div>
     </div>
 
     <div class="circuit-area glass" style="flex-direction:row;">
@@ -188,15 +195,12 @@
           <div class="legend-item"><span class="legend-swatch" style="background:var(--hot);"></span>Condenser Water Loop (น้ำร้อน)</div>
           <div class="legend-item"><span class="legend-swatch" style="background:var(--cold);"></span>Chilled Water Supply (น้ำเย็น)</div>
           <div class="legend-item"><span class="legend-swatch" style="background:var(--return);"></span>Chilled Water Return</div>
-          <div class="legend-item" style="margin-left:auto;">คลิกกล่องเพื่อดูรายละเอียด · พิมพ์ค้นหาด้านบนเพื่อไฮไลต์เครื่อง</div>
+          <div class="legend-item" style="margin-left:auto;">คลิกกล่อง Main Chiller / SCHP เพื่อดูรายเครื่อง · พิมพ์ค้นหาด้านบนเพื่อไฮไลต์เครื่อง</div>
         </div>
         <div class="svg-wrap">
           <svg id="svgMain" viewBox="0 0 1330 660" xmlns="http://www.w3.org/2000/svg"></svg>
 
-          <div class="hz" data-key="ct" style="left:1.50%; top:3.03%; width:13.53%; height:10.61%;"></div>
-          <div class="hz" data-key="cdp" style="left:30.08%; top:3.03%; width:13.53%; height:10.61%;"></div>
           <div class="hz" data-key="chl" style="left:30.08%; top:30.30%; width:13.53%; height:7.58%;"></div>
-          <div class="hz" data-key="pchp" style="left:30.08%; top:71.21%; width:13.53%; height:10.61%;"></div>
           <div class="hz" data-key="schp1" style="left:53.08%; top:54.55%; width:10.53%; height:6.06%;"></div>
           <div class="hz" data-key="schp2" style="left:79.25%; top:54.55%; width:10.53%; height:6.06%;"></div>
           <div class="hz" data-key="front" style="left:45.86%; top:66.67%; width:7.52%; height:8.33%;"></div>
@@ -248,8 +252,8 @@
   <div class="panel" id="panel-report">
     <div class="monthly-shell glass">
       <div class="kpi-strip" style="padding:0;">
-        <div class="kpi-chip"><div class="lbl" id="monthly-kpi-kwh-label">Total kWh</div><div class="val"><span id="monthly-kpi-kwh">—</span><span class="unit">kWh</span></div></div>
-        <div class="kpi-chip"><div class="lbl">Total TR</div><div class="val"><span id="monthly-kpi-tr">—</span><span class="unit">TR</span></div></div>
+        <div class="kpi-chip"><div class="lbl" id="monthly-kpi-kwh-label">Total (kWh)</div><div class="val"><span id="monthly-kpi-kwh">—</span><span class="unit">(kWh)</span></div></div>
+        <div class="kpi-chip"><div class="lbl">Total (TR)</div><div class="val"><span id="monthly-kpi-tr">—</span><span class="unit">(TR)</span></div></div>
       </div>
       <div id="monthly-sync-status" class="sync-note" style="margin-top:6px;">ยังไม่ได้ sync</div>
       <div class="table-scroll">
@@ -283,6 +287,13 @@ document.querySelectorAll('[data-phase]').forEach(function(btn){
   });
 });
 
+// [ทศนิยม/คอมม่า] ตัวช่วยแสดงตัวเลขใช้ร่วมกันทั้งหน้า — ทศนิยม 2 ตำแหน่งเสมอ + คอมม่าเมื่อเกินพัน
+function fmtNum(v, digits){
+  if(v === null || v === undefined || (typeof v === 'number' && isNaN(v))) return '—';
+  digits = (digits === undefined) ? 2 : digits;
+  return Number(v).toLocaleString('en-US',{minimumFractionDigits:digits, maximumFractionDigits:digits});
+}
+
 var CT_IDS = ["P1-CT-01","P1-CT-02","P1-CT-03","P1-CT-04","H-CT-01","H-CT-02","H-CT-03","H-CT-04","H-CT-05","H-CT-06","H-CT-07"];
 var CDP_IDS = ["P1-CDP-01","P1-CDP-02","P1-CDP-03","P1-CDP-04","H-CDP-01","H-CDP-02","H-CDP-03","H-CDP-04","H-CDP-05","H-CDP-06","H-CDP-07","H-CDP-08","RFUP-01","RFUP-02"];
 var PCHP_IDS = ["P1-PCHP-01","P1-PCHP-02","P1-PCHP-03","P1-PCHP-04","H-PCHP-01","H-PCHP-02","H-PCHP-03","H-PCHP-04","H-PCHP-05","H-PCHP-06","H-PCHP-07","H-PCHP-08"];
@@ -296,10 +307,9 @@ var ZONE_MEMBERS = {
 
 // [ใหม่] นิยามแต่ละกล่อง -> ใช้สร้างเนื้อหา side panel แบบ dynamic ตอนคลิก (ไม่ render ค้างไว้ล่วงหน้าเหมือนเดิม)
 var PANEL_DEFS = {
-  ct:     { title:'Cooling Tower',      kind:'unit', group:'CT',   ids:CT_IDS,   totalKey:'ctTotal' },
-  cdp:    { title:'Condenser Pump',     kind:'unit', group:'CDP',  ids:CDP_IDS,  totalKey:'cdpTotal' },
+  // [ข้อ5] ดีเทลรายเครื่อง (คลิกเปิด side panel) เหลือแค่ Main Chiller กับ SCHP เท่านั้น
+  // CT / CDP / Primary Water Pump ยังโชว์ค่ารวมที่กล่องในผังตามเดิม แต่ไม่มีปุ่มคลิกดูรายเครื่องแล้ว
   chl:    { title:'Main Chiller',       kind:'chl',  ids:CHL_IDS },
-  pchp:   { title:'Primary CHW Pump',   kind:'unit', group:'PCHP', ids:PCHP_IDS, totalKey:'pchpTotal' },
   schp1:  { title:'SCHP Phase I',       kind:'unit', group:'SCHP', ids:SCHP1_IDS, totalKey:'schpPhase1Total' },
   schp2:  { title:'SCHP Phase II',      kind:'unit', group:'SCHP', ids:SCHP2_IDS, totalKey:'schpPhase2Total' },
   front:      { title:'Front Zone',       kind:'unit', group:'SCHP', ids:ZONE_MEMBERS.front },
@@ -310,9 +320,14 @@ var PANEL_DEFS = {
   exhibition: { title:'Exhibition Zone',  kind:'unit', group:'SCHP', ids:ZONE_MEMBERS.exhibition }
 };
 // ลำดับความสำคัญตอนค้นหา (roster หลักก่อน แล้วค่อยโซนย่อย เพราะ id บางตัวซ้ำกันได้ระหว่าง roster กับโซน)
-var SEARCH_PRIORITY = ['ct','cdp','chl','pchp','schp1','schp2','front','back','eh105','support','sale','exhibition'];
+var SEARCH_PRIORITY = ['chl','schp1','schp2','front','back','eh105','support','sale','exhibition'];
 
 var currentPanelKey = null;
+
+// [ข้อ6] สถานะใช้ ON/OFF แบบ pill แทนข้อความยาว
+function statusPill_(on){
+  return '<span class="sp-status '+(on?'on':'off')+'">'+(on?'ON':'OFF')+'</span>';
+}
 
 function renderPanel(key){
   var def = PANEL_DEFS[key];
@@ -328,27 +343,28 @@ function renderPanel(key){
     var chlTr = perUnit.CHL_TR || {};
     var totalKw = totals.mainChillerKw, totalTr = totals.chillerCapacityTr;
     document.getElementById('spSub').textContent = def.ids.length+' หน่วย · sum สะสมของวัน · รวม '+
-      (typeof totalKw==='number'?totalKw.toFixed(1)+' kW':'—')+' / '+(typeof totalTr==='number'?totalTr.toFixed(0)+' TR':'—');
-    document.getElementById('spHeadRow').innerHTML = '<span>Unit</span><span style="width:70px;text-align:right;">สถานะ</span><span style="width:56px;text-align:right;">kW</span><span style="width:38px;text-align:right;">TR</span>';
+      (typeof totalKw==='number'?fmtNum(totalKw)+' (kW)':'—')+' / '+(typeof totalTr==='number'?fmtNum(totalTr)+' (TR)':'—');
+    document.getElementById('spHeadRow').innerHTML = '<span>Unit</span><span style="width:40px;text-align:right;">สถานะ</span><span style="width:70px;text-align:right;">(kW)</span><span style="width:56px;text-align:right;">(TR)</span>';
     document.getElementById('spRows').innerHTML = def.ids.map(function(id){
       var v = chlSums[id], tr = chlTr[id];
       var hasVal = (v !== undefined && v !== null);
-      return '<div class="sp-row" data-unit="'+id+'"><span class="sp-id"><span class="stat-dot '+(hasVal?'run':'standby')+'"></span>'+id+'</span>'+
-        '<span class="sp-val" style="width:70px;">'+(hasVal?'เดินวันนี้':'ไม่ได้เดิน')+'</span>'+
-        '<span class="sp-val">'+(hasVal?v.toFixed(1)+' kW':'0 kW')+'</span>'+
-        '<span class="sp-tr">'+((tr!==undefined&&tr!==null)?tr:'–')+'</span></div>';
+      return '<div class="sp-row" data-unit="'+id+'"><span class="sp-id">'+id+'</span>'+
+        '<span style="width:40px;text-align:right;">'+statusPill_(hasVal)+'</span>'+
+        '<span class="sp-val" style="width:70px;">'+(hasVal?fmtNum(v):fmtNum(0))+'</span>'+
+        '<span class="sp-tr" style="width:56px;">'+((tr!==undefined&&tr!==null)?fmtNum(tr):'–')+'</span></div>';
     }).join('');
   } else {
     var groupObj = (perUnit[def.group]) || {};
     var totalVal = def.totalKey ? totals[def.totalKey] : null;
     document.getElementById('spSub').textContent = def.ids.length+' หน่วย · average ของวัน' +
-      ((typeof totalVal==='number') ? (' · รวม '+totalVal.toFixed(1)+' kW') : '');
-    document.getElementById('spHeadRow').innerHTML = '<span>Unit</span><span style="width:58px;text-align:right;">kW (avg)</span>';
+      ((typeof totalVal==='number') ? (' · รวม '+fmtNum(totalVal)+' (kW)') : '');
+    document.getElementById('spHeadRow').innerHTML = '<span>Unit</span><span style="width:40px;text-align:right;">สถานะ</span><span style="width:78px;text-align:right;">(kW) avg</span>';
     document.getElementById('spRows').innerHTML = def.ids.map(function(id){
       var v = groupObj[id];
       var hasVal = (v !== undefined && v !== null);
-      return '<div class="sp-row" data-unit="'+id+'"><span class="sp-id"><span class="stat-dot '+(hasVal?'run':'standby')+'"></span>'+id+'</span>'+
-        '<span class="sp-val">'+(hasVal?v.toFixed(1)+' kW':'–')+'</span></div>';
+      return '<div class="sp-row" data-unit="'+id+'"><span class="sp-id">'+id+'</span>'+
+        '<span style="width:40px;text-align:right;">'+statusPill_(hasVal)+'</span>'+
+        '<span class="sp-val" style="width:78px;">'+(hasVal?fmtNum(v):'–')+'</span></div>';
     }).join('');
   }
 }
@@ -413,7 +429,7 @@ function botPt(n,f){ f=f===undefined?0.5:f; return {x:n.x+n.w*f,y:n.y+n.h}; }
 function leftPt(n,f){ f=f===undefined?0.5:f; return {x:n.x,y:n.y+n.h*f}; }
 function rightPt(n,f){ f=f===undefined?0.5:f; return {x:n.x+n.w,y:n.y+n.h*f}; }
 var frag = {d:'<defs>'+['h','c','r'].map(k=>{var c=k==='h'?HOT:(k==='c'?COLD:RET);return '<marker id="M-'+k+'" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1L8 5L1 9" fill="none" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>';}).join('')+'</defs>'};
-function stroke(pts,color,key,w){ frag.d+='<path d="'+sp(pts)+'" stroke="'+color+'" stroke-width="'+(w||1.8)+'" fill="none" stroke-linecap="round" stroke-linejoin="round"'+(key?' marker-end="url(#M-'+key+')"':'')+'/>'; }
+function stroke(pts,color,key,w,noFlow){ frag.d+='<path d="'+sp(pts)+'" class="'+(noFlow?'':'flow-line')+'" stroke="'+color+'" stroke-width="'+(w||1.8)+'" fill="none" stroke-linecap="round" stroke-linejoin="round"'+(key?' marker-end="url(#M-'+key+')"':'')+'/>'; }
 function industrialShell(n,color){
   frag.d+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="6" fill="rgba(255,255,255,.03)" stroke="'+color+'" stroke-width="2.2"/>';
   frag.d+='<rect x="'+(n.x+4)+'" y="'+(n.y+4)+'" width="'+(n.w-8)+'" height="'+(n.h-8)+'" rx="4" fill="none" stroke="'+color+'" stroke-width="0.8" opacity=".45"/>';
@@ -425,24 +441,43 @@ function smallNode(n,title,kwText,color,rgb,id){
   frag.d+='<text x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2-2)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9.5" fill="#fff">'+title+'</text>';
   frag.d+='<text'+(id?' id="'+id+'"':'')+' x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2+14)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="12" fill="rgb('+rgb+')">'+(kwText||'—')+'</text>';
 }
-function zoneBox(n,title,color){
+// [Mock] จำนวน AHU เปิด/ทั้งหมด ต่อโซน — ยังไม่มี endpoint real-time ให้ผูก จึงใช้ mock ไว้ก่อนตามที่ตกลง
+var AHU_MOCK_COUNTS = {
+  front:{on:8,total:12}, back:{on:6,total:9}, eh105:{on:4,total:6},
+  support:{on:10,total:14}, sale:{on:12,total:16}, exhibition:{on:9,total:13}
+};
+function ahuRatioColor_(on,total){
+  var r = total ? on/total : 0;
+  if(r>=0.7) return '#34d399';
+  if(r>=0.4) return '#f2b84f';
+  return '#f2867a';
+}
+function zoneBox(n,title,color,key){
   industrialShell(n,color);
-  frag.d+='<text x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2+4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9.5" fill="#fff">'+title+'</text>';
+  frag.d+='<text x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2-2)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9.5" fill="#fff">'+title+'</text>';
+  var m = key ? AHU_MOCK_COUNTS[key] : null;
+  if(m){
+    var c = ahuRatioColor_(m.on, m.total);
+    frag.d+='<text x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2+14)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="10.5" fill="'+c+'">'+m.on+'/'+m.total+'<tspan font-family="JetBrains Mono,monospace" font-weight="600" font-size="7.5" fill="rgba(255,255,255,.55)"> AHU (mock)</tspan></text>';
+  }
 }
 
 var ct=box(20,20,180,70), cdp=box(400,20,180,70);
 var chlCond=box(400,140,180,60), chlMid=box(400,200,180,50), chlEvap=box(400,250,180,70); // [ข้อ6] ขยับลง 30px จากเดิม (110/170/220) ให้เส้น CDP->Condenser ยาวขึ้น
-var pchp=box(400,470,180,70);
 var evapCenterY = chlEvap.y + chlEvap.h/2;
 var hsup=box(885,evapCenterY-20,130,40);
-var midY=310;
-var schp1=box(706,360,140,40), schp2=box(1054,360,140,40);
-var trunkY=420;
-var front=box(610,440,100,55), back=box(726,440,100,55), eh105=box(842,440,100,55);
-var support=box(958,440,100,55), sale=box(1074,440,100,55), exhibition=box(1190,440,100,55);
-var convergeY=520;
-var hret=box(885,550,130,40);
-var ylow=610;
+// [ข้อ3] รีวิวช่วงตั้งแต่ Header Supply ลงมา — ปรับให้ทุกช่วง junction ห่างเท่ากัน (gap คงที่ 30px)
+// เดิม: gap หลัง hsup=5px (แน่นเกินไป), หลัง schp=20px, หลัง trunk=20px, หลัง zone=25px, หลัง converge=30px, หลัง hret=20px (ไม่สม่ำเสมอ)
+var GAP = 30;
+var midY = hsup.y + hsup.h + GAP;                 // 265+40+30 = 335
+var schp1=box(706,midY+25,140,40), schp2=box(1054,midY+25,140,40); // 360
+var trunkY = schp1.y + schp1.h + GAP;              // 400+30 = 430
+var front=box(610,trunkY+GAP,100,55), back=box(726,trunkY+GAP,100,55), eh105=box(842,trunkY+GAP,100,55);
+var support=box(958,trunkY+GAP,100,55), sale=box(1074,trunkY+GAP,100,55), exhibition=box(1190,trunkY+GAP,100,55);
+var convergeY = front.y + front.h + GAP;           // 460+55+30 = 545
+var hret=box(885,convergeY+GAP,130,40);            // 575
+var ylow = hret.y + hret.h + 25;                   // 615+25 = 640
+var pchp=box(400,490,180,70);                      // [ข้อ3] ขยับลงให้สมดุลกับแนวเส้น return ใหม่
 
 stroke([rightPt(ct),leftPt(cdp)],HOT,'h');
 stroke([botPt(cdp),topPt(chlCond)],HOT,'h');
@@ -470,17 +505,17 @@ frag.d+='<text x="'+(cdp.x+cdp.w/2)+'" y="'+(cdp.y+cdp.h/2-5)+'" text-anchor="mi
 industrialShell(chlCond,HOT);
 frag.d+='<text x="'+(chlCond.x+chlCond.w/2)+'" y="'+(chlCond.y+chlCond.h/2+3)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10" fill="#fff">Condenser · น้ำร้อน</text>';
 industrialShell(chlMid,'#8892a8');
-frag.d+='<text x="'+(chlMid.x+chlMid.w/2)+'" y="'+(chlMid.y+chlMid.h/2+4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="11" fill="#fff">Main Chiller</text>';
+frag.d+='<text x="'+(chlMid.x+chlMid.w/2)+'" y="'+(chlMid.y+chlMid.h/2-8)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10.5" fill="#fff">Main Chiller</text><text id="hdrval-MainChiller" x="'+(chlMid.x+chlMid.w/2)+'" y="'+(chlMid.y+chlMid.h/2+11)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="14" fill="'+'#34d399'+'">—</text><text x="'+(chlMid.x+chlMid.w/2)+'" y="'+(chlMid.y+chlMid.h-4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="600" font-size="7" fill="rgba(255,255,255,.5)">คลิกดูรายเครื่อง ›</text>';
 industrialShell(chlEvap,COLD);
-frag.d+='<text x="'+(chlEvap.x+chlEvap.w/2)+'" y="'+(chlEvap.y+chlEvap.h/2-1)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10" fill="#fff">Evaporator · น้ำเย็น</text><text id="hdrval-Evaporator" x="'+(chlEvap.x+chlEvap.w/2)+'" y="'+(chlEvap.y+chlEvap.h/2+16)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="13" fill="'+COLD+'">—</text>';
+frag.d+='<text x="'+(chlEvap.x+chlEvap.w/2)+'" y="'+(chlEvap.y+chlEvap.h/2+4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10" fill="#fff">Evaporator · น้ำเย็น</text>';
 industrialShell(pchp,RET);
-frag.d+='<text x="'+(pchp.x+pchp.w/2)+'" y="'+(pchp.y+pchp.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10.5" fill="#fff">Primary CHW Pump</text><text id="hdrval-PrimaryCHWPump" x="'+(pchp.x+pchp.w/2)+'" y="'+(pchp.y+pchp.h/2+18)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="15" fill="rgb(242,184,79)">—</text>';
+frag.d+='<text x="'+(pchp.x+pchp.w/2)+'" y="'+(pchp.y+pchp.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10.5" fill="#fff">Primary Water Pump</text><text id="hdrval-PrimaryWaterPump" x="'+(pchp.x+pchp.w/2)+'" y="'+(pchp.y+pchp.h/2+18)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="15" fill="rgb(242,184,79)">—</text>';
 smallNode(hsup,'Header Supply',null,COLD,'56,189,248');
 smallNode(hret,'Header Return',null,RET,'242,184,79');
 smallNode(schp1,'SCHP Phase I',null,COLD,'56,189,248','hdrval-SCHP1');
 smallNode(schp2,'SCHP Phase II',null,COLD,'56,189,248','hdrval-SCHP2');
-zoneBox(front,'Front',COLD); zoneBox(back,'Back',COLD); zoneBox(eh105,'EH105-106',COLD);
-zoneBox(support,'Support',COLD); zoneBox(sale,'Sale',COLD); zoneBox(exhibition,'Exhibition',COLD);
+zoneBox(front,'Front',COLD,'front'); zoneBox(back,'Back',COLD,'back'); zoneBox(eh105,'EH105-106',COLD,'eh105');
+zoneBox(support,'Support',COLD,'support'); zoneBox(sale,'Sale',COLD,'sale'); zoneBox(exhibition,'Exhibition',COLD,'exhibition');
 
 document.getElementById('svgMain').innerHTML = frag.d;
 
@@ -498,12 +533,12 @@ document.getElementById('svgMain').innerHTML = frag.d;
     var el = document.getElementById(id);
     if(!el) return;
     var noData = (val === null || val === undefined || val === '');
-    el.textContent = noData ? '—' : ((typeof val === 'number') ? val.toFixed(digits===undefined?1:digits) : val);
+    el.textContent = noData ? '—' : ((typeof val === 'number') ? fmtNum(val, digits===undefined?2:digits) : val);
   }
   function setHdr(id, val){
     var el = document.getElementById(id);
     if(!el) return;
-    el.textContent = (val===null||val===undefined) ? '—' : (val.toFixed(1)+' kW');
+    el.textContent = (val===null||val===undefined) ? '—' : (fmtNum(val,2)+' (kW)');
   }
 
   async function fetchSummary(dateStr){
@@ -514,7 +549,8 @@ document.getElementById('svgMain').innerHTML = frag.d;
   }
 
   async function syncNow(){
-    syncStatus.textContent = 'กำลัง sync...';
+    var syncTextInit = document.getElementById('syncText');
+    if(syncTextInit) syncTextInit.textContent = 'กำลัง sync...';
     try {
       var summary = await fetchSummary(currentDateStr);
       window.__latestPowerSummary = summary;
@@ -525,33 +561,39 @@ document.getElementById('svgMain').innerHTML = frag.d;
 
       setText('kpi-ct', totals.ctTotal);
       setText('kpi-chl', totals.mainChillerKw);
-      setText('kpi-tr', totals.chillerCapacityTr, 0);
+      setText('kpi-tr', totals.chillerCapacityTr);
       setText('kpi-schp1', totals.schpPhase1Total);
       setText('kpi-schp2', totals.schpPhase2Total);
       setText('kpi-totalkw', totals.totalKwAll);
       setText('kpi-totalkwplant', totals.totalKwPlant);
-      setText('kpi-eff', averages.plantEfficiency, 3);
+      setText('kpi-eff', averages.plantEfficiency);
 
       var chlSub = document.getElementById('kpi-chl-sub');
       if(chlSub) chlSub.textContent = latest.chillerRunning ? ('เครื่องที่วิ่งอยู่ล่าสุด: ' + latest.chillerRunning) : 'ไม่มีข้อมูลของวันนี้';
 
       setHdr('hdrval-CoolingTower', totals.ctTotal);
       setHdr('hdrval-CondenserPump', totals.cdpTotal);
-      setHdr('hdrval-PrimaryCHWPump', totals.pchpTotal);
+      setHdr('hdrval-PrimaryWaterPump', totals.pchpTotal);
       setHdr('hdrval-SCHP1', totals.schpPhase1Total);
       setHdr('hdrval-SCHP2', totals.schpPhase2Total);
-      setHdr('hdrval-Evaporator', totals.mainChillerKw);
+      setHdr('hdrval-MainChiller', totals.mainChillerKw);
 
       // [ใหม่] ถ้า side panel เปิดอยู่ ให้ re-render ด้วยข้อมูลใหม่ (ไม่ต้องปิดแล้วเปิดใหม่)
       if(currentPanelKey) renderPanel(currentPanelKey);
 
       var dateStr = summary.date || '';
       var timeStr = latest.time || '';
-      syncStatus.textContent = (dateStr ? ('✅ ' + dateStr + ' ') : '⚠️ ไม่มีข้อมูล ') + timeStr;
+      var liveDot = document.getElementById('liveDot');
+      var syncText = document.getElementById('syncText');
+      if(liveDot) liveDot.style.display = dateStr ? 'inline-block' : 'none';
+      if(syncText) syncText.textContent = (dateStr ? ('✅ ' + dateStr + ' ') : '⚠️ ไม่มีข้อมูล ') + timeStr;
       var sbFoot = document.getElementById('sbFoot');
       if(sbFoot) sbFoot.textContent = 'Last sync ' + (timeStr || dateStr || '-');
     } catch(err){
-      syncStatus.textContent = '❌ sync ล้มเหลว: ' + err.message;
+      var liveDot2 = document.getElementById('liveDot');
+      var syncText2 = document.getElementById('syncText');
+      if(liveDot2) liveDot2.style.display = 'none';
+      if(syncText2) syncText2.textContent = '❌ sync ล้มเหลว: ' + err.message;
     }
   }
 
@@ -579,7 +621,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
   var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
   var statusEl = document.getElementById('monthly-sync-status');
   var monthLabelTH = {'01':'ม.ค.','02':'ก.พ.','03':'มี.ค.','04':'เม.ย.','05':'พ.ค.','06':'มิ.ย.','07':'ก.ค.','08':'ส.ค.','09':'ก.ย.','10':'ต.ค.','11':'พ.ย.','12':'ธ.ค.'};
-  function fmtNum(v, digits){ if(v===null||v===undefined) return 'N/A'; return v.toLocaleString('en-US',{minimumFractionDigits:digits||0,maximumFractionDigits:digits||0}); }
+  // [ทศนิยม/คอมม่า] ใช้ fmtNum ตัวกลาง (global, ประกาศไว้ด้านบนของสคริปต์) แทนตัวซ้ำเดิม — ทศนิยม 2 ตำแหน่งทั้งหน้า
 
   async function loadMonthly(){
     statusEl.textContent = 'กำลังดึงข้อมูล...';
@@ -614,12 +656,12 @@ document.getElementById('svgMain').innerHTML = frag.d;
         var cells = values.map(function(v){ return '<td>'+(v===null?'N/A':fmtNum(v,digits))+'</td>'; }).join('');
         return '<tr><td>'+label+'</td>'+cells+'</tr>';
       }
-      tbody.innerHTML = row('Total (kWh)', monthData.map(m=>m.totalKwh), 0) + row('Total (TR)', monthData.map(m=>m.totalTr), 0);
+      tbody.innerHTML = row('Total (kWh)', monthData.map(m=>m.totalKwh), 2) + row('Total (TR)', monthData.map(m=>m.totalTr), 2);
 
       var latest = monthData[monthData.length-1];
-      document.getElementById('monthly-kpi-kwh-label').textContent = 'Total kWh (' + latest.label + ')';
-      document.getElementById('monthly-kpi-kwh').textContent = latest.totalKwh!==null ? fmtNum(latest.totalKwh,0) : '—';
-      document.getElementById('monthly-kpi-tr').textContent = latest.totalTr!==null ? fmtNum(latest.totalTr,0) : '—';
+      document.getElementById('monthly-kpi-kwh-label').textContent = 'Total (kWh) · ' + latest.label;
+      document.getElementById('monthly-kpi-kwh').textContent = latest.totalKwh!==null ? fmtNum(latest.totalKwh,2) : '—';
+      document.getElementById('monthly-kpi-tr').textContent = latest.totalTr!==null ? fmtNum(latest.totalTr,2) : '—';
       statusEl.textContent = '✅ sync ล่าสุด · ดึง ' + rows.length + ' แถว จาก ' + monthKeys.length + ' เดือน';
     } catch(err){ statusEl.textContent = '❌ sync ล้มเหลว: ' + err.message; }
   }
