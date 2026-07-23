@@ -1,700 +1,661 @@
-/**
- * Power data functions — เวอร์ชัน "single source from sheet" (20/7/69)
- *
- * รายชื่อเครื่อง CT/SCHP/CHL/CDP/PCHP  -> อ่านจากชีต 'List' (Equipment_ID, Zone_ID, Status)
- * โครงสร้าง AHU (hall ไหน phase อะไร)   -> อ่านจากชีต 'AHU_Floor'
- * SCHP -> zone mapping                  -> อ่านจากชีต 'SCHP' (SCHP_ID, SCHP_ZONE)
- * พื้นที่ต่อ location (ตร.ม.)            -> อ่านจากชีต 'Location'
- * ค่า kW จริง                            -> อ่านจากชีต 'Data_Log'
- *
- * Wing (Exhibition/Convention) ไม่มีคอลัมน์ในชีตไหนเลย เป็น mapping เดียวที่ยังคง
- * hardcode ไว้ในโค้ด (WING_MAP_) — ถ้าอยากให้ dynamic 100% ต้องเพิ่มคอลัมน์ Wing ใน AHU_Floor
- *
- * ---------------------------------------------------------------------------
- * [เพิ่มใหม่ 22/7/69] getPowerSummary() — action ใหม่ "summary"
- * สร้างขึ้นตาม spec ที่คุยกันเรื่อง mapping คอลัมน์ Data_Log ชุดใหม่ (หลัง IMPORTRANGE)
- * ของเดิม (getPowerLatest / getDailyCumulative ฯลฯ) ยังอยู่ครบ ไม่ได้ถูกแทนที่
- * เผื่อต้องเทียบผลลัพธ์ก่อนตัดสินใจว่าจะย้ายไปใช้ตัวใหม่แทนของเดิมทั้งหมดหรือไม่
- * ---------------------------------------------------------------------------
- */
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BITEC Chiller &amp; AHU Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --p1-1:#22d3ee; --p2-1:#a855f7;
+    --text:#f3f6fb; --text-muted:#93a0b8; --text-faint:#59657f;
+    --glass:rgba(255,255,255,0.035); --glass-border:rgba(255,255,255,0.10);
+    --hot:#f2867a; --cold:#38bdf8; --return:#f2b84f; --green:#34d399;
+    --sidebar-w:180px; --sidebar-w-collapsed:60px; --topbar-h:52px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ height:100%; overflow:hidden; }
+  body{
+    background: radial-gradient(circle at 6% 4%, rgba(34,211,238,0.13), transparent 38%),
+      radial-gradient(circle at 96% 10%, rgba(168,85,247,0.12), transparent 40%),
+      linear-gradient(180deg,#05070d 0%,#030408 100%);
+    color:var(--text); font-family:'Inter',sans-serif; font-size:13px;
+  }
+  .glass{ background:var(--glass); border:1px solid var(--glass-border); border-radius:14px;
+    backdrop-filter:blur(24px) saturate(150%); }
+  .sidebar{
+    position:fixed; top:0; left:0; bottom:0; width:var(--sidebar-w);
+    background:rgba(8,10,16,0.75); border-right:1px solid rgba(255,255,255,0.08);
+    display:flex; flex-direction:column; z-index:50; transition:width .2s;
+  }
+  .sidebar.collapsed{ width:var(--sidebar-w-collapsed); }
+  .sb-head{ display:flex; align-items:center; gap:8px; padding:12px; border-bottom:1px solid rgba(255,255,255,0.06); min-height:48px; }
+  .sb-mark{ width:26px; height:26px; flex-shrink:0; border-radius:8px; background:linear-gradient(135deg,var(--p1-1),var(--p2-1)); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11px; color:#05070d; }
+  .sb-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11.5px; white-space:nowrap; overflow:hidden; }
+  .sidebar.collapsed .sb-title{ display:none; }
+  .sb-toggle{ position:absolute; top:16px; right:-11px; width:22px; height:22px; border-radius:50%; background:#11151f; border:1px solid rgba(255,255,255,.14); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:10px; z-index:5; }
+  .sidebar.collapsed .sb-toggle{ transform:rotate(180deg); }
+  .sb-nav{ padding:8px 6px; display:flex; flex-direction:column; gap:3px; }
+  .sb-item{ display:flex; align-items:center; gap:9px; padding:8px 9px; border-radius:8px; cursor:pointer; color:var(--text-muted); white-space:nowrap; overflow:hidden; }
+  .sb-item:hover{ background:rgba(255,255,255,0.04); }
+  .sb-item.active{ background:linear-gradient(120deg, rgba(34,211,238,0.16), rgba(168,85,247,0.16)); color:#fff; border:1px solid rgba(34,211,238,0.25); }
+  .sb-icon{ width:16px; height:16px; flex-shrink:0; border-radius:4px; border:1.5px solid currentColor; opacity:0.85; }
+  .sb-label{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:11px; }
+  .sidebar.collapsed .sb-label{ display:none; }
+  .sb-foot{ padding:10px 12px; border-top:1px solid rgba(255,255,255,0.06); font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text-faint); white-space:nowrap; overflow:hidden; }
+  .sidebar.collapsed .sb-foot{ display:none; }
 
-const RAW_SHEET_NAME = 'Data_Log';
-const LIST_SHEET_NAME = 'List';
-const AHU_FLOOR_SHEET_NAME = 'AHU_Floor';
-const LOCATION_SHEET_NAME = 'Location';
-const SCHP_SHEET_NAME = 'SCHP';
+  .main{ margin-left:var(--sidebar-w); height:100vh; display:flex; flex-direction:column; transition:margin-left .2s; padding:10px 14px; gap:10px; }
+  .sidebar.collapsed ~ .main{ margin-left:var(--sidebar-w-collapsed); }
 
-// จุดเดียวที่ยังไม่ได้มาจาก sheet (ไม่มีคอลัมน์ Wing ในชีตไหนเลย)
-const WING_MAP_ = {
-  'EH98': 'Exhibition Wing', 'EH99': 'Exhibition Wing', 'EH100': 'Exhibition Wing',
-  'EH101': 'Exhibition Wing', 'EH102': 'Exhibition Wing', 'EH103': 'Exhibition Wing', 'EH104': 'Exhibition Wing',
-  'BEAT': 'Exhibition Wing', 'SAMA-GARDEN': 'Exhibition Wing',
-  'LIVE': 'Convention Wing', 'GH201': 'Convention Wing', 'GH202': 'Convention Wing', 'GH203': 'Convention Wing',
-  'BHIRAJ': 'Convention Wing', 'COSMOS': 'Convention Wing'
+  .topbar{ flex-shrink:0; height:var(--topbar-h); display:flex; align-items:center; gap:12px; padding:0 16px; flex-wrap:wrap; }
+  .topbar h1{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13.5px; }
+  .search-box{ display:flex; align-items:center; gap:5px; background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:7px; padding:4px 9px; }
+  .search-box input{ background:none; border:none; outline:none; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:11px; width:130px; }
+  .search-box input::placeholder{ color:var(--text-faint); }
+  .date-filter{ display:flex; align-items:center; gap:6px; margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-muted); }
+  .date-filter input[type=date]{ background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:7px; color:var(--text); padding:5px 8px; font-family:'JetBrains Mono',monospace; font-size:11px; }
+  .date-filter .f-btn{ padding:5px 10px; border-radius:7px; font-size:10.5px; font-weight:600; font-family:'Space Grotesk',sans-serif; color:var(--text-muted); border:1px solid var(--glass-border); cursor:pointer; background:rgba(255,255,255,0.02); }
+  .date-filter .f-btn.active{ color:#0a0612; background:linear-gradient(120deg,var(--p1-1),var(--p2-1)); border-color:transparent; }
+  .sync-note{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint); }
+
+  .panel{ display:none; flex:1; min-height:0; flex-direction:column; gap:10px; }
+  .panel.active{ display:flex; }
+
+  .kpi-strip{ flex-shrink:0; display:flex; gap:8px; padding:10px 16px; flex-wrap:wrap; }
+  .kpi-chip{ display:flex; flex-direction:column; padding:8px 12px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-left:3px solid var(--cold); min-width:100px; }
+  .kpi-chip.hot{ border-left-color:var(--hot); }
+  .kpi-chip.green{ border-left-color:var(--green); }
+  .kpi-chip .lbl{ font-family:'JetBrains Mono',monospace; font-size:8.5px; text-transform:uppercase; color:var(--text-faint); }
+  .kpi-chip .val{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; }
+  .kpi-chip .val span.unit{ font-size:9px; color:var(--text-faint); font-weight:500; margin-left:3px; }
+  .kpi-chip .sub{ font-size:8.5px; color:var(--text-faint); }
+
+  .circuit-area{ flex:1; min-height:0; padding:10px 16px 14px; display:flex; flex-direction:column; }
+  .circuit-legend{ flex-shrink:0; display:flex; gap:14px; margin-bottom:6px; flex-wrap:wrap; }
+  .legend-item{ display:flex; align-items:center; gap:5px; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--text-muted); }
+  .legend-swatch{ width:16px; height:3px; border-radius:2px; }
+  .svg-wrap{ flex:1; min-height:0; position:relative; }
+  svg#svgMain{ width:100%; height:100%; display:block; }
+
+  .hz{ position:absolute; cursor:pointer; border-radius:6px; transition:box-shadow .15s; }
+  .hz.search-hit{ box-shadow:0 0 0 2px #fac775, 0 0 14px 2px rgba(250,199,117,0.6); }
+  .hz.active{ box-shadow:0 0 0 2px rgba(255,255,255,0.5); }
+  .stat-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .stat-dot.run{ background:var(--green); box-shadow:0 0 5px var(--green); }
+  .stat-dot.standby{ background:#5b6478; }
+
+  /* [ใหม่] Side Panel ทึบ แทน hover tooltip ลอย — คลิกกล่องเพื่อเปิด */
+  .diagram-col{ flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; }
+  .side-panel{ width:0; overflow:hidden; flex-shrink:0; transition:width .2s ease; background:#0d1017; border-left:1px solid var(--glass-border); border-radius:0 14px 14px 0; }
+  .side-panel.open{ width:260px; }
+  .sp-inner{ width:260px; height:100%; padding:14px; display:flex; flex-direction:column; min-height:0; }
+  .sp-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12.5px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; margin-bottom:2px; }
+  .sp-close{ background:none; border:none; color:var(--text-faint); cursor:pointer; font-size:13px; padding:2px 5px; border-radius:5px; }
+  .sp-close:hover{ background:rgba(255,255,255,0.08); color:#fff; }
+  .sp-sub{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint); margin-bottom:10px; flex-shrink:0; }
+  .sp-head-row{ display:flex; justify-content:space-between; padding:2px; font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text-faint); text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,.14); padding-bottom:5px; margin-bottom:3px; flex-shrink:0; }
+  .sp-rows{ flex:1; min-height:0; overflow-y:auto; }
+  .sp-row{ display:flex; align-items:center; justify-content:space-between; padding:6px 2px; font-family:'JetBrains Mono',monospace; font-size:11px; border-top:1px solid rgba(255,255,255,.06); gap:6px; border-radius:4px; }
+  .sp-row:first-child{ border-top:none; }
+  .sp-row.row-hit{ background:rgba(250,199,117,0.18); }
+  .sp-id{ color:var(--text-muted); display:flex; align-items:center; gap:5px; flex:1; }
+  .sp-val{ color:var(--text); font-weight:600; width:58px; text-align:right; }
+  .sp-tr{ color:var(--text-faint); width:38px; text-align:right; }
+  .sp-empty{ display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:8px; color:var(--text-faint); text-align:center; padding:16px; font-size:11px; }
+
+  .ahu-shell{ flex:1; min-height:0; display:flex; gap:10px; padding:0 16px 14px; }
+  .ahu-side{ width:170px; flex-shrink:0; display:flex; flex-direction:column; gap:8px; }
+  .side-card{ padding:12px; }
+  .side-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10.5px; margin-bottom:8px; }
+  .legend-row2{ display:flex; align-items:center; gap:7px; font-size:10px; color:var(--text-muted); margin-bottom:6px; }
+  .legend-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .ahu-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; min-height:0; }
+  .filter-row{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+  .f-label{ font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--text-faint); }
+  .f-btn{ padding:5px 12px; border-radius:7px; font-size:10px; font-weight:600; font-family:'Space Grotesk',sans-serif; color:var(--text-muted); border:1px solid var(--glass-border); cursor:pointer; background:rgba(255,255,255,0.02); }
+  .f-btn.active{ color:#0a0612; background:linear-gradient(120deg,var(--p1-1),var(--p2-1)); border-color:transparent; }
+  .hall-scroll{ flex:1; min-height:0; overflow-y:auto; }
+  .wing-label{ font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:1.2px; color:var(--text-faint); margin:10px 0 6px; }
+  .wing-label:first-child{ margin-top:0; }
+  .hall-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:8px; }
+  .hall-card{ border-radius:10px; background:rgba(255,255,255,0.025); border:1px solid var(--glass-border); overflow:hidden; }
+  .hall-card.p1{ border-top:3px solid var(--p1-1); }
+  .hall-card.p2{ border-top:3px solid var(--p2-1); }
+  .hc-head{ padding:8px 10px 4px; display:flex; justify-content:space-between; }
+  .hc-name{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11.5px; }
+  .hc-phase{ font-family:'JetBrains Mono',monospace; font-size:8px; padding:2px 6px; border-radius:20px; }
+  .hall-card.p1 .hc-phase{ color:var(--p1-1); background:rgba(34,211,238,0.12); }
+  .hall-card.p2 .hc-phase{ color:var(--p2-1); background:rgba(168,85,247,0.12); }
+  .hc-count{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint); padding:0 10px 8px; }
+
+  /* [AHU Option 2] Compact Pill List */
+  .pill-row{ display:flex; flex-wrap:wrap; gap:4px; padding:0 10px 10px; }
+  .pill{ display:flex; align-items:center; gap:4px; padding:3px 7px; border-radius:20px; font-family:'JetBrains Mono',monospace; font-size:8.5px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); color:var(--text-muted); cursor:default; }
+  .pill-dot{ width:6px; height:6px; border-radius:50%; background:var(--text-faint); flex-shrink:0; }
+
+  .monthly-shell{ flex:1; min-height:0; display:flex; flex-direction:column; margin:0 16px 14px; padding:14px; }
+  .table-scroll{ flex:1; min-height:0; overflow-y:auto; margin-top:8px; }
+  table{ width:100%; border-collapse:collapse; font-size:11px; }
+  th{ text-align:left; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint); text-transform:uppercase; padding:8px 12px; position:sticky; top:0; background:#0c0f18; }
+  td{ padding:8px 12px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'JetBrains Mono',monospace; }
+</style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <div class="sb-head"><div class="sb-mark">B</div><div class="sb-title">BITEC Plant</div></div>
+  <div class="sb-toggle" id="sbToggle">‹</div>
+  <div class="sb-nav">
+    <div class="side-tab sb-item active" data-tab="plant"><div class="sb-icon"></div><div class="sb-label">Chiller circuit</div></div>
+    <div class="side-tab sb-item" data-tab="ahu"><div class="sb-icon"></div><div class="sb-label">AHU floor plan</div></div>
+    <div class="side-tab sb-item" data-tab="report"><div class="sb-icon"></div><div class="sb-label">Monthly report</div></div>
+  </div>
+  <div class="sb-foot" id="sbFoot">ยังไม่ได้ sync</div>
+</div>
+
+<div class="main">
+  <div class="topbar glass">
+    <h1>BITEC Chiller &amp; AHU</h1>
+    <div class="search-box">
+      <span style="color:var(--text-faint); font-size:11px;">🔍</span>
+      <input type="text" id="unitSearch" placeholder="ค้นหา unit id เช่น H-SCHP-04">
+    </div>
+    <div class="date-filter">
+      <span class="f-btn active" data-range="today">วันนี้</span>
+      <span class="f-btn" data-range="yesterday">เมื่อวาน</span>
+      <input type="date" id="dateFilter">
+      <span id="sync-status" class="sync-note">ยังไม่ได้ sync</span>
+    </div>
+  </div>
+
+  <div class="panel active" id="panel-plant">
+    <div class="kpi-strip">
+      <div class="kpi-chip hot"><div class="lbl">Cooling Tower</div><div class="val"><span id="kpi-ct">—</span><span class="unit">kW</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip green"><div class="lbl">Main Chiller</div><div class="val"><span id="kpi-chl">—</span><span class="unit">kW</span></div><div class="sub" id="kpi-chl-sub">ยังไม่มีข้อมูล</div></div>
+      <div class="kpi-chip green"><div class="lbl">Chiller Capacity</div><div class="val"><span id="kpi-tr">—</span><span class="unit">TR</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">SCHP Phase I</div><div class="val"><span id="kpi-schp1">—</span><span class="unit">kW</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">SCHP Phase II</div><div class="val"><span id="kpi-schp2">—</span><span class="unit">kW</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">Total kW</div><div class="val"><span id="kpi-totalkw">—</span><span class="unit">kW</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">Total kW Plant</div><div class="val"><span id="kpi-totalkwplant">—</span><span class="unit">kW</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">Plant Efficiency</div><div class="val"><span id="kpi-eff">—</span><span class="unit">kW/TR</span></div><div class="sub">average วันนี้</div></div>
+    </div>
+
+    <div class="circuit-area glass" style="flex-direction:row;">
+      <div class="diagram-col">
+        <div class="circuit-legend">
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--hot);"></span>Condenser Water Loop (น้ำร้อน)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--cold);"></span>Chilled Water Supply (น้ำเย็น)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--return);"></span>Chilled Water Return</div>
+          <div class="legend-item" style="margin-left:auto;">คลิกกล่องเพื่อดูรายละเอียด · พิมพ์ค้นหาด้านบนเพื่อไฮไลต์เครื่อง</div>
+        </div>
+        <div class="svg-wrap">
+          <svg id="svgMain" viewBox="0 0 1330 660" xmlns="http://www.w3.org/2000/svg"></svg>
+
+          <div class="hz" data-key="ct" style="left:1.50%; top:3.03%; width:13.53%; height:10.61%;"></div>
+          <div class="hz" data-key="cdp" style="left:30.08%; top:3.03%; width:13.53%; height:10.61%;"></div>
+          <div class="hz" data-key="chl" style="left:30.08%; top:30.30%; width:13.53%; height:7.58%;"></div>
+          <div class="hz" data-key="pchp" style="left:30.08%; top:71.21%; width:13.53%; height:10.61%;"></div>
+          <div class="hz" data-key="schp1" style="left:53.08%; top:54.55%; width:10.53%; height:6.06%;"></div>
+          <div class="hz" data-key="schp2" style="left:79.25%; top:54.55%; width:10.53%; height:6.06%;"></div>
+          <div class="hz" data-key="front" style="left:45.86%; top:66.67%; width:7.52%; height:8.33%;"></div>
+          <div class="hz" data-key="back" style="left:54.59%; top:66.67%; width:7.52%; height:8.33%;"></div>
+          <div class="hz" data-key="eh105" style="left:63.31%; top:66.67%; width:7.52%; height:8.33%;"></div>
+          <div class="hz" data-key="support" style="left:72.03%; top:66.67%; width:7.52%; height:8.33%;"></div>
+          <div class="hz" data-key="sale" style="left:80.75%; top:66.67%; width:7.52%; height:8.33%;"></div>
+          <div class="hz" data-key="exhibition" style="left:89.47%; top:66.67%; width:7.52%; height:8.33%;"></div>
+        </div>
+      </div>
+      <div class="side-panel" id="sidePanel">
+        <div class="sp-inner">
+          <div class="sp-title"><span id="spTitle">—</span><button class="sp-close" id="spClose">✕</button></div>
+          <div class="sp-sub" id="spSub">—</div>
+          <div class="sp-head-row" id="spHeadRow"></div>
+          <div class="sp-rows" id="spRows"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-ahu">
+    <div class="ahu-shell">
+      <div class="ahu-side">
+        <div class="side-card glass"><div class="side-title">LEGEND</div>
+          <div class="legend-row2"><span class="legend-dot" style="background:var(--p1-1)"></span>Phase 1 · 66 หน่วย</div>
+          <div class="legend-row2"><span class="legend-dot" style="background:var(--p2-1)"></span>Phase 2 · 37 หน่วย</div>
+        </div>
+        <div class="side-card glass"><div class="side-title">QUICK VIEW</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px;">103<span style="font-size:10px; color:var(--text-faint); font-weight:500;"> AHU</span></div>
+          <div style="font-size:9.5px; color:var(--text-faint);">15 hall</div>
+        </div>
+        <div class="side-card glass"><div class="side-title">หมายเหตุ</div>
+          <div style="font-size:9.5px; color:var(--text-faint); line-height:1.5;">รายชื่อ hall/AHU ยังเป็น hardcode ฝั่งหน้าเว็บ ยังไม่ได้ดึงจาก getStructure() แบบ dynamic — เป็นงานค้างที่ต้องทำต่อ</div>
+        </div>
+      </div>
+      <div class="ahu-main glass" style="padding:12px;">
+        <div class="filter-row">
+          <span class="f-label">Filter:</span>
+          <div class="f-btn active" data-phase="all">ทั้งหมด</div>
+          <div class="f-btn" data-phase="p1">Phase 1</div>
+          <div class="f-btn" data-phase="p2">Phase 2</div>
+        </div>
+        <div class="hall-scroll" id="hallScroll"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-report">
+    <div class="monthly-shell glass">
+      <div class="kpi-strip" style="padding:0;">
+        <div class="kpi-chip"><div class="lbl" id="monthly-kpi-kwh-label">Total kWh</div><div class="val"><span id="monthly-kpi-kwh">—</span><span class="unit">kWh</span></div></div>
+        <div class="kpi-chip"><div class="lbl">Total TR</div><div class="val"><span id="monthly-kpi-tr">—</span><span class="unit">TR</span></div></div>
+      </div>
+      <div id="monthly-sync-status" class="sync-note" style="margin-top:6px;">ยังไม่ได้ sync</div>
+      <div class="table-scroll">
+        <table>
+          <thead id="monthly-thead"><tr><th>Monthly</th></tr></thead>
+          <tbody id="monthly-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('sbToggle').addEventListener('click', function(){ document.getElementById('sidebar').classList.toggle('collapsed'); });
+document.querySelectorAll(".side-tab").forEach(function(tab){
+  tab.addEventListener("click", function(){
+    document.querySelectorAll(".side-tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-"+tab.dataset.tab).classList.add("active");
+  });
+});
+document.querySelectorAll('[data-phase]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('[data-phase]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    var phase = btn.dataset.phase;
+    document.querySelectorAll('.hall-card').forEach(function(card){
+      card.style.display = (phase==='all'||card.classList.contains(phase)) ? '' : 'none';
+    });
+  });
+});
+
+var CT_IDS = ["P1-CT-01","P1-CT-02","P1-CT-03","P1-CT-04","H-CT-01","H-CT-02","H-CT-03","H-CT-04","H-CT-05","H-CT-06","H-CT-07"];
+var CDP_IDS = ["P1-CDP-01","P1-CDP-02","P1-CDP-03","P1-CDP-04","H-CDP-01","H-CDP-02","H-CDP-03","H-CDP-04","H-CDP-05","H-CDP-06","H-CDP-07","H-CDP-08","RFUP-01","RFUP-02"];
+var PCHP_IDS = ["P1-PCHP-01","P1-PCHP-02","P1-PCHP-03","P1-PCHP-04","H-PCHP-01","H-PCHP-02","H-PCHP-03","H-PCHP-04","H-PCHP-05","H-PCHP-06","H-PCHP-07","H-PCHP-08"];
+var SCHP1_IDS = ["SCHP-01","SCHP-02","SCHP-03","SCHP-04","SCHP-05","SCHP-06","SCHP-07"];
+var SCHP2_IDS = ["H-SCHP-01","H-SCHP-02","H-SCHP-03","H-SCHP-04","H-SCHP-05","H-SCHP-06","H-SCHP-07","H-SCHP-08","H-SCHP-09"];
+var CHL_IDS = ["P1-CH-01","P1-CH-02","P1-CH-03","P1-CH-04","H1-CH-01","H1-CH-02","H1-CH-03","H1-CH-04","H1-CH-05","H1-CH-06","H1-CH-07","H1-CH-08"];
+var ZONE_MEMBERS = {
+  front: ["SCHP-01","SCHP-02","SCHP-03"], back: ["SCHP-04","SCHP-05"], eh105: ["SCHP-06","SCHP-07"],
+  support: ["H-SCHP-01","H-SCHP-02","H-SCHP-03"], sale: ["H-SCHP-04","H-SCHP-05","H-SCHP-06"], exhibition: ["H-SCHP-07","H-SCHP-08","H-SCHP-09"]
 };
 
-/**
- * [ใหม่] Chiller -> CDP -> PCHP mapping
- * ไม่มีคอลัมน์นี้ในชีตไหนเลย (เหมือนกรณี WING_MAP_) เลย hardcode ไว้ตรงนี้
- * ใช้คู่กับคอลัมน์ 'Chiller running' ในแต่ละแถวของ Data_Log เพื่อรู้ว่าแถวนั้น
- * ค่า 'Sum_Cal_TT_PCHP Demand (kW)' / 'Sum_Cal_TT_ CDP Demand (kW)' เป็นของ CDP/PCHP ตัวไหน
- * (สเปกที่ยืนยันแล้ว: 1 แถว = 1 chiller ที่วิ่งอยู่ ณ ช่วงเวลานั้น ถ้าวิ่งพร้อมกันหลายตัว
- * จะแยกเป็นคนละแถว ไม่ใช่ค่ารวมของทั้งกลุ่ม)
- */
-const CHILLER_MAP_ = {
-  'P1-CH-01': { cdp: 'P1-CDP-01', pchp: 'P1-PCHP-01' },
-  'P1-CH-02': { cdp: 'P1-CDP-02', pchp: 'P1-PCHP-02' },
-  'P1-CH-03': { cdp: 'P1-CDP-03', pchp: 'P1-PCHP-03' },
-  'P1-CH-04': { cdp: 'P1-CDP-04', pchp: 'P1-PCHP-04' },
-  'H1-CH-01': { cdp: 'H-CDP-01', pchp: 'H-PCHP-01' },
-  'H1-CH-02': { cdp: 'H-CDP-02', pchp: 'H-PCHP-02' },
-  'H1-CH-03': { cdp: 'H-CDP-03', pchp: 'H-PCHP-03' },
-  'H1-CH-04': { cdp: 'H-CDP-04', pchp: 'H-PCHP-04' },
-  'H1-CH-05': { cdp: 'H-CDP-05', pchp: 'H-PCHP-05' },
-  'H1-CH-06': { cdp: 'H-CDP-06', pchp: 'H-PCHP-06' },
-  'H1-CH-07': { cdp: 'H-CDP-07', pchp: 'H-PCHP-07' },
-  'H1-CH-08': { cdp: 'H-CDP-08', pchp: 'H-PCHP-08' }
+// [ใหม่] นิยามแต่ละกล่อง -> ใช้สร้างเนื้อหา side panel แบบ dynamic ตอนคลิก (ไม่ render ค้างไว้ล่วงหน้าเหมือนเดิม)
+var PANEL_DEFS = {
+  ct:     { title:'Cooling Tower',      kind:'unit', group:'CT',   ids:CT_IDS,   totalKey:'ctTotal' },
+  cdp:    { title:'Condenser Pump',     kind:'unit', group:'CDP',  ids:CDP_IDS,  totalKey:'cdpTotal' },
+  chl:    { title:'Main Chiller',       kind:'chl',  ids:CHL_IDS },
+  pchp:   { title:'Primary CHW Pump',   kind:'unit', group:'PCHP', ids:PCHP_IDS, totalKey:'pchpTotal' },
+  schp1:  { title:'SCHP Phase I',       kind:'unit', group:'SCHP', ids:SCHP1_IDS, totalKey:'schpPhase1Total' },
+  schp2:  { title:'SCHP Phase II',      kind:'unit', group:'SCHP', ids:SCHP2_IDS, totalKey:'schpPhase2Total' },
+  front:      { title:'Front Zone',       kind:'unit', group:'SCHP', ids:ZONE_MEMBERS.front },
+  back:       { title:'Back Zone',        kind:'unit', group:'SCHP', ids:ZONE_MEMBERS.back },
+  eh105:      { title:'EH105-106 Zone',   kind:'unit', group:'SCHP', ids:ZONE_MEMBERS.eh105 },
+  support:    { title:'Support Zone',     kind:'unit', group:'SCHP', ids:ZONE_MEMBERS.support },
+  sale:       { title:'Sale Zone',        kind:'unit', group:'SCHP', ids:ZONE_MEMBERS.sale },
+  exhibition: { title:'Exhibition Zone',  kind:'unit', group:'SCHP', ids:ZONE_MEMBERS.exhibition }
 };
+// ลำดับความสำคัญตอนค้นหา (roster หลักก่อน แล้วค่อยโซนย่อย เพราะ id บางตัวซ้ำกันได้ระหว่าง roster กับโซน)
+var SEARCH_PRIORITY = ['ct','cdp','chl','pchp','schp1','schp2','front','back','eh105','support','sale','exhibition'];
 
-function _loadRawSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(RAW_SHEET_NAME);
-  const values = sheet.getDataRange().getValues();
-  const header = values[0];
-  const rows = values.slice(1).filter(r => r[0] !== '' && r[0] !== null);
+var currentPanelKey = null;
 
-  const colIndex = {};
-  header.forEach((h, i) => { if (h) colIndex[h] = i; });
+function renderPanel(key){
+  var def = PANEL_DEFS[key];
+  if(!def) return;
+  var summary = window.__latestPowerSummary || {};
+  var totals = summary.totals || {};
+  var perUnit = summary.perUnit || {};
 
-  return { header, rows, colIndex };
-}
+  document.getElementById('spTitle').innerHTML = '<span>'+def.title+'</span>';
 
-/**
- * อ่านชีต 'List' -> รายชื่อ Equipment_ID แยกตาม Zone_ID
- * ข้ามแถวที่ Status ไม่ใช่ 'Active' — เพิ่ม/ลบ/เปลี่ยนชื่อเครื่อง แก้ที่ชีตนี้อย่างเดียว
- */
-function _loadListIds_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(LIST_SHEET_NAME);
-  const values = sheet.getDataRange().getValues();
-  const header = values[0];
-  const idCol = header.indexOf('Equipment_ID');
-  const zoneCol = header.indexOf('Zone_ID');
-  const statusCol = header.indexOf('Status');
-
-  const byZone = { CT: [], SCHP: [], CHL: [], CDP: [], PCHP: [], AHU: [] };
-  for (let i = 1; i < values.length; i++) {
-    const row = values[i];
-    const id = row[idCol];
-    const zone = row[zoneCol];
-    if (!id || !zone) continue;
-    const status = statusCol !== -1 ? row[statusCol] : 'Active';
-    if (status && status !== 'Active') continue;
-    const key = String(zone).trim();
-    if (byZone[key]) byZone[key].push(String(id).trim());
-  }
-  return byZone;
-}
-
-function _val_(row, colIndex, colName) {
-  const i = colIndex[colName];
-  if (i === undefined) return null;
-  const v = row[i];
-  return (v === '' || v === null || v === undefined) ? null : v;
-}
-
-function _hasValue_(row, colIndex, colName) {
-  return _val_(row, colIndex, colName) !== null;
-}
-
-function formatDateVal_(dateVal) {
-  if (dateVal instanceof Date) {
-    return Utilities.formatDate(dateVal, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  }
-  return dateVal;
-}
-
-function _sumCols_(row, colIndex, colNames) {
-  let sum = 0, any = false;
-  colNames.forEach(c => {
-    const v = _val_(row, colIndex, c);
-    if (v !== null) { sum += v; any = true; }
-  });
-  return any ? sum : null;
-}
-
-/** [ใหม่] ปัดทศนิยม 2 ตำแหน่ง ใช้กับค่า average ที่ getPowerSummary คำนวณ */
-function round2_(v) {
-  return Math.round(v * 100) / 100;
-}
-
-/**
- * getStructure — ข้อมูลโครงสร้าง/ชื่อทั้งหมดที่ dashboard ต้องใช้ render UI
- * (ไม่ใช่ตัวเลขวัดค่าไฟ — เป็นแค่ "มีเครื่องอะไรบ้าง / อยู่ตรงไหน / ผูกกับอะไร")
- * Frontend เรียกตัวนี้ครั้งเดียวตอนโหลดหน้า แล้วเอาไปแทนที่ CT_ROSTER/CHL_ROSTER/SCHP_ZONES/
- * รายชื่อ CDP-PCHP/hall card ที่เคย hardcode ไว้
- */
-function getStructure() {
-  const equip = _loadListIds_();
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  // ---- AHU: อ่านจาก AHU_Floor -> hall (Location) + phase + zone ----
-  const ahuSheet = ss.getSheetByName(AHU_FLOOR_SHEET_NAME);
-  const ahuValues = ahuSheet.getDataRange().getValues();
-  const ahuHeader = ahuValues[0];
-  const idCol = ahuHeader.indexOf('Equipment_ID');
-  const locCol = ahuHeader.indexOf('Location');
-  const phaseCol = ahuHeader.indexOf('Phase');
-  const zoneCol = ahuHeader.indexOf('SCHP_ZONE');
-
-  const hallMap = {};       // hall -> { hall, phase, wing, ahus:[] }
-  const zoneHallSet = {};   // SCHP_ZONE -> { hall: true, ... }
-  const phaseCount = { p1: 0, p2: 0 };
-
-  for (let i = 1; i < ahuValues.length; i++) {
-    const row = ahuValues[i];
-    const ahuId = String(row[idCol] || '').trim();
-    if (!ahuId) continue;
-    const hall = String(row[locCol] || '').trim().replace(/^BITEC-/, '');
-    const phase = (Number(row[phaseCol]) === 2) ? 'p2' : 'p1';
-    const zone = String(row[zoneCol] || '').trim();
-
-    if (!hallMap[hall]) {
-      hallMap[hall] = { hall: hall, phase: phase, wing: WING_MAP_[hall] || 'อื่นๆ', ahus: [] };
-    }
-    hallMap[hall].ahus.push(ahuId);
-    phaseCount[phase]++;
-
-    if (zone) {
-      if (!zoneHallSet[zone]) zoneHallSet[zone] = {};
-      zoneHallSet[zone][hall] = true;
-    }
-  }
-
-  // ---- SCHP: อ่านจากชีต SCHP -> SCHP_ID กับ SCHP_ZONE ไหนคู่กัน ----
-  const schpSheet = ss.getSheetByName(SCHP_SHEET_NAME);
-  const schpValues = schpSheet.getDataRange().getValues();
-  const schpHeader = schpValues[0];
-  const schpIdCol = schpHeader.indexOf('SCHP_ID');
-  const schpZoneCol = schpHeader.indexOf('SCHP_ZONE');
-
-  const zoneIds = {}; // SCHP_ZONE -> [SCHP_ID, ...] (unique)
-  for (let i = 1; i < schpValues.length; i++) {
-    const id = String(schpValues[i][schpIdCol] || '').trim();
-    const zone = String(schpValues[i][schpZoneCol] || '').trim();
-    if (!id || !zone) continue;
-    if (!zoneIds[zone]) zoneIds[zone] = [];
-    if (zoneIds[zone].indexOf(id) === -1) zoneIds[zone].push(id);
-  }
-
-  // ---- ประกอบ schpZones: zone -> SCHP ids + hall ที่ zone นั้นเลี้ยง (จาก AHU_Floor จริง) ----
-  const schpZones = Object.keys(zoneIds).map(zone => ({
-    zone: zone,
-    ids: zoneIds[zone],
-    halls: Object.keys(zoneHallSet[zone] || {})
-  }));
-
-  const halls = Object.values(hallMap);
-
-  return {
-    equipment: {
-      CT: equip.CT,
-      SCHP: equip.SCHP,
-      CHL: equip.CHL,
-      CDP: equip.CDP,
-      PCHP: equip.PCHP
-    },
-    schpZones: schpZones,
-    ahu: {
-      totalCount: halls.reduce((s, h) => s + h.ahus.length, 0),
-      phaseCount: phaseCount,
-      halls: halls
-    }
-  };
-}
-
-/**
- * getDailyCumulative — SUM ทุกแถวของ "วันล่าสุดที่มีข้อมูล" เท่านั้น
- * - CT, SCHP, CHL -> สะสมแยกรายตัว + รวมเป็นยอดใหญ่
- * - CDP, PCHP -> สะสมค่ารวมเป็นยอดใหญ่ตรงๆ (ไม่มีคอลัมน์รายตัวใน Data_Log)
- *
- * [หมายเหตุ 22/7/69] ฟังก์ชันนี้เป็นของเดิม ยังใช้อยู่ใน getPowerLatest() ด้านล่าง
- * (activeChillerCumulativeKw) ไม่ได้ถูกแทนที่ด้วย getPowerSummary() ใหม่
- */
-function getDailyCumulative() {
-  const { rows, colIndex } = _loadRawSheet_();
-  const equip = _loadListIds_();
-  const result = {
-    date: null,
-    perUnit: { CT: {}, SCHP: {}, CHL: {} },
-    totals: { CT: null, SCHP: null, CHL: null, CDP: null, PCHP: null }
-  };
-  if (rows.length === 0) return result;
-
-  const dateCol = colIndex['DAY_record'];
-  const lastDate = rows[rows.length - 1][dateCol];
-  if (!(lastDate instanceof Date)) return result;
-  const lastDateKey = Utilities.formatDate(lastDate, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  result.date = lastDateKey;
-
-  const ctFullCols = equip.CT.map(id => 'Cooling(kW)_' + id);
-  const schpFullCols = equip.SCHP.map(id => 'Record_(kW)_' + id);
-
-  let cdpSum = 0, cdpAny = false;
-  let pchpSum = 0, pchpAny = false;
-
-  rows.forEach(r => {
-    const d = r[dateCol];
-    if (!(d instanceof Date)) return;
-    const dKey = Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
-    if (dKey !== lastDateKey) return;
-
-    ctFullCols.forEach((col, i) => {
-      const v = _val_(r, colIndex, col);
-      if (v === null) return;
-      const id = equip.CT[i];
-      result.perUnit.CT[id] = (result.perUnit.CT[id] || 0) + v;
-    });
-
-    schpFullCols.forEach((col, i) => {
-      const v = _val_(r, colIndex, col);
-      if (v === null) return;
-      const id = equip.SCHP[i];
-      result.perUnit.SCHP[id] = (result.perUnit.SCHP[id] || 0) + v;
-    });
-
-    const chillerId = _val_(r, colIndex, 'Chiller running');
-    const plantKw = _val_(r, colIndex, 'Sum_All Plant Demand(kW)');
-    if (chillerId && plantKw !== null) {
-      result.perUnit.CHL[chillerId] = (result.perUnit.CHL[chillerId] || 0) + plantKw;
-    }
-
-    const cdp = _val_(r, colIndex, 'Sum_Cal_TT_ CDP Demand (kW)');
-    if (cdp !== null) { cdpSum += cdp; cdpAny = true; }
-
-    const pchp = _val_(r, colIndex, 'Sum_Cal_TT_PCHP Demand (kW)');
-    if (pchp !== null) { pchpSum += pchp; pchpAny = true; }
-  });
-
-  function round1_(v) { return Math.round(v * 10) / 10; }
-
-  Object.keys(result.perUnit.CT).forEach(k => { result.perUnit.CT[k] = round1_(result.perUnit.CT[k]); });
-  Object.keys(result.perUnit.SCHP).forEach(k => { result.perUnit.SCHP[k] = round1_(result.perUnit.SCHP[k]); });
-  Object.keys(result.perUnit.CHL).forEach(k => { result.perUnit.CHL[k] = round1_(result.perUnit.CHL[k]); });
-
-  result.totals.CT = Object.keys(result.perUnit.CT).length
-    ? round1_(Object.values(result.perUnit.CT).reduce((a, b) => a + b, 0)) : null;
-  result.totals.SCHP = Object.keys(result.perUnit.SCHP).length
-    ? round1_(Object.values(result.perUnit.SCHP).reduce((a, b) => a + b, 0)) : null;
-  result.totals.CHL = Object.keys(result.perUnit.CHL).length
-    ? round1_(Object.values(result.perUnit.CHL).reduce((a, b) => a + b, 0)) : null;
-  result.totals.CDP = cdpAny ? round1_(cdpSum) : null;
-  result.totals.PCHP = pchpAny ? round1_(pchpSum) : null;
-
-  return result;
-}
-
-/**
- * ดึงค่าล่าสุด (แถวสุดท้ายของ Data_Log) สำหรับ KPI card
- * [หมายเหตุ 22/7/69] ฟังก์ชันเดิม ยังคงไว้ ไม่แตะ — ใช้เทียบกับ getPowerSummary() ใหม่
- */
-function getPowerLatest() {
-  const { rows, colIndex } = _loadRawSheet_();
-  if (rows.length === 0) {
-    return { __debugEmpty: true, rowsLength: 0, sheetName: RAW_SHEET_NAME };
-  }
-
-  const equip = _loadListIds_();
-  const last = rows[rows.length - 1];
-  const schpFullCols = equip.SCHP.map(id => 'Record_(kW)_' + id);
-  const ctFullCols = equip.CT.map(id => 'Cooling(kW)_' + id);
-
-  const groupStatus = {
-    CT: ctFullCols.some(c => _hasValue_(last, colIndex, c)) ? 'on' : 'off',
-    SCHP: schpFullCols.some(c => _hasValue_(last, colIndex, c)) ? 'on' : 'off',
-    CDP: _hasValue_(last, colIndex, 'Sum_Cal_TT_ CDP Demand (kW)') ? 'on' : 'off',
-    PCHP: _hasValue_(last, colIndex, 'Sum_Cal_TT_PCHP Demand (kW)') ? 'on' : 'off',
-    CHL: _hasValue_(last, colIndex, 'Chiller running') ? 'on' : 'off'
-  };
-
-  const rawTime = _val_(last, colIndex, 'Time');
-  const formattedTime = rawTime instanceof Date
-    ? Utilities.formatDate(rawTime, Session.getScriptTimeZone(), 'HH:mm:ss')
-    : rawTime;
-
-  const totalKw = _val_(last, colIndex, 'Sum_All Plant Demand(kW)');
-  const chillerCapacityTr = _val_(last, colIndex, 'Sum_CAL_ Chiller Capacity(TR)');
-  const plantKwPerTr = (totalKw !== null && chillerCapacityTr) ? (totalKw / chillerCapacityTr) : null;
-
-  return {
-    date: formatDateVal_(_val_(last, colIndex, 'DAY_record')),
-    time: formattedTime,
-    activeChiller: _val_(last, colIndex, 'Chiller running'),
-    groupStatus: groupStatus,
-    totalKw: totalKw,
-    chillerCapacityTr: chillerCapacityTr,
-    coolingTr: _val_(last, colIndex, 'Sum_Cooling(TRct)'),
-    oat: _val_(last, colIndex, 'Record_Tadb(OAT)-C'),
-    plantKwPerTr: plantKwPerTr,
-    pchpDemandKw: _val_(last, colIndex, 'Sum_Cal_TT_PCHP Demand (kW)'),
-    cdpDemandKw: _val_(last, colIndex, 'Sum_Cal_TT_ CDP Demand (kW)'),
-    schpDemandKw: _sumCols_(last, colIndex, schpFullCols),
-    ctDemandKw: _sumCols_(last, colIndex, ctFullCols),
-    activeChillerCumulativeKw: (function () {
-      const daily = getDailyCumulative();
-      const active = _val_(last, colIndex, 'Chiller running');
-      return (active && daily.perUnit.CHL[active] !== undefined) ? daily.perUnit.CHL[active] : null;
-    })()
-  };
-}
-
-/**
- * kW ต่อพื้นที่ (kW/m²) ต่อโซนจริง (Location) — พื้นที่อ่านจากชีต 'Location'
- */
-function getZoneKwPerArea() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  const locValues = ss.getSheetByName(LOCATION_SHEET_NAME).getDataRange().getValues();
-  const areaByLocation = {};
-  for (let i = 1; i < locValues.length; i++) {
-    const loc = locValues[i][0];
-    const area = locValues[i][1];
-    if (loc) areaByLocation[loc] = area;
-  }
-
-  const ahuValues = ss.getSheetByName(AHU_FLOOR_SHEET_NAME).getDataRange().getValues();
-  const ahuHeader = ahuValues[0];
-  const locCol = ahuHeader.indexOf('Location');
-  const zoneCol = ahuHeader.indexOf('SCHP_ZONE');
-  const zoneGroupLocations = {};
-  for (let i = 1; i < ahuValues.length; i++) {
-    const loc = String(ahuValues[i][locCol] || '').trim();
-    const zone = String(ahuValues[i][zoneCol] || '').trim();
-    if (!loc || !zone) continue;
-    if (!zoneGroupLocations[zone]) zoneGroupLocations[zone] = {};
-    zoneGroupLocations[zone][loc] = (zoneGroupLocations[zone][loc] || 0) + 1;
-  }
-
-  const schpValues = ss.getSheetByName(SCHP_SHEET_NAME).getDataRange().getValues();
-  const schpHeader = schpValues[0];
-  const schpIdCol = schpHeader.indexOf('SCHP_ID');
-  const schpZoneCol = schpHeader.indexOf('SCHP_ZONE');
-  const schpToZones = {};
-  for (let i = 1; i < schpValues.length; i++) {
-    const id = String(schpValues[i][schpIdCol] || '').trim();
-    const zone = String(schpValues[i][schpZoneCol] || '').trim();
-    if (!id || !zone) continue;
-    if (!schpToZones[id]) schpToZones[id] = [];
-    schpToZones[id].push(zone);
-  }
-
-  const { rows, colIndex } = _loadRawSheet_();
-  function lastNonBlankKw_(schpId) {
-    const col = colIndex['Record_(kW)_' + schpId];
-    if (col === undefined) return null;
-    for (let i = rows.length - 1; i >= 0; i--) {
-      const v = rows[i][col];
-      if (v !== '' && v !== null && v !== undefined) return v;
-    }
-    return null;
-  }
-
-  const zoneGroupKw = {};
-  Object.keys(schpToZones).forEach(id => {
-    const kw = lastNonBlankKw_(id);
-    if (kw === null) return;
-    schpToZones[id].forEach(zone => {
-      zoneGroupKw[zone] = (zoneGroupKw[zone] || 0) + kw;
-    });
-  });
-
-  const locationKw = {};
-  Object.keys(zoneGroupLocations).forEach(zone => {
-    const locCounts = zoneGroupLocations[zone];
-    const totalUnits = Object.values(locCounts).reduce((a, b) => a + b, 0);
-    const kwForZone = zoneGroupKw[zone] || 0;
-    Object.keys(locCounts).forEach(loc => {
-      const share = locCounts[loc] / totalUnits;
-      locationKw[loc] = (locationKw[loc] || 0) + kwForZone * share;
-    });
-  });
-
-  return Object.keys(locationKw).map(loc => {
-    const kw = locationKw[loc];
-    const area = areaByLocation[loc] || null;
-    return {
-      location: loc,
-      kw: Math.round(kw * 100) / 100,
-      areaSqm: area,
-      kwPerSqm: area ? Math.round((kw / area) * 1000) / 1000 : null
-    };
-  }).sort((a, b) => (b.kwPerSqm || 0) - (a.kwPerSqm || 0));
-}
-
-/**
- * ดึงประวัติตามช่วงวันที่ จาก Data_Log สำหรับหน้า Monthly Report / trend strip
- */
-function getPowerHistory(startDate, endDate) {
-  const { rows, colIndex } = _loadRawSheet_();
-
-  const start = new Date(startDate);
-  start.setFullYear(start.getFullYear() + 543);
-  const end = new Date(endDate);
-  end.setFullYear(end.getFullYear() + 543);
-  end.setHours(23, 59, 59, 999);
-
-  return rows
-    .filter(r => {
-      const d = r[colIndex['DAY_record']];
-      return d instanceof Date && d >= start && d <= end;
-    })
-    .map(r => {
-      const totalKw = _val_(r, colIndex, 'Sum_All Plant Demand(kW)');
-      const chillerCapacityTr = _val_(r, colIndex, 'Sum_CAL_ Chiller Capacity(TR)');
-      return {
-        date: formatDateVal_(_val_(r, colIndex, 'DAY_record')),
-        time: (function () {
-          const t = _val_(r, colIndex, 'Time');
-          return t instanceof Date ? Utilities.formatDate(t, Session.getScriptTimeZone(), 'HH:mm:ss') : t;
-        })(),
-        totalKw: totalKw,
-        chillerCapacityTr: chillerCapacityTr,
-        coolingTr: _val_(r, colIndex, 'Sum_Cooling(TRct)'),
-        oat: _val_(r, colIndex, 'Record_Tadb(OAT)-C'),
-        plantKwPerTr: (totalKw !== null && chillerCapacityTr) ? (totalKw / chillerCapacityTr) : null
-      };
-    });
-}
-
-/**
- * ==========================================================================
- * [ใหม่ 22/7/69] getPowerSummary — สรุปตาม spec ที่คุยกันรอบล่าสุด
- * ==========================================================================
- *
- * หลักการที่ยึดตลอดฟังก์ชันนี้ (ยืนยันแล้วในแชท):
- *   - "รวม/Total" ระดับ Overview ทั้งหมด = SUM สะสมทุกแถวของ "วันล่าสุดที่มีข้อมูล"
- *     (Total kW, Total kW Plant, Main Chiller kW, CT รวม, SCHP Phase I/II รวม)
- *   - "Plant Efficiency" = AVERAGE ของวัน (ไม่ใช่ sum ไม่ใช่คำนวณเอง อ่านคอลัมน์ตรงๆ)
- *   - "รายตัว" (per-unit) ในผัง Chiller circuit ส่วนใหญ่ = AVERAGE ของวัน ต่อเครื่อง
- *     (CT รายตัว, SCHP รายตัว, และ PCHP/CDP รายตัวที่ได้จาก mapping ผ่าน Chiller running)
- *   - ข้อยกเว้น: Chiller รายตัว (perUnit.CHL) = SUM สะสมของวัน ต่อเครื่อง (ไม่ใช่ average)
- *     เพราะยืนยันแล้วว่าถ้าวันนั้นสลับกันวิ่งหลายเครื่อง ต้องบวกสะสมแยกตามเครื่อง ไม่ใช่โชว์
- *     แค่เครื่องล่าสุดตัวเดียว sum(perUnit.CHL ทุกตัว) ควรเท่ากับ totals.mainChillerKw
- *   - "รวม" กับ "รายตัวบวกกัน" ตั้งใจไม่ให้เท่ากันเป๊ะ เพราะคนละมุมมอง (sum ทั้งวัน
- *     vs average ต่อเครื่อง) — เป็นความเข้าใจที่ยืนยันแล้วในแชท ไม่ต้อง reconcile
- *   - PCHP/CDP รายตัว: 1 แถวใน Data_Log = 1 chiller ที่วิ่งอยู่ ณ ตอนนั้น (ไม่ใช่ 1
- *     timestamp = 1 แถว) ถ้าวิ่งพร้อมกันหลายตัวจะแยกเป็นคนละแถว ดังนั้นค่า
- *     'Sum_Cal_TT_PCHP Demand (kW)' / CDP ในแถวนั้นคือค่าของ PCHP/CDP ที่ผูกกับ
- *     chiller ตัวที่ระบุใน 'Chiller running' ของแถวนั้นเท่านั้น (ผ่าน CHILLER_MAP_)
- *   - P1-CH-04 correction (×0.15) ที่เคยอยู่ใน datalog.gs ไม่จำเป็นแล้ว
- *     (ยืนยันแล้วว่าแก้ที่ต้นทางเรียบร้อย) — ฟังก์ชันนี้จึงไม่มี logic แก้ค่าพิเศษใดๆ
- * ==========================================================================
- */
-function getPowerSummary(dateStr) {
-  const { rows, colIndex } = _loadRawSheet_();
-  const equip = _loadListIds_();
-
-  const result = {
-    date: null,
-    latest: {
-      chillerRunning: null,   // 'Chiller running' ของแถวล่าสุด (label เฉยๆ ไม่ใช่ sum/avg)
-      time: null
-    },
-    totals: {                 // sum สะสมทั้งวัน
-      totalKwAll: null,        // Sum_All_kW total
-      totalKwPlant: null,      // Sum_All Plant Demand(kW)
-      mainChillerKw: null,     // Sum_CAL_Chiller demard(kW)
-      ctTotal: null,           // Sum_Cal_TT_ CT(kW)
-      schpPhase1Total: null,   // Sum_Cal_TT_SCHP Demand (kW)
-      schpPhase2Total: null,   // Sum_Cal_TT_H-SCHP Demand (kW)
-      chillerCapacityTr: null, // [ใหม่] Sum_CAL_ Chiller Capacity(TR) — ข้อ1
-      cdpTotal: null,          // [ใหม่] Sum_Cal_TT_ CDP Demand (kW) — ข้อ5 (ให้กล่อง CDP มีค่าโชว์)
-      pchpTotal: null          // [ใหม่] Sum_Cal_TT_PCHP Demand (kW) — ข้อ5 (ให้กล่อง PCHP มีค่าโชว์)
-    },
-    averages: {                // average ของวัน
-      plantEfficiency: null    // Sum_All_kW/TRp-Plant
-    },
-    perUnit: {                 // ค่ารายตัวของวัน
-      CT: {},                   // average ของวัน ต่อเครื่อง
-      SCHP: {},                 // average ของวัน ต่อเครื่อง
-      CDP: {},                  // average ของวัน ต่อเครื่อง (เฉพาะแถวที่ chiller คู่กันวิ่ง)
-      PCHP: {},                 // average ของวัน ต่อเครื่อง (เฉพาะแถวที่ chiller คู่กันวิ่ง)
-      CHL: {},                  // sum สะสมของวัน ต่อเครื่อง (ไม่ใช่ average เหมือนกลุ่มอื่น)
-      CHL_TR: {}                 // [ยืนยันแล้ว 22/7/69] sum TR สะสมของวัน ต่อเครื่อง — คอลัมน์
-                                  // 'Sum_CAL_ Chiller Capacity(TR)' เป็นค่า per-row ของ chiller
-                                  // ที่วิ่งในแถวนั้นจริง (เหมือน PCHP/CDP demand) บวกสะสมได้ตรงๆ
-    }
-  };
-
-  if (rows.length === 0) return result;
-
-  const dateCol = colIndex['DAY_record'];
-
-  // [ใหม่ 22/7/69] ถ้ามี dateStr ส่งมา (เช่น '2026-07-20' — ค.ศ. จาก frontend) ใช้วันนั้นแทน
-  // "วันล่าสุดที่มีข้อมูล" เพื่อรองรับ global date filter
-  // *** สำคัญ: DAY_record ในชีตเก็บเป็นปี พ.ศ. (เหมือนที่ getPowerHistory ทำ +543 ปีอยู่แล้ว) ***
-  // ต้องแปลง dateStr จาก ค.ศ. -> พ.ศ. ก่อนเทียบ ไม่งั้นจะหาแถวไม่เจอเลยสักแถว (บั๊กที่เจอจริง)
-  let targetDateKey;
-  if (dateStr) {
-    const buddhistDate = new Date(dateStr);
-    buddhistDate.setFullYear(buddhistDate.getFullYear() + 543);
-    targetDateKey = Utilities.formatDate(buddhistDate, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  if(def.kind === 'chl'){
+    var chlSums = perUnit.CHL || {};
+    var chlTr = perUnit.CHL_TR || {};
+    var totalKw = totals.mainChillerKw, totalTr = totals.chillerCapacityTr;
+    document.getElementById('spSub').textContent = def.ids.length+' หน่วย · sum สะสมของวัน · รวม '+
+      (typeof totalKw==='number'?totalKw.toFixed(1)+' kW':'—')+' / '+(typeof totalTr==='number'?totalTr.toFixed(0)+' TR':'—');
+    document.getElementById('spHeadRow').innerHTML = '<span>Unit</span><span style="width:70px;text-align:right;">สถานะ</span><span style="width:56px;text-align:right;">kW</span><span style="width:38px;text-align:right;">TR</span>';
+    document.getElementById('spRows').innerHTML = def.ids.map(function(id){
+      var v = chlSums[id], tr = chlTr[id];
+      var hasVal = (v !== undefined && v !== null);
+      return '<div class="sp-row" data-unit="'+id+'"><span class="sp-id"><span class="stat-dot '+(hasVal?'run':'standby')+'"></span>'+id+'</span>'+
+        '<span class="sp-val" style="width:70px;">'+(hasVal?'เดินวันนี้':'ไม่ได้เดิน')+'</span>'+
+        '<span class="sp-val">'+(hasVal?v.toFixed(1)+' kW':'0 kW')+'</span>'+
+        '<span class="sp-tr">'+((tr!==undefined&&tr!==null)?tr:'–')+'</span></div>';
+    }).join('');
   } else {
-    const lastRow = rows[rows.length - 1];
-    const lastDateVal = lastRow[dateCol];
-    if (!(lastDateVal instanceof Date)) return result;
-    targetDateKey = Utilities.formatDate(lastDateVal, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    var groupObj = (perUnit[def.group]) || {};
+    var totalVal = def.totalKey ? totals[def.totalKey] : null;
+    document.getElementById('spSub').textContent = def.ids.length+' หน่วย · average ของวัน' +
+      ((typeof totalVal==='number') ? (' · รวม '+totalVal.toFixed(1)+' kW') : '');
+    document.getElementById('spHeadRow').innerHTML = '<span>Unit</span><span style="width:58px;text-align:right;">kW (avg)</span>';
+    document.getElementById('spRows').innerHTML = def.ids.map(function(id){
+      var v = groupObj[id];
+      var hasVal = (v !== undefined && v !== null);
+      return '<div class="sp-row" data-unit="'+id+'"><span class="sp-id"><span class="stat-dot '+(hasVal?'run':'standby')+'"></span>'+id+'</span>'+
+        '<span class="sp-val">'+(hasVal?v.toFixed(1)+' kW':'–')+'</span></div>';
+    }).join('');
   }
-  result.date = targetDateKey;
+}
 
-  const dayRows = rows.filter(r => {
-    const d = r[dateCol];
-    return d instanceof Date && Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd') === targetDateKey;
+function openPanel(key){
+  currentPanelKey = key;
+  document.querySelectorAll('.hz').forEach(h=>h.classList.remove('active'));
+  var hz = document.querySelector('.hz[data-key="'+key+'"]');
+  if(hz) hz.classList.add('active');
+  document.getElementById('sidePanel').classList.add('open');
+  renderPanel(key);
+}
+function closePanel(){
+  currentPanelKey = null;
+  document.getElementById('sidePanel').classList.remove('open');
+  document.querySelectorAll('.hz').forEach(h=>h.classList.remove('active'));
+}
+
+document.querySelectorAll('.hz').forEach(function(hz){
+  hz.addEventListener('click', function(e){
+    e.stopPropagation();
+    var key = hz.dataset.key;
+    if(currentPanelKey === key){ closePanel(); return; }
+    openPanel(key);
   });
+});
+document.getElementById('spClose').addEventListener('click', closePanel);
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.hz') && !e.target.closest('#sidePanel')) closePanel();
+});
 
-  if (dayRows.length === 0) return result; // ไม่มีข้อมูลของวันที่ขอ -> คืนค่าว่างทั้งหมด (ไม่ error)
-
-  const lastRow = dayRows[dayRows.length - 1]; // แถวล่าสุด "ของวันนั้น" ไม่ใช่ของทั้งไฟล์
-
-  // ---- latest label (Chiller running ของแถวล่าสุดของวันนั้น) ----
-  result.latest.chillerRunning = _val_(lastRow, colIndex, 'Chiller running');
-  const rawTime = _val_(lastRow, colIndex, 'Time');
-  result.latest.time = rawTime instanceof Date
-    ? Utilities.formatDate(rawTime, Session.getScriptTimeZone(), 'HH:mm:ss')
-    : rawTime;
-
-  // ---- helper: sum / average ของคอลัมน์หนึ่ง ข้ามทุกแถวของวันนั้น ----
-  function sumOfCol_(colName) {
-    let sum = 0, any = false;
-    dayRows.forEach(r => {
-      const v = _val_(r, colIndex, colName);
-      if (v !== null) { sum += v; any = true; }
-    });
-    return any ? sum : null;
-  }
-  function avgOfCol_(colName) {
-    let sum = 0, count = 0;
-    dayRows.forEach(r => {
-      const v = _val_(r, colIndex, colName);
-      if (v !== null) { sum += v; count++; }
-    });
-    return count > 0 ? (sum / count) : null;
-  }
-
-  // ---- totals: sum สะสมทั้งวัน ----
-  result.totals.totalKwAll = sumOfCol_('Sum_All_kW total');
-  result.totals.totalKwPlant = sumOfCol_('Sum_All Plant Demand(kW)');
-  result.totals.mainChillerKw = sumOfCol_('Sum_CAL_Chiller demard(kW)');
-  result.totals.ctTotal = sumOfCol_('Sum_Cal_TT_ CT(kW)');
-  result.totals.schpPhase1Total = sumOfCol_('Sum_Cal_TT_SCHP Demand (kW)');
-  result.totals.schpPhase2Total = sumOfCol_('Sum_Cal_TT_H-SCHP Demand (kW)');
-  result.totals.chillerCapacityTr = sumOfCol_('Sum_CAL_ Chiller Capacity(TR)'); // [ใหม่] ข้อ1
-  result.totals.cdpTotal = sumOfCol_('Sum_Cal_TT_ CDP Demand (kW)');            // [ใหม่] ข้อ5
-  result.totals.pchpTotal = sumOfCol_('Sum_Cal_TT_PCHP Demand (kW)');           // [ใหม่] ข้อ5
-
-  // ---- averages ----
-  result.averages.plantEfficiency = avgOfCol_('Sum_All_kW/TRp-Plant');
-
-  // ---- per-unit average: CT ----
-  equip.CT.forEach(id => {
-    const v = avgOfCol_('Cooling(kW)_' + id);
-    if (v !== null) result.perUnit.CT[id] = round2_(v);
-  });
-
-  // ---- per-unit average: SCHP (ทั้ง Phase I และ Phase II รวมอยู่ใน equip.SCHP ชุดเดียว) ----
-  equip.SCHP.forEach(id => {
-    const v = avgOfCol_('Record_(kW)_' + id);
-    if (v !== null) result.perUnit.SCHP[id] = round2_(v);
-  });
-
-  // ---- per-unit average: PCHP / CDP ผ่าน CHILLER_MAP_ ----
-  // เดินทีละแถวของวันนั้น อ่าน Chiller running -> หา cdp/pchp คู่กันจาก CHILLER_MAP_
-  // -> สะสม sum + count แยกตาม cdp id / pchp id -> หาร เป็น average ต่อเครื่องตอนท้าย
-  const pchpSums = {}, pchpCounts = {};
-  const cdpSums = {}, cdpCounts = {};
-
-  dayRows.forEach(r => {
-    const chillerId = _val_(r, colIndex, 'Chiller running');
-    if (!chillerId) return;
-    const map = CHILLER_MAP_[chillerId];
-    if (!map) return; // เจอ chiller id ที่ไม่มีใน mapping -> ข้าม (กัน error เงียบๆ)
-
-    const pchpVal = _val_(r, colIndex, 'Sum_Cal_TT_PCHP Demand (kW)');
-    if (pchpVal !== null) {
-      pchpSums[map.pchp] = (pchpSums[map.pchp] || 0) + pchpVal;
-      pchpCounts[map.pchp] = (pchpCounts[map.pchp] || 0) + 1;
+document.getElementById('unitSearch').addEventListener('input', function(){
+  var q = this.value.trim().toUpperCase();
+  document.querySelectorAll('.hz').forEach(h=>h.classList.remove('search-hit'));
+  if(!q) return;
+  var foundKey = null, foundId = null;
+  for(var i=0;i<SEARCH_PRIORITY.length && !foundKey;i++){
+    var def = PANEL_DEFS[SEARCH_PRIORITY[i]];
+    for(var j=0;j<def.ids.length;j++){
+      if(def.ids[j].toUpperCase().indexOf(q) !== -1){ foundKey=SEARCH_PRIORITY[i]; foundId=def.ids[j]; break; }
     }
-
-    const cdpVal = _val_(r, colIndex, 'Sum_Cal_TT_ CDP Demand (kW)');
-    if (cdpVal !== null) {
-      cdpSums[map.cdp] = (cdpSums[map.cdp] || 0) + cdpVal;
-      cdpCounts[map.cdp] = (cdpCounts[map.cdp] || 0) + 1;
+  }
+  if(!foundKey) return;
+  var hz = document.querySelector('.hz[data-key="'+foundKey+'"]');
+  if(hz) hz.classList.add('search-hit');
+  openPanel(foundKey);
+  setTimeout(function(){
+    var row = document.querySelector('.sp-row[data-unit="'+foundId+'"]');
+    if(row){
+      row.classList.add('row-hit');
+      row.scrollIntoView({block:'center'});
+      setTimeout(function(){ row.classList.remove('row-hit'); }, 2000);
     }
-  });
+  }, 30);
+});
 
-  Object.keys(pchpSums).forEach(id => {
-    result.perUnit.PCHP[id] = round2_(pchpSums[id] / pchpCounts[id]);
-  });
-  Object.keys(cdpSums).forEach(id => {
-    result.perUnit.CDP[id] = round2_(cdpSums[id] / cdpCounts[id]);
-  });
-
-  // ---- per-unit SUM: CHL (Main Chiller) ----
-  // [แก้ 22/7/69] ยืนยันแล้วในแชท: CT/SCHP รายตัวยังเป็น average เหมือนเดิม แต่ Chiller รายตัว
-  // ต้องเป็น SUM สะสมของวัน แยกตามเครื่อง — เพราะแต่ละแถวคือ chiller ตัวใดตัวหนึ่งที่วิ่งอยู่
-  // ณ ตอนนั้น ถ้าวันนั้นสลับกันวิ่งหลายตัว ให้บวกสะสมแยกตามตัว (ไม่ใช่ average และไม่ใช่แค่
-  // เครื่องล่าสุดตัวเดียวแบบที่เคยทำผิดไป) -> sum(perUnit.CHL ทุกตัว) ควรเท่ากับ totals.mainChillerKw
-  const chlSums = {};
-  dayRows.forEach(r => {
-    const chillerId = _val_(r, colIndex, 'Chiller running');
-    if (!chillerId) return;
-    const v = _val_(r, colIndex, 'Sum_CAL_Chiller demard(kW)');
-    if (v === null) return;
-    chlSums[chillerId] = (chlSums[chillerId] || 0) + v;
-  });
-  Object.keys(chlSums).forEach(id => {
-    result.perUnit.CHL[id] = round2_(chlSums[id]); // sum ไม่หารด้วยจำนวนแถว
-  });
-
-  // ---- per-unit SUM: CHL_TR ----
-  // [ยืนยันแล้ว 22/7/69] ทำ pattern เดียวกับ CHL ทุกประการ — คอลัมน์
-  // 'Sum_CAL_ Chiller Capacity(TR)' เป็นค่า per-row ของ chiller ที่วิ่งในแถวนั้นจริง
-  const chlTrSums = {};
-  dayRows.forEach(r => {
-    const chillerId = _val_(r, colIndex, 'Chiller running');
-    if (!chillerId) return;
-    const v = _val_(r, colIndex, 'Sum_CAL_ Chiller Capacity(TR)');
-    if (v === null) return;
-    chlTrSums[chillerId] = (chlTrSums[chillerId] || 0) + v;
-  });
-  Object.keys(chlTrSums).forEach(id => {
-    result.perUnit.CHL_TR[id] = round2_(chlTrSums[id]);
-  });
-
-  return result;
+var HOT='#f2867a', COLD='#38bdf8', RET='#f2b84f';
+function sp(pts){ return pts.map((p,i)=>(i===0?'M':'L')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' '); }
+function box(x,y,w,h){ return {x,y,w,h}; }
+function topPt(n,f){ f=f===undefined?0.5:f; return {x:n.x+n.w*f,y:n.y}; }
+function botPt(n,f){ f=f===undefined?0.5:f; return {x:n.x+n.w*f,y:n.y+n.h}; }
+function leftPt(n,f){ f=f===undefined?0.5:f; return {x:n.x,y:n.y+n.h*f}; }
+function rightPt(n,f){ f=f===undefined?0.5:f; return {x:n.x+n.w,y:n.y+n.h*f}; }
+var frag = {d:'<defs>'+['h','c','r'].map(k=>{var c=k==='h'?HOT:(k==='c'?COLD:RET);return '<marker id="M-'+k+'" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1L8 5L1 9" fill="none" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>';}).join('')+'</defs>'};
+function stroke(pts,color,key,w){ frag.d+='<path d="'+sp(pts)+'" stroke="'+color+'" stroke-width="'+(w||1.8)+'" fill="none" stroke-linecap="round" stroke-linejoin="round"'+(key?' marker-end="url(#M-'+key+')"':'')+'/>'; }
+function industrialShell(n,color){
+  frag.d+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="6" fill="rgba(255,255,255,.03)" stroke="'+color+'" stroke-width="2.2"/>';
+  frag.d+='<rect x="'+(n.x+4)+'" y="'+(n.y+4)+'" width="'+(n.w-8)+'" height="'+(n.h-8)+'" rx="4" fill="none" stroke="'+color+'" stroke-width="0.8" opacity=".45"/>';
+  frag.d+='<circle cx="'+(n.x+12)+'" cy="'+(n.y+12)+'" r="3" fill="'+color+'"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle>';
+  frag.d+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="18" rx="6" fill="'+color+'" opacity=".15"/>';
+}
+function smallNode(n,title,kwText,color,rgb,id){
+  industrialShell(n,color);
+  frag.d+='<text x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2-2)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9.5" fill="#fff">'+title+'</text>';
+  frag.d+='<text'+(id?' id="'+id+'"':'')+' x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2+14)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="12" fill="rgb('+rgb+')">'+(kwText||'—')+'</text>';
+}
+function zoneBox(n,title,color){
+  industrialShell(n,color);
+  frag.d+='<text x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2+4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9.5" fill="#fff">'+title+'</text>';
 }
 
-function testAllPowerFunctions() {
-  Logger.log('===== getStructure =====');
-  Logger.log(getStructure());
+var ct=box(20,20,180,70), cdp=box(400,20,180,70);
+var chlCond=box(400,140,180,60), chlMid=box(400,200,180,50), chlEvap=box(400,250,180,70); // [ข้อ6] ขยับลง 30px จากเดิม (110/170/220) ให้เส้น CDP->Condenser ยาวขึ้น
+var pchp=box(400,470,180,70);
+var evapCenterY = chlEvap.y + chlEvap.h/2;
+var hsup=box(885,evapCenterY-20,130,40);
+var midY=310;
+var schp1=box(706,360,140,40), schp2=box(1054,360,140,40);
+var trunkY=420;
+var front=box(610,440,100,55), back=box(726,440,100,55), eh105=box(842,440,100,55);
+var support=box(958,440,100,55), sale=box(1074,440,100,55), exhibition=box(1190,440,100,55);
+var convergeY=520;
+var hret=box(885,550,130,40);
+var ylow=610;
 
-  Logger.log('===== getPowerLatest =====');
-  Logger.log(getPowerLatest());
+stroke([rightPt(ct),leftPt(cdp)],HOT,'h');
+stroke([botPt(cdp),topPt(chlCond)],HOT,'h');
+stroke([leftPt(chlCond,0.5),{x:110,y:leftPt(chlCond,0.5).y},{x:110,y:botPt(ct).y}],HOT,'h');
+stroke([rightPt(chlEvap,0.5),leftPt(hsup,0.5)],COLD,'c');
+stroke([botPt(hsup),{x:botPt(hsup).x,y:midY}],COLD,0);
+[schp1,schp2].forEach(n=>stroke([{x:botPt(hsup).x,y:midY},{x:topPt(n).x,y:midY},topPt(n)],COLD,'c'));
+stroke([botPt(schp1),{x:botPt(schp1).x,y:trunkY}],COLD,0);
+[front,back,eh105].forEach(n=>stroke([{x:botPt(schp1).x,y:trunkY},{x:topPt(n).x,y:trunkY},topPt(n)],COLD,'c'));
+stroke([botPt(schp2),{x:botPt(schp2).x,y:trunkY}],COLD,0);
+[support,sale,exhibition].forEach(n=>stroke([{x:botPt(schp2).x,y:trunkY},{x:topPt(n).x,y:trunkY},topPt(n)],COLD,'c'));
+[front,back,eh105,support,sale,exhibition].forEach(function(n){
+  stroke([botPt(n),{x:botPt(n).x,y:convergeY}],RET,0,1.3);
+  frag.d+='<circle cx="'+botPt(n).x+'" cy="'+convergeY+'" r="2" fill="'+RET+'"/>';
+});
+stroke([{x:front.x+front.w/2,y:convergeY},{x:exhibition.x+exhibition.w/2,y:convergeY}],RET,0,2.2);
+stroke([{x:hret.x+hret.w/2,y:convergeY},topPt(hret)],RET,'r',2.2);
+stroke([botPt(hret),{x:botPt(hret).x,y:ylow},{x:botPt(pchp,0.5).x,y:ylow},botPt(pchp,0.5)],RET,'r',2.2);
+stroke([topPt(pchp),botPt(chlEvap)],RET,'r',2.2);
 
-  Logger.log('===== getDailyCumulative =====');
-  Logger.log(getDailyCumulative());
+industrialShell(ct,HOT);
+frag.d+='<text x="'+(ct.x+ct.w/2)+'" y="'+(ct.y+ct.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10.5" fill="#fff">Cooling Tower</text><text id="hdrval-CoolingTower" x="'+(ct.x+ct.w/2)+'" y="'+(ct.y+ct.h/2+18)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="15" fill="rgb(242,134,122)">—</text>';
+industrialShell(cdp,HOT);
+frag.d+='<text x="'+(cdp.x+cdp.w/2)+'" y="'+(cdp.y+cdp.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10.5" fill="#fff">Condenser Pump</text><text id="hdrval-CondenserPump" x="'+(cdp.x+cdp.w/2)+'" y="'+(cdp.y+cdp.h/2+18)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="15" fill="rgb(242,134,122)">—</text>';
+industrialShell(chlCond,HOT);
+frag.d+='<text x="'+(chlCond.x+chlCond.w/2)+'" y="'+(chlCond.y+chlCond.h/2+3)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10" fill="#fff">Condenser · น้ำร้อน</text>';
+industrialShell(chlMid,'#8892a8');
+frag.d+='<text x="'+(chlMid.x+chlMid.w/2)+'" y="'+(chlMid.y+chlMid.h/2+4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="11" fill="#fff">Main Chiller</text>';
+industrialShell(chlEvap,COLD);
+frag.d+='<text x="'+(chlEvap.x+chlEvap.w/2)+'" y="'+(chlEvap.y+chlEvap.h/2-1)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10" fill="#fff">Evaporator · น้ำเย็น</text><text id="hdrval-Evaporator" x="'+(chlEvap.x+chlEvap.w/2)+'" y="'+(chlEvap.y+chlEvap.h/2+16)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="13" fill="'+COLD+'">—</text>';
+industrialShell(pchp,RET);
+frag.d+='<text x="'+(pchp.x+pchp.w/2)+'" y="'+(pchp.y+pchp.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10.5" fill="#fff">Primary CHW Pump</text><text id="hdrval-PrimaryCHWPump" x="'+(pchp.x+pchp.w/2)+'" y="'+(pchp.y+pchp.h/2+18)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="15" fill="rgb(242,184,79)">—</text>';
+smallNode(hsup,'Header Supply',null,COLD,'56,189,248');
+smallNode(hret,'Header Return',null,RET,'242,184,79');
+smallNode(schp1,'SCHP Phase I',null,COLD,'56,189,248','hdrval-SCHP1');
+smallNode(schp2,'SCHP Phase II',null,COLD,'56,189,248','hdrval-SCHP2');
+zoneBox(front,'Front',COLD); zoneBox(back,'Back',COLD); zoneBox(eh105,'EH105-106',COLD);
+zoneBox(support,'Support',COLD); zoneBox(sale,'Sale',COLD); zoneBox(exhibition,'Exhibition',COLD);
 
-  Logger.log('===== getZoneKwPerArea =====');
-  Logger.log(getZoneKwPerArea());
+document.getElementById('svgMain').innerHTML = frag.d;
 
-  Logger.log('===== getPowerHistory (2026-07-10 to 2026-07-18) =====');
-  const history = getPowerHistory('2026-07-10', '2026-07-18');
-  Logger.log('จำนวนแถว: ' + history.length);
-  Logger.log(history.slice(0, 3));
+(function(){
+  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
+  var syncStatus = document.getElementById('sync-status');
+  var dateInput = document.getElementById('dateFilter');
+  var currentDateStr = null;
+
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+  function yesterdayStr(){ var d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+  dateInput.value = todayStr();
+
+  function setText(id, val, digits){
+    var el = document.getElementById(id);
+    if(!el) return;
+    var noData = (val === null || val === undefined || val === '');
+    el.textContent = noData ? '—' : ((typeof val === 'number') ? val.toFixed(digits===undefined?1:digits) : val);
+  }
+  function setHdr(id, val){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = (val===null||val===undefined) ? '—' : (val.toFixed(1)+' kW');
+  }
+
+  async function fetchSummary(dateStr){
+    var url = API_URL + '?action=summary' + (dateStr ? ('&date=' + dateStr) : '');
+    var res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  }
+
+  async function syncNow(){
+    syncStatus.textContent = 'กำลัง sync...';
+    try {
+      var summary = await fetchSummary(currentDateStr);
+      window.__latestPowerSummary = summary;
+      var totals = summary.totals || {};
+      var averages = summary.averages || {};
+      var perUnit = summary.perUnit || {};
+      var latest = summary.latest || {};
+
+      setText('kpi-ct', totals.ctTotal);
+      setText('kpi-chl', totals.mainChillerKw);
+      setText('kpi-tr', totals.chillerCapacityTr, 0);
+      setText('kpi-schp1', totals.schpPhase1Total);
+      setText('kpi-schp2', totals.schpPhase2Total);
+      setText('kpi-totalkw', totals.totalKwAll);
+      setText('kpi-totalkwplant', totals.totalKwPlant);
+      setText('kpi-eff', averages.plantEfficiency, 3);
+
+      var chlSub = document.getElementById('kpi-chl-sub');
+      if(chlSub) chlSub.textContent = latest.chillerRunning ? ('เครื่องที่วิ่งอยู่ล่าสุด: ' + latest.chillerRunning) : 'ไม่มีข้อมูลของวันนี้';
+
+      setHdr('hdrval-CoolingTower', totals.ctTotal);
+      setHdr('hdrval-CondenserPump', totals.cdpTotal);
+      setHdr('hdrval-PrimaryCHWPump', totals.pchpTotal);
+      setHdr('hdrval-SCHP1', totals.schpPhase1Total);
+      setHdr('hdrval-SCHP2', totals.schpPhase2Total);
+      setHdr('hdrval-Evaporator', totals.mainChillerKw);
+
+      // [ใหม่] ถ้า side panel เปิดอยู่ ให้ re-render ด้วยข้อมูลใหม่ (ไม่ต้องปิดแล้วเปิดใหม่)
+      if(currentPanelKey) renderPanel(currentPanelKey);
+
+      var dateStr = summary.date || '';
+      var timeStr = latest.time || '';
+      syncStatus.textContent = (dateStr ? ('✅ ' + dateStr + ' ') : '⚠️ ไม่มีข้อมูล ') + timeStr;
+      var sbFoot = document.getElementById('sbFoot');
+      if(sbFoot) sbFoot.textContent = 'Last sync ' + (timeStr || dateStr || '-');
+    } catch(err){
+      syncStatus.textContent = '❌ sync ล้มเหลว: ' + err.message;
+    }
+  }
+
+  document.querySelectorAll('.date-filter [data-range]').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.date-filter [data-range]').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      currentDateStr = b.dataset.range === 'yesterday' ? yesterdayStr() : null;
+      dateInput.value = b.dataset.range === 'yesterday' ? yesterdayStr() : todayStr();
+      syncNow();
+    });
+  });
+  dateInput.addEventListener('change', function(){
+    document.querySelectorAll('.date-filter [data-range]').forEach(x=>x.classList.remove('active'));
+    currentDateStr = dateInput.value || null;
+    syncNow();
+  });
+
+  syncNow();
+  setInterval(syncNow, 600000); // [แก้ตามที่ confirm] auto-refresh ทุก 10 นาที (ลดจาก 60 วิ เพื่อลดการเรียก API)
+  window.__syncCircuitNow = syncNow;
+})();
+
+(function(){
+  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
+  var statusEl = document.getElementById('monthly-sync-status');
+  var monthLabelTH = {'01':'ม.ค.','02':'ก.พ.','03':'มี.ค.','04':'เม.ย.','05':'พ.ค.','06':'มิ.ย.','07':'ก.ค.','08':'ส.ค.','09':'ก.ย.','10':'ต.ค.','11':'พ.ย.','12':'ธ.ค.'};
+  function fmtNum(v, digits){ if(v===null||v===undefined) return 'N/A'; return v.toLocaleString('en-US',{minimumFractionDigits:digits||0,maximumFractionDigits:digits||0}); }
+
+  async function loadMonthly(){
+    statusEl.textContent = 'กำลังดึงข้อมูล...';
+    try {
+      var end = new Date(); var start = new Date();
+      start.setMonth(start.getMonth()-2); start.setDate(1);
+      var toStr = function(d){ return d.toISOString().slice(0,10); };
+      var res = await fetch(API_URL + '?action=history&start=' + toStr(start) + '&end=' + toStr(end));
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var rows = await res.json();
+      if(!Array.isArray(rows) || rows.length===0){ statusEl.textContent='⚠️ ไม่พบข้อมูลในช่วงนี้'; return; }
+
+      var months = {};
+      rows.forEach(function(r){ if(!r.date) return; var mk=String(r.date).slice(0,7); (months[mk]=months[mk]||[]).push(r); });
+      var monthKeys = Object.keys(months).sort();
+      var monthData = monthKeys.map(function(mk){
+        var list = months[mk]; var sumKwh=0, sumTr=0, hasKwh=false, hasTr=false;
+        list.forEach(function(r){
+          if(typeof r.totalKw==='number'){ sumKwh+=r.totalKw; hasKwh=true; }
+          if(typeof r.chillerCapacityTr==='number'){ sumTr+=r.chillerCapacityTr; hasTr=true; }
+        });
+        return { mk:mk, label:(monthLabelTH[mk.slice(5,7)]||mk.slice(5,7))+'-'+mk.slice(2,4), totalKwh:hasKwh?sumKwh:null, totalTr:hasTr?sumTr:null };
+      });
+
+      var thead = document.getElementById('monthly-thead');
+      var tbody = document.getElementById('monthly-tbody');
+      var headHtml = '<tr><th>Monthly</th>';
+      monthData.forEach(function(m,i){ headHtml += '<th>'+m.label+(i===monthData.length-1?' (partial)':'')+'</th>'; });
+      headHtml += '</tr>'; thead.innerHTML = headHtml;
+
+      function row(label, values, digits){
+        var cells = values.map(function(v){ return '<td>'+(v===null?'N/A':fmtNum(v,digits))+'</td>'; }).join('');
+        return '<tr><td>'+label+'</td>'+cells+'</tr>';
+      }
+      tbody.innerHTML = row('Total (kWh)', monthData.map(m=>m.totalKwh), 0) + row('Total (TR)', monthData.map(m=>m.totalTr), 0);
+
+      var latest = monthData[monthData.length-1];
+      document.getElementById('monthly-kpi-kwh-label').textContent = 'Total kWh (' + latest.label + ')';
+      document.getElementById('monthly-kpi-kwh').textContent = latest.totalKwh!==null ? fmtNum(latest.totalKwh,0) : '—';
+      document.getElementById('monthly-kpi-tr').textContent = latest.totalTr!==null ? fmtNum(latest.totalTr,0) : '—';
+      statusEl.textContent = '✅ sync ล่าสุด · ดึง ' + rows.length + ' แถว จาก ' + monthKeys.length + ' เดือน';
+    } catch(err){ statusEl.textContent = '❌ sync ล้มเหลว: ' + err.message; }
+  }
+  loadMonthly();
+})();
+
+// [AHU Option 2] roster เต็ม มี unit id จริงรายตัว (ไม่ใช่แค่จำนวน) — สถานะ real-time ยังไม่มีข้อมูล
+// จึงโชว์เป็น "ไม่มีข้อมูล" แทนสีสุ่ม/ปลอมแปลง
+var EXHIBITION_H = [
+  {name:'SAMA GARDEN', phase:1, units:['SMGARDEN-01','SMGARDEN-02','SMGARDEN-03','SMGARDEN-04','SMGARDEN-05','SMGARDEN-06','SMGARDEN-07','SMGARDEN-08','SMGARDEN-09']},
+  {name:'BEAT', phase:1, units:Array.from({length:30},function(_,i){return 'BEAT-'+String(i+1).padStart(2,'0');})},
+  {name:'EH104', phase:1, units:['EH104-F','EH104-B']},
+  {name:'EH103', phase:1, units:['EH103-F','EH103-B']},
+  {name:'EH102', phase:1, units:['EH102-F','EH102-B']},
+  {name:'EH101', phase:1, units:['EH101-F','EH101-B','SEH101-01','SEH101-02']},
+  {name:'EH100', phase:2, units:['9-2MAHU-01','9-2MAHU-02','9-2MAHU-03','9-2MAHU-04','1-2MAHU-01','1-2MAHU-02','1-2MAHU-03','1-2MAHU-04','1-2MAHU-05']},
+  {name:'EH99', phase:2, units:['2-2MAHU-01','2-2MAHU-02','2-2MAHU-03','2-2MAHU-04','2-2MAHU-05']},
+  {name:'EH98', phase:2, units:['2-2MAHU-06','3-2MAHU-01','3-2MAHU-02','3-2MAHU-03','3-2MAHU-04','3-2MAHU-05','4-2MAHU-04','4-2MAHU-05','4-2MAHU-06','4-2MAHU-07']}
+];
+var CONVENTION_H = [
+  {name:'LIVE', phase:1, units:Array.from({length:10},function(_,i){return 'BTLIVE-'+String(i+1).padStart(2,'0');})},
+  {name:'GH201', phase:1, units:['GH201-01','GH201-02']},
+  {name:'GH202', phase:1, units:['GH202-01','GH202-02']},
+  {name:'GH203', phase:1, units:['GH203-01','GH203-02','OAU-203-03']},
+  {name:'BHIRAJ', phase:2, units:['6-3MAHU-07','6-3MAHU-08','6-3MAHU-02','6-3MAHU-03','5-3MAHU-01','5-3MAHU-02']},
+  {name:'COSMOS', phase:2, units:['6-GSAHU-01','6-GSAHU-02','6-GSAHU-03','6-GSAHU-04','6-GSAHU-05','6-GSAHU-06','6-GSAHU-07']}
+];
+function hallCard(h){
+  var pills = h.units.map(function(u){
+    return '<div class="pill" title="ยังไม่มีข้อมูลสถานะ real-time"><span class="pill-dot"></span>'+u+'</div>';
+  }).join('');
+  return '<div class="hall-card p'+h.phase+'"><div class="hc-head"><span class="hc-name">'+h.name+'</span><span class="hc-phase">P'+h.phase+'</span></div><div class="hc-count">'+h.units.length+' หน่วย</div><div class="pill-row">'+pills+'</div></div>';
 }
-
-/** [ใหม่] เทสต์เฉพาะ getPowerSummary ตัวใหม่ แยกจาก testAllPowerFunctions เดิม */
-function testPowerSummary() {
-  Logger.log('===== getPowerSummary =====');
-  Logger.log(JSON.stringify(getPowerSummary(), null, 2));
-}
+document.getElementById('hallScroll').innerHTML =
+  '<div class="wing-label">EXHIBITION WING</div><div class="hall-cards">'+EXHIBITION_H.map(hallCard).join('')+'</div>'+
+  '<div class="wing-label">CONVENTION WING</div><div class="hall-cards">'+CONVENTION_H.map(hallCard).join('')+'</div>';
+</script>
+</body>
+</html>
