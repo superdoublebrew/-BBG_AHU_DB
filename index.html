@@ -262,15 +262,12 @@
     <div class="ahu-shell">
       <div class="ahu-side">
         <div class="side-card glass"><div class="side-title">LEGEND</div>
-          <div class="legend-row2"><span class="legend-dot" style="background:var(--p1-1)"></span>Phase 1 · 66 หน่วย</div>
-          <div class="legend-row2"><span class="legend-dot" style="background:var(--p2-1)"></span>Phase 2 · 37 หน่วย</div>
+          <div class="legend-row2"><span class="legend-dot" style="background:var(--p1-1)"></span>Phase 1 · <span id="ahu-p1-count">—</span> หน่วย</div>
+          <div class="legend-row2"><span class="legend-dot" style="background:var(--p2-1)"></span>Phase 2 · <span id="ahu-p2-count">—</span> หน่วย</div>
         </div>
         <div class="side-card glass"><div class="side-title">QUICK VIEW</div>
-          <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px;">103<span style="font-size:10px; color:var(--text-faint); font-weight:500;"> AHU</span></div>
-          <div style="font-size:9.5px; color:var(--text-faint);">15 hall</div>
-        </div>
-        <div class="side-card glass"><div class="side-title">หมายเหตุ</div>
-          <div style="font-size:9.5px; color:var(--text-faint); line-height:1.5;">รายชื่อ hall/AHU ยังเป็น hardcode ฝั่งหน้าเว็บ ยังไม่ได้ดึงจาก getStructure() แบบ dynamic — เป็นงานค้างที่ต้องทำต่อ</div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px;"><span id="ahu-total-count">—</span><span style="font-size:10px; color:var(--text-faint); font-weight:500;"> AHU</span></div>
+          <div style="font-size:9.5px; color:var(--text-faint);" id="ahu-hall-count">— hall</div>
         </div>
       </div>
       <div class="ahu-main glass" style="padding:12px;">
@@ -919,47 +916,71 @@ document.getElementById('svgMain').innerHTML = frag.d;
   window.__loadMonthlyReport = loadMonthlyReport;
 })();
 
-// [AHU Option 2] roster เต็ม มี unit id จริงรายตัว (ไม่ใช่แค่จำนวน) — สถานะ real-time ยังไม่มีข้อมูล
-// จึงโชว์เป็น "ไม่มีข้อมูล" แทนสีสุ่ม/ปลอมแปลง
-var EXHIBITION_H = [
-  {name:'SAMA GARDEN', phase:1, units:['SMGARDEN-01','SMGARDEN-02','SMGARDEN-03','SMGARDEN-04','SMGARDEN-05','SMGARDEN-06','SMGARDEN-07','SMGARDEN-08','SMGARDEN-09']},
-  {name:'BEAT', phase:1, units:Array.from({length:30},function(_,i){return 'BEAT-'+String(i+1).padStart(2,'0');})},
-  {name:'EH104', phase:1, units:['EH104-F','EH104-B']},
-  {name:'EH103', phase:1, units:['EH103-F','EH103-B']},
-  {name:'EH102', phase:1, units:['EH102-F','EH102-B']},
-  {name:'EH101', phase:1, units:['EH101-F','EH101-B','SEH101-01','SEH101-02']},
-  {name:'EH100', phase:2, units:['9-2MAHU-01','9-2MAHU-02','9-2MAHU-03','9-2MAHU-04','1-2MAHU-01','1-2MAHU-02','1-2MAHU-03','1-2MAHU-04','1-2MAHU-05']},
-  {name:'EH99', phase:2, units:['2-2MAHU-01','2-2MAHU-02','2-2MAHU-03','2-2MAHU-04','2-2MAHU-05']},
-  {name:'EH98', phase:2, units:['2-2MAHU-06','3-2MAHU-01','3-2MAHU-02','3-2MAHU-03','3-2MAHU-04','3-2MAHU-05','4-2MAHU-04','4-2MAHU-05','4-2MAHU-06','4-2MAHU-07']}
-];
-var CONVENTION_H = [
-  {name:'LIVE', phase:1, units:Array.from({length:10},function(_,i){return 'BTLIVE-'+String(i+1).padStart(2,'0');})},
-  {name:'GH201', phase:1, units:['GH201-01','GH201-02']},
-  {name:'GH202', phase:1, units:['GH202-01','GH202-02']},
-  {name:'GH203', phase:1, units:['GH203-01','GH203-02','OAU-203-03']},
-  {name:'BHIRAJ', phase:2, units:['6-3MAHU-07','6-3MAHU-08','6-3MAHU-02','6-3MAHU-03','5-3MAHU-01','5-3MAHU-02']},
-  {name:'COSMOS', phase:2, units:['6-GSAHU-01','6-GSAHU-02','6-GSAHU-03','6-GSAHU-04','6-GSAHU-05','6-GSAHU-06','6-GSAHU-07']}
-];
-var ALL_HALLS = EXHIBITION_H.concat(CONVENTION_H);
+// [แก้ 23/7/69] ดึง roster ของ hall/AHU จาก getStructure() จริงแล้ว (แก้งานค้างเดิม — เคย hardcode ไว้)
+// ทั้ง hall, phase, wing, และรายชื่อ AHU unit id มาจากชีต AHU_Floor ตรงๆ ไม่มี hardcode รายชื่อในหน้าเว็บอีกแล้ว
+var ALL_HALLS = []; // เติมค่าหลัง fetch เสร็จ — ใช้ต่อโดย loadAhuData() (kW/m² + event) ด้านล่าง
 function hallLocationKey(name){ return 'BITEC-' + name.replace(/\s+/g,'-'); }
 function hallCard(h){
-  var loc = hallLocationKey(h.name);
-  var pills = h.units.map(function(u){
+  var loc = hallLocationKey(h.hall);
+  var phaseNum = (h.phase === 'p2') ? '2' : '1';
+  var pills = h.ahus.map(function(u){
     return '<div class="pill" title="ยังไม่มีข้อมูลสถานะ real-time"><span class="pill-dot"></span>'+u+'</div>';
   }).join('');
-  return '<div class="hall-card p'+h.phase+'" id="hc-'+loc+'" data-location="'+loc+'">'+
-    '<div class="hc-head"><span class="hc-name">'+h.name+'</span>'+
+  return '<div class="hall-card '+h.phase+'" id="hc-'+loc+'" data-location="'+loc+'">'+
+    '<div class="hc-head"><span class="hc-name">'+h.hall+'</span>'+
       '<div style="display:flex; gap:4px; flex-shrink:0;">'+
-        '<span class="hc-phase">P'+h.phase+'</span>'+
+        '<span class="hc-phase">P'+phaseNum+'</span>'+
         '<span class="hc-event-badge" id="hcevent-'+loc+'" style="display:none;">EVENT</span>'+
       '</div>'+
     '</div>'+
     '<div class="hc-kwm2"><span class="val" id="hckw-'+loc+'" style="color:var(--text-faint);">—</span><span class="unit">(kW/m²)</span></div>'+
-    '<div class="hc-count">'+h.units.length+' หน่วย</div><div class="pill-row">'+pills+'</div></div>';
+    '<div class="hc-count">'+h.ahus.length+' หน่วย</div><div class="pill-row">'+pills+'</div></div>';
 }
-document.getElementById('hallScroll').innerHTML =
-  '<div class="wing-label">EXHIBITION WING</div><div class="hall-cards">'+EXHIBITION_H.map(hallCard).join('')+'</div>'+
-  '<div class="wing-label">CONVENTION WING</div><div class="hall-cards">'+CONVENTION_H.map(hallCard).join('')+'</div>';
+
+(function(){
+  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
+  var WING_ORDER = ['Exhibition Wing', 'Convention Wing']; // ลำดับที่รู้จักโชว์ก่อน ที่เหลือ (เช่น 'อื่นๆ') ต่อท้าย
+
+  async function loadAhuStructure(){
+    try {
+      var res = await fetch(API_URL + '?action=structure');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      var halls = (data.ahu && Array.isArray(data.ahu.halls)) ? data.ahu.halls : [];
+      ALL_HALLS = halls;
+
+      var groups = {}, order = [];
+      halls.forEach(function(h){
+        var wing = h.wing || 'อื่นๆ';
+        if(!groups[wing]){ groups[wing] = []; order.push(wing); }
+        groups[wing].push(h);
+      });
+      order.sort(function(a,b){
+        var ia = WING_ORDER.indexOf(a); if(ia === -1) ia = 99;
+        var ib = WING_ORDER.indexOf(b); if(ib === -1) ib = 99;
+        return ia - ib;
+      });
+
+      document.getElementById('hallScroll').innerHTML = order.map(function(wing){
+        return '<div class="wing-label">'+wing.toUpperCase()+'</div><div class="hall-cards">'+groups[wing].map(hallCard).join('')+'</div>';
+      }).join('');
+
+      var pc = (data.ahu && data.ahu.phaseCount) || { p1: 0, p2: 0 };
+      var p1El = document.getElementById('ahu-p1-count'), p2El = document.getElementById('ahu-p2-count');
+      if(p1El) p1El.textContent = pc.p1;
+      if(p2El) p2El.textContent = pc.p2;
+      var totalEl = document.getElementById('ahu-total-count'), hallCountEl = document.getElementById('ahu-hall-count');
+      if(totalEl) totalEl.textContent = (data.ahu && data.ahu.totalCount) || 0;
+      if(hallCountEl) hallCountEl.textContent = halls.length + ' hall';
+
+      // roster พร้อมแล้ว (มี element ในหน้าให้เติมค่า) ค่อยดึง kW/m² + event มาเติมทับ
+      if(window.__loadAhuData) window.__loadAhuData();
+    } catch(err){
+      document.getElementById('hallScroll').innerHTML = '<div style="color:var(--text-faint); padding:20px; font-family:JetBrains Mono,monospace; font-size:11px;">โหลดรายชื่อ hall ไม่สำเร็จ: '+err.message+'</div>';
+    }
+  }
+  loadAhuStructure();
+})();
 
 // [ใหม่ 23/7/69] kW ต่อพื้นที่ + event badge บนการ์ด hall — ใช้ ?action=zonekw + ?action=eventlocations
 (function(){
@@ -976,6 +997,7 @@ document.getElementById('hallScroll').innerHTML =
   }
 
   async function loadAhuData(){
+    if(!ALL_HALLS.length) return; // roster ยังไม่พร้อม (loadAhuStructure จะเรียกซ้ำให้เองตอนพร้อม)
     try {
       var dateParam = window.__currentDateStr ? ('&date=' + window.__currentDateStr) : '';
       var results = await Promise.all([
@@ -995,7 +1017,7 @@ document.getElementById('hallScroll').innerHTML =
       ranked.forEach(function(l, i){ rankIndex[l.location] = i; });
 
       ALL_HALLS.forEach(function(h){
-        var loc = hallLocationKey(h.name);
+        var loc = hallLocationKey(h.hall);
         var kwEl = document.getElementById('hckw-'+loc);
         var cardEl = document.getElementById('hc-'+loc);
         var kwPerSqm = kwByLoc[loc];
@@ -1029,7 +1051,6 @@ document.getElementById('hallScroll').innerHTML =
   }
 
   window.__loadAhuData = loadAhuData;
-  loadAhuData();
 })();
 </script>
 </body>
