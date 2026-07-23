@@ -15,9 +15,16 @@
     --sidebar-w:180px; --sidebar-w-collapsed:60px; --topbar-h:52px;
   }
   @keyframes flowdash{ to{ stroke-dashoffset:-56; } }
-  .flow-line{ stroke-dasharray:9 7; animation:flowdash 1.4s linear infinite; }
+  .flow-line{ stroke-dasharray:9 7; animation:flowdash 1.4s linear infinite; filter:drop-shadow(0 0 3px currentColor); }
   @keyframes livepulse{ 0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(52,211,153,0.55); } 50%{ opacity:.55; box-shadow:0 0 0 4px rgba(52,211,153,0); } }
   .live-dot{ width:6px; height:6px; border-radius:50%; background:var(--green); display:inline-block; margin-right:5px; animation:livepulse 1.8s ease-in-out infinite; }
+  @keyframes kpiIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
+  .kpi-chip{ animation:kpiIn .4s ease both; }
+  .kpi-strip .kpi-chip:nth-child(1){ animation-delay:.02s; } .kpi-strip .kpi-chip:nth-child(2){ animation-delay:.06s; }
+  .kpi-strip .kpi-chip:nth-child(3){ animation-delay:.10s; } .kpi-strip .kpi-chip:nth-child(4){ animation-delay:.14s; }
+  .kpi-strip .kpi-chip:nth-child(5){ animation-delay:.18s; } .kpi-strip .kpi-chip:nth-child(6){ animation-delay:.22s; }
+  .kpi-strip .kpi-chip:nth-child(7){ animation-delay:.26s; } .kpi-strip .kpi-chip:nth-child(8){ animation-delay:.30s; }
+  .kpi-strip .kpi-chip:nth-child(9){ animation-delay:.34s; }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{ height:100%; overflow:hidden; }
   body{
@@ -67,14 +74,21 @@
   .panel{ display:none; flex:1; min-height:0; flex-direction:column; gap:10px; }
   .panel.active{ display:flex; }
 
-  .kpi-strip{ flex-shrink:0; display:flex; gap:8px; padding:10px 16px; flex-wrap:wrap; }
-  .kpi-chip{ display:flex; flex-direction:column; padding:8px 12px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-left:3px solid var(--cold); min-width:100px; }
+  .kpi-strip{ flex-shrink:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(0, 1fr)); gap:8px; padding:10px 16px; }
+  .kpi-chip{ display:flex; flex-direction:column; padding:10px 14px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-left:3px solid var(--cold); min-width:0; position:relative; overflow:hidden; transition:box-shadow .25s, border-color .25s; }
   .kpi-chip.hot{ border-left-color:var(--hot); }
   .kpi-chip.green{ border-left-color:var(--green); }
-  .kpi-chip .lbl{ font-family:'JetBrains Mono',monospace; font-size:8.5px; text-transform:uppercase; color:var(--text-faint); }
+  .kpi-chip.headline{ box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset; padding-bottom:26px; }
+  .kpi-chip.headline:hover{ border-color:rgba(255,255,255,0.22); box-shadow:0 0 18px -6px rgba(34,211,238,0.35); }
+  .kpi-chip .lbl{ font-family:'JetBrains Mono',monospace; font-size:8.5px; text-transform:uppercase; color:var(--text-faint); display:flex; align-items:center; justify-content:space-between; gap:4px; }
   .kpi-chip .val{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; }
   .kpi-chip .val span.unit{ font-size:9px; color:var(--text-faint); font-weight:500; margin-left:3px; }
   .kpi-chip .sub{ font-size:8.5px; color:var(--text-faint); }
+  .kpi-trend{ font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; display:inline-flex; align-items:center; gap:2px; }
+  .kpi-trend.up{ color:var(--green); }
+  .kpi-trend.down{ color:var(--hot); }
+  .kpi-trend.flat{ color:var(--text-faint); }
+  .kpi-spark{ position:absolute; left:0; right:0; bottom:0; height:22px; opacity:0.55; pointer-events:none; }
 
   .circuit-area{ flex:1; min-height:0; padding:10px 16px 14px; display:flex; flex-direction:column; }
   .circuit-legend{ flex-shrink:0; display:flex; gap:14px; margin-bottom:6px; flex-wrap:wrap; }
@@ -165,6 +179,7 @@
 <div class="main">
   <div class="topbar glass">
     <h1>BITEC Chiller &amp; AHU</h1>
+    <span id="liveClock" style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-muted);">—</span>
     <div class="search-box">
       <span style="color:var(--text-faint); font-size:11px;">🔍</span>
       <input type="text" id="unitSearch" placeholder="ค้นหา unit id เช่น H-SCHP-04">
@@ -180,13 +195,13 @@
   <div class="panel active" id="panel-plant">
     <div class="kpi-strip">
       <div class="kpi-chip hot"><div class="lbl">Cooling Tower</div><div class="val"><span id="kpi-ct">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip green"><div class="lbl">Main Chiller</div><div class="val"><span id="kpi-chl">—</span><span class="unit">(kW)</span></div><div class="sub" id="kpi-chl-sub">ยังไม่มีข้อมูล</div></div>
-      <div class="kpi-chip green"><div class="lbl">Chiller Capacity</div><div class="val"><span id="kpi-tr">—</span><span class="unit">(TR)</span></div><div class="sub">sum วันนี้</div></div>
+      <div class="kpi-chip green headline"><div class="lbl">Main Chiller<span class="kpi-trend" id="trend-chl"></span></div><div class="val"><span id="kpi-chl">—</span><span class="unit">(kW)</span></div><div class="sub" id="kpi-chl-sub">ยังไม่มีข้อมูล</div><svg class="kpi-spark" id="spark-chl" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
+      <div class="kpi-chip green headline"><div class="lbl">Chiller Capacity<span class="kpi-trend" id="trend-tr"></span></div><div class="val"><span id="kpi-tr">—</span><span class="unit">(TR)</span></div><div class="sub">sum วันนี้</div><svg class="kpi-spark" id="spark-tr" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
       <div class="kpi-chip"><div class="lbl">SCHP Phase I</div><div class="val"><span id="kpi-schp1">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
       <div class="kpi-chip"><div class="lbl">SCHP Phase II</div><div class="val"><span id="kpi-schp2">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
       <div class="kpi-chip"><div class="lbl">Total kW</div><div class="val"><span id="kpi-totalkw">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip"><div class="lbl">Total kW Plant</div><div class="val"><span id="kpi-totalkwplant">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip"><div class="lbl">Plant Efficiency</div><div class="val"><span id="kpi-eff">—</span><span class="unit">(kW/TR)</span></div><div class="sub">average วันนี้</div></div>
+      <div class="kpi-chip headline"><div class="lbl">Total kW Plant<span class="kpi-trend" id="trend-totalkwplant"></span></div><div class="val"><span id="kpi-totalkwplant">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div><svg class="kpi-spark" id="spark-totalkwplant" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
+      <div class="kpi-chip headline"><div class="lbl">Plant Efficiency<span class="kpi-trend" id="trend-eff"></span></div><div class="val"><span id="kpi-eff">—</span><span class="unit">(kW/TR)</span></div><div class="sub">average วันนี้</div><svg class="kpi-spark" id="spark-eff" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
       <div class="kpi-chip"><div class="lbl">Outdoor Temp</div><div class="val"><span id="kpi-oat">—</span><span class="unit">(C)</span></div><div class="sub">average วันนี้</div></div>
     </div>
 
@@ -272,6 +287,18 @@
 
 <script>
 document.getElementById('sbToggle').addEventListener('click', function(){ document.getElementById('sidebar').classList.toggle('collapsed'); });
+// [ข้อ F] 23/7/69 — นาฬิกา live ที่ topbar (ยืมมาจาก Option B ตามที่ตกลง)
+(function(){
+  var clockEl = document.getElementById('liveClock');
+  function tick(){
+    if(!clockEl) return;
+    var now = new Date();
+    var pad = function(n){ return String(n).padStart(2,'0'); };
+    clockEl.textContent = pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
 document.querySelectorAll(".side-tab").forEach(function(tab){
   tab.addEventListener("click", function(){
     document.querySelectorAll(".side-tab").forEach(t=>t.classList.remove("active"));
@@ -455,6 +482,7 @@ function tempChip(cx,cy,id,color){
   frag.d+='<rect x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" rx="9" fill="#0d1017" stroke="'+color+'" stroke-width="1.3" opacity="0.96"/>';
   frag.d+='<text id="'+id+'" x="'+cx+'" y="'+(cy+3.5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9" fill="'+color+'">—</text>';
 }
+// [ตัดออก 23/7/69] วงแหวน % โหลด Main Chiller (gaugeRing) — ผู้ใช้ขอตัดออก
 // [Mock] จำนวน AHU เปิด/ทั้งหมด ต่อโซน — ยังไม่มี endpoint real-time ให้ผูก จึงใช้ mock ไว้ก่อนตามที่ตกลง
 var AHU_MOCK_COUNTS = {
   front:{on:8,total:12}, back:{on:6,total:9}, eh105:{on:4,total:6},
@@ -549,11 +577,32 @@ document.getElementById('svgMain').innerHTML = frag.d;
   function yesterdayStr(){ var d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
   dateInput.value = todayStr();
 
+  var __kpiRAF = {};
   function setText(id, val, digits){
     var el = document.getElementById(id);
     if(!el) return;
-    var noData = (val === null || val === undefined || val === '');
-    el.textContent = noData ? '—' : ((typeof val === 'number') ? fmtNum(val, digits===undefined?2:digits) : val);
+    digits = digits===undefined?2:digits;
+    var noData = (val === null || val === undefined || val === '' || typeof val !== 'number');
+    if(noData){
+      el.textContent = (val === null || val === undefined || val === '') ? '—' : val;
+      el.removeAttribute('data-raw');
+      if(__kpiRAF[id]) cancelAnimationFrame(__kpiRAF[id]);
+      return;
+    }
+    // [ข้อ B] 23/7/69 — count-up animation แทนการเปลี่ยนตัวเลขวูบเดียว ให้ความรู้สึก "มีชีวิต"
+    var prevRaw = el.getAttribute('data-raw');
+    var from = (prevRaw !== null && !isNaN(parseFloat(prevRaw))) ? parseFloat(prevRaw) : val;
+    el.setAttribute('data-raw', val);
+    if(__kpiRAF[id]) cancelAnimationFrame(__kpiRAF[id]);
+    if(from === val){ el.textContent = fmtNum(val, digits); return; }
+    var start = performance.now(), dur = 650;
+    function step(now){
+      var t = Math.min(1, (now - start) / dur);
+      var eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = fmtNum(from + (val - from) * eased, digits);
+      if(t < 1){ __kpiRAF[id] = requestAnimationFrame(step); }
+    }
+    __kpiRAF[id] = requestAnimationFrame(step);
   }
   function setHdr(id, val){
     var el = document.getElementById(id);
@@ -571,6 +620,58 @@ document.getElementById('svgMain').innerHTML = frag.d;
     var res = await fetch(url);
     if(!res.ok) throw new Error('HTTP ' + res.status);
     return await res.json();
+  }
+
+  // [ข้อ C] 23/7/69 — sparkline 7 วัน + ลูกศรเทรนด์เทียบเมื่อวาน เฉพาะ 4 การ์ดหลัก
+  async function fetchDailyTrend(){
+    var res = await fetch(API_URL + '?action=dailytrend&days=7');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  }
+  function renderSparkline(svgId, values, color){
+    var svg = document.getElementById(svgId);
+    if(!svg) return;
+    var nums = values.filter(function(v){ return typeof v === 'number'; });
+    if(nums.length < 2){ svg.innerHTML = ''; return; }
+    var min = Math.min.apply(null, nums), max = Math.max.apply(null, nums);
+    var range = (max - min) || 1;
+    var w = 100, h = 22, pad = 2;
+    var stepX = (w - pad*2) / (values.length - 1);
+    var pts = values.map(function(v, i){
+      if(typeof v !== 'number') return null;
+      var x = pad + i * stepX;
+      var y = h - pad - ((v - min) / range) * (h - pad*2);
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    }).filter(Boolean).join(' ');
+    svg.innerHTML = '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  function renderTrend(elId, todayVal, yestVal){
+    var el = document.getElementById(elId);
+    if(!el) return;
+    if(typeof todayVal !== 'number' || typeof yestVal !== 'number' || yestVal === 0){
+      el.textContent = ''; el.className = 'kpi-trend'; return;
+    }
+    var diffPct = ((todayVal - yestVal) / Math.abs(yestVal)) * 100;
+    var dir = diffPct > 0.5 ? 'up' : (diffPct < -0.5 ? 'down' : 'flat');
+    el.className = 'kpi-trend ' + dir;
+    el.textContent = (dir==='up'?'▲':(dir==='down'?'▼':'—')) + ' ' + fmtNum(Math.abs(diffPct),1) + '%';
+  }
+  async function syncDailyTrend(){
+    try {
+      var trend = await fetchDailyTrend();
+      if(!Array.isArray(trend) || trend.length === 0) return;
+      renderSparkline('spark-chl', trend.map(function(d){return d.mainChillerKw;}), '#34d399');
+      renderSparkline('spark-tr', trend.map(function(d){return d.chillerCapacityTr;}), '#34d399');
+      renderSparkline('spark-totalkwplant', trend.map(function(d){return d.totalKwPlant;}), '#38bdf8');
+      renderSparkline('spark-eff', trend.map(function(d){return d.plantEfficiency;}), '#38bdf8');
+      var n = trend.length;
+      if(n >= 2){
+        renderTrend('trend-chl', trend[n-1].mainChillerKw, trend[n-2].mainChillerKw);
+        renderTrend('trend-tr', trend[n-1].chillerCapacityTr, trend[n-2].chillerCapacityTr);
+        renderTrend('trend-totalkwplant', trend[n-1].totalKwPlant, trend[n-2].totalKwPlant);
+        renderTrend('trend-eff', trend[n-1].plantEfficiency, trend[n-2].plantEfficiency);
+      }
+    } catch(err){ /* เงียบไว้ — sparkline พลาดไม่ควรทำให้ sync หลักพัง */ }
   }
 
   async function syncNow(){
@@ -646,7 +747,9 @@ document.getElementById('svgMain').innerHTML = frag.d;
   });
 
   syncNow();
+  syncDailyTrend();
   setInterval(syncNow, 600000); // [แก้ตามที่ confirm] auto-refresh ทุก 10 นาที (ลดจาก 60 วิ เพื่อลดการเรียก API)
+  setInterval(syncDailyTrend, 600000); // [ข้อ C] 23/7/69 — sparkline/เทรนด์ ไม่ต้องขึ้นบ่อยเท่า ใช้รอบเดียวกันพอ
   window.__syncCircuitNow = syncNow;
 })();
 
