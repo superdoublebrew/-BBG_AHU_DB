@@ -187,6 +187,7 @@
       <div class="kpi-chip"><div class="lbl">Total kW</div><div class="val"><span id="kpi-totalkw">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
       <div class="kpi-chip"><div class="lbl">Total kW Plant</div><div class="val"><span id="kpi-totalkwplant">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
       <div class="kpi-chip"><div class="lbl">Plant Efficiency</div><div class="val"><span id="kpi-eff">—</span><span class="unit">(kW/TR)</span></div><div class="sub">average วันนี้</div></div>
+      <div class="kpi-chip"><div class="lbl">Outdoor Temp</div><div class="val"><span id="kpi-oat">—</span><span class="unit">(C)</span></div><div class="sub">average วันนี้</div></div>
     </div>
 
     <div class="circuit-area glass" style="flex-direction:row;">
@@ -195,12 +196,15 @@
           <div class="legend-item"><span class="legend-swatch" style="background:var(--hot);"></span>Condenser Water Loop (น้ำร้อน)</div>
           <div class="legend-item"><span class="legend-swatch" style="background:var(--cold);"></span>Chilled Water Supply (น้ำเย็น)</div>
           <div class="legend-item"><span class="legend-swatch" style="background:var(--return);"></span>Chilled Water Return</div>
-          <div class="legend-item" style="margin-left:auto;">คลิกกล่อง Main Chiller / SCHP เพื่อดูรายเครื่อง · พิมพ์ค้นหาด้านบนเพื่อไฮไลต์เครื่อง</div>
+          <div class="legend-item" style="margin-left:auto;">คลิกกล่องเพื่อดูรายเครื่อง · พิมพ์ค้นหาด้านบนเพื่อไฮไลต์เครื่อง</div>
         </div>
         <div class="svg-wrap">
           <svg id="svgMain" viewBox="0 0 1330 660" xmlns="http://www.w3.org/2000/svg"></svg>
 
+          <div class="hz" data-key="ct" style="left:1.50%; top:3.03%; width:13.53%; height:10.61%;"></div>
+          <div class="hz" data-key="cdp" style="left:30.08%; top:3.03%; width:13.53%; height:10.61%;"></div>
           <div class="hz" data-key="chl" style="left:30.08%; top:30.30%; width:13.53%; height:7.58%;"></div>
+          <div class="hz" data-key="pchp" style="left:30.08%; top:69.70%; width:13.53%; height:10.61%;"></div>
           <div class="hz" data-key="schp1" style="left:53.08%; top:54.55%; width:10.53%; height:6.06%;"></div>
           <div class="hz" data-key="schp2" style="left:79.25%; top:54.55%; width:10.53%; height:6.06%;"></div>
           <div class="hz" data-key="front" style="left:45.86%; top:66.67%; width:7.52%; height:8.33%;"></div>
@@ -307,9 +311,11 @@ var ZONE_MEMBERS = {
 
 // [ใหม่] นิยามแต่ละกล่อง -> ใช้สร้างเนื้อหา side panel แบบ dynamic ตอนคลิก (ไม่ render ค้างไว้ล่วงหน้าเหมือนเดิม)
 var PANEL_DEFS = {
-  // [ข้อ5] ดีเทลรายเครื่อง (คลิกเปิด side panel) เหลือแค่ Main Chiller กับ SCHP เท่านั้น
-  // CT / CDP / Primary Water Pump ยังโชว์ค่ารวมที่กล่องในผังตามเดิม แต่ไม่มีปุ่มคลิกดูรายเครื่องแล้ว
+  // [แก้ 23/7/69] ยกเลิกข้อจำกัดเดิม (เหลือแค่ Main Chiller/SCHP) — กลับมาเปิดดีเทลรายเครื่องได้ครบทุกกล่อง
+  ct:     { title:'Cooling Tower',      kind:'unit', group:'CT',   ids:CT_IDS,   totalKey:'ctTotal' },
+  cdp:    { title:'Condenser Pump',     kind:'unit', group:'CDP',  ids:CDP_IDS,  totalKey:'cdpTotal' },
   chl:    { title:'Main Chiller',       kind:'chl',  ids:CHL_IDS },
+  pchp:   { title:'Primary Water Pump', kind:'unit', group:'PCHP', ids:PCHP_IDS, totalKey:'pchpTotal' },
   schp1:  { title:'SCHP Phase I',       kind:'unit', group:'SCHP', ids:SCHP1_IDS, totalKey:'schpPhase1Total' },
   schp2:  { title:'SCHP Phase II',      kind:'unit', group:'SCHP', ids:SCHP2_IDS, totalKey:'schpPhase2Total' },
   front:      { title:'Front Zone',       kind:'unit', group:'SCHP', ids:ZONE_MEMBERS.front },
@@ -320,7 +326,7 @@ var PANEL_DEFS = {
   exhibition: { title:'Exhibition Zone',  kind:'unit', group:'SCHP', ids:ZONE_MEMBERS.exhibition }
 };
 // ลำดับความสำคัญตอนค้นหา (roster หลักก่อน แล้วค่อยโซนย่อย เพราะ id บางตัวซ้ำกันได้ระหว่าง roster กับโซน)
-var SEARCH_PRIORITY = ['chl','schp1','schp2','front','back','eh105','support','sale','exhibition'];
+var SEARCH_PRIORITY = ['ct','cdp','chl','pchp','schp1','schp2','front','back','eh105','support','sale','exhibition'];
 
 var currentPanelKey = null;
 
@@ -341,17 +347,19 @@ function renderPanel(key){
   if(def.kind === 'chl'){
     var chlSums = perUnit.CHL || {};
     var chlTr = perUnit.CHL_TR || {};
+    var chlPct = perUnit.CHL_PCT || {};
     var totalKw = totals.mainChillerKw, totalTr = totals.chillerCapacityTr;
-    document.getElementById('spSub').textContent = def.ids.length+' หน่วย · sum สะสมของวัน · รวม '+
+    document.getElementById('spSub').textContent = def.ids.length+' หน่วย · sum สะสมของวัน (โหลด % เฉลี่ยของวัน) · รวม '+
       (typeof totalKw==='number'?fmtNum(totalKw)+' (kW)':'—')+' / '+(typeof totalTr==='number'?fmtNum(totalTr)+' (TR)':'—');
-    document.getElementById('spHeadRow').innerHTML = '<span>Unit</span><span style="width:40px;text-align:right;">สถานะ</span><span style="width:70px;text-align:right;">(kW)</span><span style="width:56px;text-align:right;">(TR)</span>';
+    document.getElementById('spHeadRow').innerHTML = '<span>Unit</span><span style="width:36px;text-align:right;">สถานะ</span><span style="width:60px;text-align:right;">(kW)</span><span style="width:44px;text-align:right;">(TR)</span><span style="width:40px;text-align:right;">(%)</span>';
     document.getElementById('spRows').innerHTML = def.ids.map(function(id){
-      var v = chlSums[id], tr = chlTr[id];
+      var v = chlSums[id], tr = chlTr[id], pct = chlPct[id];
       var hasVal = (v !== undefined && v !== null);
       return '<div class="sp-row" data-unit="'+id+'"><span class="sp-id">'+id+'</span>'+
-        '<span style="width:40px;text-align:right;">'+statusPill_(hasVal)+'</span>'+
-        '<span class="sp-val" style="width:70px;">'+(hasVal?fmtNum(v):fmtNum(0))+'</span>'+
-        '<span class="sp-tr" style="width:56px;">'+((tr!==undefined&&tr!==null)?fmtNum(tr):'–')+'</span></div>';
+        '<span style="width:36px;text-align:right;">'+statusPill_(hasVal)+'</span>'+
+        '<span class="sp-val" style="width:60px;">'+(hasVal?fmtNum(v):fmtNum(0))+'</span>'+
+        '<span class="sp-tr" style="width:44px;">'+((tr!==undefined&&tr!==null)?fmtNum(tr):'–')+'</span>'+
+        '<span class="sp-tr" style="width:40px;">'+((pct!==undefined&&pct!==null)?fmtNum(pct):'–')+'</span></div>';
     }).join('');
   } else {
     var groupObj = (perUnit[def.group]) || {};
@@ -441,6 +449,12 @@ function smallNode(n,title,kwText,color,rgb,id){
   frag.d+='<text x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2-2)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9.5" fill="#fff">'+title+'</text>';
   frag.d+='<text'+(id?' id="'+id+'"':'')+' x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2+14)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="12" fill="rgb('+rgb+')">'+(kwText||'—')+'</text>';
 }
+// [ข้อ2-3] 23/7/69 — ป้ายอุณหภูมิน้ำลอยกลางเส้นท่อ (Option A ที่เลือก) วาดทับบนเส้นตอนท้ายสุดให้อยู่บนสุด
+function tempChip(cx,cy,id,color){
+  var w=68,h=18;
+  frag.d+='<rect x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" rx="9" fill="#0d1017" stroke="'+color+'" stroke-width="1.3" opacity="0.96"/>';
+  frag.d+='<text id="'+id+'" x="'+cx+'" y="'+(cy+3.5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9" fill="'+color+'">—</text>';
+}
 // [Mock] จำนวน AHU เปิด/ทั้งหมด ต่อโซน — ยังไม่มี endpoint real-time ให้ผูก จึงใช้ mock ไว้ก่อนตามที่ตกลง
 var AHU_MOCK_COUNTS = {
   front:{on:8,total:12}, back:{on:6,total:9}, eh105:{on:4,total:6},
@@ -477,7 +491,7 @@ var support=box(958,trunkY+GAP,100,55), sale=box(1074,trunkY+GAP,100,55), exhibi
 var convergeY = front.y + front.h + GAP;           // 460+55+30 = 545
 var hret=box(885,convergeY+GAP,130,40);            // 575
 var ylow = hret.y + hret.h + 25;                   // 615+25 = 640
-var pchp=box(400,490,180,70);                      // [ข้อ3] ขยับลงให้สมดุลกับแนวเส้น return ใหม่
+var pchp=box(400,front.y,180,70);                 // [ข้อ4] 23/7/69 — ขยับให้อยู่แถวเดียวกับ front/back (y-position เดียวกัน)
 
 stroke([rightPt(ct),leftPt(cdp)],HOT,'h');
 stroke([botPt(cdp),topPt(chlCond)],HOT,'h');
@@ -517,6 +531,12 @@ smallNode(schp2,'SCHP Phase II',null,COLD,'56,189,248','hdrval-SCHP2');
 zoneBox(front,'Front',COLD,'front'); zoneBox(back,'Back',COLD,'back'); zoneBox(eh105,'EH105-106',COLD,'eh105');
 zoneBox(support,'Support',COLD,'support'); zoneBox(sale,'Sale',COLD,'sale'); zoneBox(exhibition,'Exhibition',COLD,'exhibition');
 
+// [ข้อ2-3] 23/7/69 — ป้ายอุณหภูมิ 4 เส้น คำนวณตำแหน่งกลางเส้นจากพิกัดกล่องจริง (ไม่ hardcode ตัวเลข)
+tempChip(110, (leftPt(chlCond,0.5).y+botPt(ct).y)/2, 'temp-condToCT', HOT);                                   // Condenser -> Cooling Tower
+tempChip(botPt(cdp).x, (botPt(cdp).y+topPt(chlCond).y)/2, 'temp-cdpToCond', HOT);                             // Condenser Pump -> Condenser
+tempChip((rightPt(chlEvap,0.5).x+leftPt(hsup,0.5).x)/2, rightPt(chlEvap,0.5).y, 'temp-evapToHsup', COLD);     // Evaporator -> Header Supply
+tempChip(topPt(pchp).x, (topPt(pchp).y+botPt(chlEvap).y)/2, 'temp-pchpToEvap', RET);                          // Primary Water Pump -> Evaporator
+
 document.getElementById('svgMain').innerHTML = frag.d;
 
 (function(){
@@ -539,6 +559,11 @@ document.getElementById('svgMain').innerHTML = frag.d;
     var el = document.getElementById(id);
     if(!el) return;
     el.textContent = (val===null||val===undefined) ? '—' : (fmtNum(val,2)+' (kW)');
+  }
+  function setTemp(id, val){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = (val===null||val===undefined) ? '— (C)' : (fmtNum(val,2)+' (C)');
   }
 
   async function fetchSummary(dateStr){
@@ -567,6 +592,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       setText('kpi-totalkw', totals.totalKwAll);
       setText('kpi-totalkwplant', totals.totalKwPlant);
       setText('kpi-eff', averages.plantEfficiency);
+      setText('kpi-oat', averages.outdoorTemp); // [ใหม่] ข้อ6 — Outdoor Temp KPI
 
       var chlSub = document.getElementById('kpi-chl-sub');
       if(chlSub) chlSub.textContent = latest.chillerRunning ? ('เครื่องที่วิ่งอยู่ล่าสุด: ' + latest.chillerRunning) : 'ไม่มีข้อมูลของวันนี้';
@@ -577,6 +603,13 @@ document.getElementById('svgMain').innerHTML = frag.d;
       setHdr('hdrval-SCHP1', totals.schpPhase1Total);
       setHdr('hdrval-SCHP2', totals.schpPhase2Total);
       setHdr('hdrval-MainChiller', totals.mainChillerKw);
+
+      // [ใหม่] ข้อ2-3 — ป้ายอุณหภูมิน้ำ 4 เส้น (เฉลี่ยของวัน แปลง F->C จาก backend แล้ว)
+      var temps = summary.temps || {};
+      setTemp('temp-condToCT', temps.condToCT);
+      setTemp('temp-cdpToCond', temps.cdpToCond);
+      setTemp('temp-evapToHsup', temps.evapToHsup);
+      setTemp('temp-pchpToEvap', temps.pchpToEvap);
 
       // [ใหม่] ถ้า side panel เปิดอยู่ ให้ re-render ด้วยข้อมูลใหม่ (ไม่ต้องปิดแล้วเปิดใหม่)
       if(currentPanelKey) renderPanel(currentPanelKey);
