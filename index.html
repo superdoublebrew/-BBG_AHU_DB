@@ -161,6 +161,11 @@
   table{ width:100%; border-collapse:collapse; font-size:11px; }
   th{ text-align:left; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint); text-transform:uppercase; padding:8px 12px; position:sticky; top:0; background:#0c0f18; }
   td{ padding:8px 12px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'JetBrains Mono',monospace; }
+  .hc-kwm2{ display:flex; align-items:baseline; gap:5px; padding:6px 10px 0; }
+  .hc-kwm2 .val{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; }
+  .hc-kwm2 .unit{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint); }
+  .hc-event-badge{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:8px; padding:2px 6px; border-radius:20px; color:var(--return); background:rgba(242,184,79,0.16); cursor:default; flex-shrink:0; }
+  .hall-card.no-area{ opacity:0.55; }
 </style>
 </head>
 <body>
@@ -738,12 +743,16 @@ document.getElementById('svgMain').innerHTML = frag.d;
       currentDateStr = b.dataset.range === 'yesterday' ? yesterdayStr() : null;
       dateInput.value = b.dataset.range === 'yesterday' ? yesterdayStr() : todayStr();
       syncNow();
+      window.__currentDateStr = currentDateStr; // ให้แท็บ AHU floor plan อ่านวันที่เดียวกันได้ (kW/m² + event)
+      if(window.__loadAhuData) window.__loadAhuData();
     });
   });
   dateInput.addEventListener('change', function(){
     document.querySelectorAll('.date-filter [data-range]').forEach(x=>x.classList.remove('active'));
     currentDateStr = dateInput.value || null;
     syncNow();
+    window.__currentDateStr = currentDateStr;
+    if(window.__loadAhuData) window.__loadAhuData();
   });
 
   syncNow();
@@ -825,15 +834,97 @@ var CONVENTION_H = [
   {name:'BHIRAJ', phase:2, units:['6-3MAHU-07','6-3MAHU-08','6-3MAHU-02','6-3MAHU-03','5-3MAHU-01','5-3MAHU-02']},
   {name:'COSMOS', phase:2, units:['6-GSAHU-01','6-GSAHU-02','6-GSAHU-03','6-GSAHU-04','6-GSAHU-05','6-GSAHU-06','6-GSAHU-07']}
 ];
+var ALL_HALLS = EXHIBITION_H.concat(CONVENTION_H);
+function hallLocationKey(name){ return 'BITEC-' + name.replace(/\s+/g,'-'); }
 function hallCard(h){
+  var loc = hallLocationKey(h.name);
   var pills = h.units.map(function(u){
     return '<div class="pill" title="ยังไม่มีข้อมูลสถานะ real-time"><span class="pill-dot"></span>'+u+'</div>';
   }).join('');
-  return '<div class="hall-card p'+h.phase+'"><div class="hc-head"><span class="hc-name">'+h.name+'</span><span class="hc-phase">P'+h.phase+'</span></div><div class="hc-count">'+h.units.length+' หน่วย</div><div class="pill-row">'+pills+'</div></div>';
+  return '<div class="hall-card p'+h.phase+'" id="hc-'+loc+'" data-location="'+loc+'">'+
+    '<div class="hc-head"><span class="hc-name">'+h.name+'</span>'+
+      '<div style="display:flex; gap:4px; flex-shrink:0;">'+
+        '<span class="hc-phase">P'+h.phase+'</span>'+
+        '<span class="hc-event-badge" id="hcevent-'+loc+'" style="display:none;">EVENT</span>'+
+      '</div>'+
+    '</div>'+
+    '<div class="hc-kwm2"><span class="val" id="hckw-'+loc+'" style="color:var(--text-faint);">—</span><span class="unit">(kW/m²)</span></div>'+
+    '<div class="hc-count">'+h.units.length+' หน่วย</div><div class="pill-row">'+pills+'</div></div>';
 }
 document.getElementById('hallScroll').innerHTML =
   '<div class="wing-label">EXHIBITION WING</div><div class="hall-cards">'+EXHIBITION_H.map(hallCard).join('')+'</div>'+
   '<div class="wing-label">CONVENTION WING</div><div class="hall-cards">'+CONVENTION_H.map(hallCard).join('')+'</div>';
+
+// [ใหม่ 23/7/69] kW ต่อพื้นที่ + event badge บนการ์ด hall — ใช้ ?action=zonekw + ?action=eventlocations
+(function(){
+  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
+
+  // สีไล่ตามลำดับ kW/m² จริงในชุดข้อมูลนั้นๆ (percentile) ไม่ hardcode threshold ตายตัว
+  // เพราะยังไม่รู้ค่ามาตรฐานที่เหมาะสมของอาคารนี้ — สูงสุด 1/3 = แดง, กลาง = เหลือง, ต่ำสุด = เขียว
+  function colorForRank_(idx, total){
+    if(total <= 1) return '#38bdf8';
+    var pct = idx / (total - 1);
+    if(pct <= 1/3) return '#f2867a';
+    if(pct <= 2/3) return '#f2b84f';
+    return '#34d399';
+  }
+
+  async function loadAhuData(){
+    try {
+      var dateParam = window.__currentDateStr ? ('&date=' + window.__currentDateStr) : '';
+      var results = await Promise.all([
+        fetch(API_URL + '?action=zonekw' + dateParam).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }),
+        fetch(API_URL + '?action=eventlocations' + dateParam).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      ]);
+      var zoneData = results[0] || {};
+      var eventData = results[1] || {};
+      var byLocation = Array.isArray(zoneData.byLocation) ? zoneData.byLocation : [];
+      var eventLocations = eventData.locations || {};
+
+      var kwByLoc = {};
+      byLocation.forEach(function(l){ kwByLoc[l.location] = l.kwPerSqm; });
+      var ranked = byLocation.filter(function(l){ return typeof l.kwPerSqm === 'number'; })
+        .sort(function(a,b){ return b.kwPerSqm - a.kwPerSqm; });
+      var rankIndex = {};
+      ranked.forEach(function(l, i){ rankIndex[l.location] = i; });
+
+      ALL_HALLS.forEach(function(h){
+        var loc = hallLocationKey(h.name);
+        var kwEl = document.getElementById('hckw-'+loc);
+        var cardEl = document.getElementById('hc-'+loc);
+        var kwPerSqm = kwByLoc[loc];
+        if(kwEl){
+          if(typeof kwPerSqm === 'number'){
+            kwEl.textContent = fmtNum(kwPerSqm);
+            kwEl.style.color = colorForRank_(rankIndex[loc], ranked.length);
+            if(cardEl) cardEl.classList.remove('no-area');
+          } else {
+            kwEl.textContent = '—';
+            kwEl.style.color = 'var(--text-faint)';
+            if(cardEl) cardEl.classList.add('no-area');
+          }
+        }
+        var evEl = document.getElementById('hcevent-'+loc);
+        var events = eventLocations[loc];
+        if(evEl){
+          if(Array.isArray(events) && events.length){
+            evEl.style.display = '';
+            evEl.title = events.join('\n');
+            evEl.textContent = events.length > 1 ? ('EVENT (' + events.length + ')') : 'EVENT';
+          } else {
+            evEl.style.display = 'none';
+          }
+        }
+      });
+    } catch(err){
+      // เงียบไว้ — ถ้าดึงไม่ได้ การ์ดยังโชว์ roster ปกติ แค่ไม่มี kW/m²/event badge
+      console.error('loadAhuData failed:', err.message);
+    }
+  }
+
+  window.__loadAhuData = loadAhuData;
+  loadAhuData();
+})();
 </script>
 </body>
 </html>
