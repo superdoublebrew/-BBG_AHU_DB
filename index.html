@@ -118,6 +118,9 @@
   .diagram-col{ flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; }
   .loczone-panel{ width:230px; flex-shrink:0; background:#0d1017; border-left:1px solid var(--glass-border); border-radius:14px; display:flex; flex-direction:column; padding:12px; margin-left:8px; }
   .loczone-head{ display:flex; justify-content:space-between; align-items:baseline; gap:6px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10.5px; color:#fff; margin-bottom:6px; flex-shrink:0; }
+  .lz-tr-total{ background:rgba(168,85,247,0.10); border:1px solid rgba(168,85,247,0.3); border-radius:8px; padding:7px 10px; margin-bottom:8px; flex-shrink:0; }
+  .lz-tr-total-lbl{ font-family:'JetBrains Mono',monospace; font-size:7.5px; color:#c9a3f7; text-transform:uppercase; }
+  .lz-tr-total-val{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; color:#a855f7; }
   .loczone-scroll{ flex:1; min-height:0; overflow-y:auto; font-family:'JetBrains Mono',monospace; font-size:9.5px; }
   .lz-zone-row{ font-weight:700; color:#fff; padding:5px 2px 2px; border-top:1px solid rgba(255,255,255,.1); margin-top:2px; display:flex; justify-content:space-between; align-items:baseline; }
   .lz-zone-row .avg{ color:var(--text-faint); font-weight:600; font-size:7.5px; }
@@ -300,7 +303,11 @@
         </div>
       </div>
       <div class="loczone-panel">
-        <div class="loczone-head"><span>TR / kW ต่อ ตร.ม.</span><span class="sync-note" id="loczone-sync-status" style="font-size:8px;">ยังไม่ได้ sync</span></div>
+        <div class="loczone-head"><span>kW ต่อ ตร.ม.</span><span class="sync-note" id="loczone-sync-status" style="font-size:8px;">ยังไม่ได้ sync</span></div>
+        <div class="lz-tr-total">
+          <div class="lz-tr-total-lbl">TR ต่อ ตร.ม. (รวมทั้งอาคาร)</div>
+          <div class="lz-tr-total-val"><span id="lz-tr-total-val">—</span></div>
+        </div>
         <div class="loczone-scroll" id="loczoneBody"></div>
         <div id="loczone-footnote" style="font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-faint); margin-top:6px; flex-shrink:0; line-height:1.4;"></div>
       </div>
@@ -899,7 +906,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
   window.__syncCircuitNow = syncNow;
 })();
 
-// [ใหม่ 23/7/69] Location Zone table — TR/kW ต่อ ตร.ม. ข้างผัง Chiller Circuit
+// [แก้ 23/7/69] Location Zone table — kW ต่อ ตร.ม. รายโซน (จริง) + TR ต่อ ตร.ม. รวมอาคาร (เลขเดียว ไม่มีข้อสมมติ)
 (function(){
   var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
   var statusEl = document.getElementById('loczone-sync-status');
@@ -911,9 +918,11 @@ document.getElementById('svgMain').innerHTML = frag.d;
       var res = await fetch(API_URL + '?action=locationzone' + dateParam);
       if(!res.ok) throw new Error('HTTP ' + res.status);
       var data = await res.json();
-      var byLocation = Array.isArray(data.byLocation) ? data.byLocation : [];
       var byLocationZone = Array.isArray(data.byLocationZone) ? data.byLocationZone : [];
       var missingZones = Array.isArray(data.missingAreaZones) ? data.missingAreaZones : [];
+
+      var trTotalEl = document.getElementById('lz-tr-total-val');
+      if(trTotalEl) trTotalEl.textContent = (typeof data.trPerSqmTotal === 'number') ? fmtNum(data.trPerSqmTotal,3) : '—';
 
       if(byLocationZone.length === 0 && missingZones.length === 0){
         document.getElementById('loczoneBody').innerHTML = '<div style="color:var(--text-faint); padding:10px 2px;">ไม่มีข้อมูลของวันที่เลือก</div>';
@@ -921,12 +930,6 @@ document.getElementById('svgMain').innerHTML = frag.d;
         return;
       }
 
-      // จัดกลุ่ม location (ห้อง) ตาม schpZone เพื่อวางใต้หัวข้อโซนเดียวกับ byLocationZone
-      var locBySchpZone = {};
-      byLocation.forEach(function(l){
-        if(!locBySchpZone[l.schpZone]) locBySchpZone[l.schpZone] = [];
-        locBySchpZone[l.schpZone].push(l);
-      });
       var lzBySchpZone = {};
       byLocationZone.forEach(function(z){
         if(!lzBySchpZone[z.schpZone]) lzBySchpZone[z.schpZone] = [];
@@ -934,18 +937,18 @@ document.getElementById('svgMain').innerHTML = frag.d;
       });
 
       var schpZonesInOrder = Object.keys(lzBySchpZone).sort(function(a,b){
-        var maxA = Math.max.apply(null, lzBySchpZone[a].map(function(z){return z.trPerSqm||0;}));
-        var maxB = Math.max.apply(null, lzBySchpZone[b].map(function(z){return z.trPerSqm||0;}));
+        var maxA = Math.max.apply(null, lzBySchpZone[a].map(function(z){return z.kwPerSqm||0;}));
+        var maxB = Math.max.apply(null, lzBySchpZone[b].map(function(z){return z.kwPerSqm||0;}));
         return maxB - maxA;
       });
 
       var html = '';
       schpZonesInOrder.forEach(function(schpZone){
-        var lzList = lzBySchpZone[schpZone].sort(function(a,b){ return (b.trPerSqm||0)-(a.trPerSqm||0); });
-        var zoneAvgTr = lzList.length ? (lzList.reduce(function(s,z){return s+(z.trPerSqm||0);},0)/lzList.length) : null;
-        html += '<div class="lz-zone-row"><span>'+schpZone.toUpperCase()+'</span><span class="avg">'+(zoneAvgTr!==null?('เฉลี่ย '+fmtNum(zoneAvgTr)):'—')+'</span></div>';
+        var lzList = lzBySchpZone[schpZone].sort(function(a,b){ return (b.kwPerSqm||0)-(a.kwPerSqm||0); });
+        var zoneAvgKw = lzList.length ? (lzList.reduce(function(s,z){return s+(z.kwPerSqm||0);},0)/lzList.length) : null;
+        html += '<div class="lz-zone-row"><span>'+schpZone.toUpperCase()+'</span><span class="avg">'+(zoneAvgKw!==null?('เฉลี่ย '+fmtNum(zoneAvgKw,3)):'—')+'</span></div>';
         lzList.forEach(function(lz){
-          html += '<div class="lz-loc-row" title="'+lz.locationZone+': '+(lz.trPerSqm!==null?fmtNum(lz.trPerSqm):'—')+' TR/m\u00b2 \u00b7 '+(lz.kwPerSqm!==null?fmtNum(lz.kwPerSqm):'—')+' kW/m\u00b2"><span class="name">'+lz.locationZone+'</span><span class="val">'+(lz.trPerSqm!==null?fmtNum(lz.trPerSqm):'—')+'</span></div>';
+          html += '<div class="lz-loc-row" title="'+lz.locationZone+': '+(lz.kwPerSqm!==null?fmtNum(lz.kwPerSqm,3):'—')+' kW/m\u00b2"><span class="name">'+lz.locationZone+'</span><span class="val">'+(lz.kwPerSqm!==null?fmtNum(lz.kwPerSqm,3):'—')+'</span></div>';
         });
       });
       missingZones.forEach(function(schpZone){
@@ -954,7 +957,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       document.getElementById('loczoneBody').innerHTML = html;
 
       var footEl = document.getElementById('loczone-footnote');
-      if(footEl) footEl.textContent = '* ' + (data.assumption || '') + (data.date ? (' · ' + data.date) : '');
+      if(footEl) footEl.textContent = 'TR/m\u00b2 คำนวณจาก TR รวมทั้งแผน \u00f7 พื้นที่รวมทั้งอาคาร (ไม่แยกโซน เพราะไม่มีมิเตอร์ TR รายโซนจริง)' + (data.date ? (' \u00b7 ' + data.date) : '');
 
       if(statusEl) statusEl.textContent = '✅ sync ล่าสุด' + (data.date ? (' · ' + data.date) : '');
     } catch(err){
