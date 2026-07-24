@@ -75,6 +75,16 @@
   .panel.active{ display:flex; }
 
   .kpi-strip{ flex-shrink:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(0, 1fr)); gap:8px; padding:10px 16px; }
+  .kpi-rows{ flex-shrink:0; display:flex; flex-direction:column; gap:7px; padding:8px 16px; }
+  .kpi-row{ display:grid; gap:7px; }
+  .kpi-row.row1{ grid-template-columns:repeat(3, 1fr); }
+  .kpi-row.row2{ grid-template-columns:repeat(2, 1fr); }
+  .kpi-group{ background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-radius:9px; padding:7px 11px; animation:kpiIn .4s ease both; }
+  .kpi-group-head{ font-family:'JetBrains Mono',monospace; font-size:8px; text-transform:uppercase; color:var(--text-faint); border-bottom:1px solid rgba(255,255,255,.08); padding-bottom:5px; margin-bottom:6px; }
+  .kpi-metrics{ display:flex; gap:12px; flex-wrap:wrap; }
+  .kpi-metric .lbl{ font-family:'JetBrains Mono',monospace; font-size:7.5px; color:var(--text-faint); white-space:nowrap; display:flex; align-items:center; gap:3px; }
+  .kpi-metric .val{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px; color:var(--text); }
+  .kpi-metric .val .unit{ font-size:8px; color:var(--text-faint); font-weight:500; margin-left:2px; }
   .kpi-chip{ display:flex; flex-direction:column; padding:10px 14px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border); border-left:3px solid var(--cold); min-width:0; position:relative; overflow:hidden; transition:box-shadow .25s, border-color .25s; }
   .kpi-chip.hot{ border-left-color:var(--hot); }
   .kpi-chip.green{ border-left-color:var(--green); }
@@ -106,6 +116,15 @@
 
   /* [ใหม่] Side Panel ทึบ แทน hover tooltip ลอย — คลิกกล่องเพื่อเปิด */
   .diagram-col{ flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; }
+  .loczone-panel{ width:230px; flex-shrink:0; background:#0d1017; border-left:1px solid var(--glass-border); border-radius:14px; display:flex; flex-direction:column; padding:12px; margin-left:8px; }
+  .loczone-head{ display:flex; justify-content:space-between; align-items:baseline; gap:6px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10.5px; color:#fff; margin-bottom:6px; flex-shrink:0; }
+  .loczone-scroll{ flex:1; min-height:0; overflow-y:auto; font-family:'JetBrains Mono',monospace; font-size:9.5px; }
+  .lz-zone-row{ font-weight:700; color:#fff; padding:5px 2px 2px; border-top:1px solid rgba(255,255,255,.1); margin-top:2px; display:flex; justify-content:space-between; align-items:baseline; }
+  .lz-zone-row .avg{ color:var(--text-faint); font-weight:600; font-size:7.5px; }
+  .lz-zone-row.no-data{ color:var(--text-faint); font-weight:600; }
+  .lz-loc-row{ display:flex; justify-content:space-between; padding:2px 2px 2px 8px; color:var(--text-muted); gap:6px; }
+  .lz-loc-row .name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lz-loc-row .val{ font-weight:700; flex-shrink:0; }
   .side-panel{ width:0; overflow:hidden; flex-shrink:0; transition:width .2s ease; background:#0d1017; border-left:1px solid var(--glass-border); border-radius:0 14px 14px 0; }
   .side-panel.open{ width:300px; }
   .sp-inner{ width:300px; height:100%; padding:14px; display:flex; flex-direction:column; min-height:0; }
@@ -210,16 +229,49 @@
   </div>
 
   <div class="panel active" id="panel-plant">
-    <div class="kpi-strip">
-      <div class="kpi-chip hot"><div class="lbl">Cooling Tower</div><div class="val"><span id="kpi-ct">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip green headline"><div class="lbl">Main Chiller<span class="kpi-trend" id="trend-chl"></span></div><div class="val"><span id="kpi-chl">—</span><span class="unit">(kW)</span></div><div class="sub" id="kpi-chl-sub">ยังไม่มีข้อมูล</div><svg class="kpi-spark" id="spark-chl" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
-      <div class="kpi-chip green headline"><div class="lbl">Chiller Capacity<span class="kpi-trend" id="trend-tr"></span></div><div class="val"><span id="kpi-tr">—</span><span class="unit">(TR)</span></div><div class="sub">sum วันนี้</div><svg class="kpi-spark" id="spark-tr" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
-      <div class="kpi-chip"><div class="lbl">SCHP Phase I</div><div class="val"><span id="kpi-schp1">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip"><div class="lbl">SCHP Phase II</div><div class="val"><span id="kpi-schp2">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip"><div class="lbl">Total kW</div><div class="val"><span id="kpi-totalkw">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div></div>
-      <div class="kpi-chip headline"><div class="lbl">Total kW Plant<span class="kpi-trend" id="trend-totalkwplant"></span></div><div class="val"><span id="kpi-totalkwplant">—</span><span class="unit">(kW)</span></div><div class="sub">sum วันนี้</div><svg class="kpi-spark" id="spark-totalkwplant" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
-      <div class="kpi-chip headline"><div class="lbl">Plant Efficiency<span class="kpi-trend" id="trend-eff"></span></div><div class="val"><span id="kpi-eff">—</span><span class="unit">(kW/TR)</span></div><div class="sub">average วันนี้</div><svg class="kpi-spark" id="spark-eff" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
-      <div class="kpi-chip"><div class="lbl">Outdoor Temp</div><div class="val"><span id="kpi-oat">—</span><span class="unit">(C)</span></div><div class="sub">average วันนี้</div></div>
+    <div class="kpi-rows">
+      <div class="kpi-row row1">
+        <div class="kpi-group">
+          <div class="kpi-group-head">Main Chiller</div>
+          <div class="kpi-metrics">
+            <div class="kpi-metric"><div class="lbl">Total<span class="kpi-trend" id="trend-chl"></span></div><div class="val"><span id="kpi-chl">—</span><span class="unit">(kW)</span></div></div>
+            <div class="kpi-metric"><div class="lbl">Total<span class="kpi-trend" id="trend-tr"></span></div><div class="val"><span id="kpi-tr">—</span><span class="unit">(TR)</span></div></div>
+          </div>
+        </div>
+        <div class="kpi-group">
+          <div class="kpi-group-head">Cooling Tower</div>
+          <div class="kpi-metrics">
+            <div class="kpi-metric"><div class="lbl">Total</div><div class="val"><span id="kpi-ct">—</span><span class="unit">(kW)</span></div></div>
+            <div class="kpi-metric"><div class="lbl">Thermal Eff.</div><div class="val"><span id="kpi-thermaleff">—</span><span class="unit">(%)</span></div></div>
+          </div>
+        </div>
+        <div class="kpi-group">
+          <div class="kpi-group-head">Pump Load</div>
+          <div class="kpi-metrics">
+            <div class="kpi-metric"><div class="lbl">Condenser Pump</div><div class="val"><span id="kpi-cdp">—</span><span class="unit">(kW)</span></div></div>
+            <div class="kpi-metric"><div class="lbl">SCHP I</div><div class="val"><span id="kpi-schp1">—</span><span class="unit">(kW)</span></div></div>
+            <div class="kpi-metric"><div class="lbl">SCHP II</div><div class="val"><span id="kpi-schp2">—</span><span class="unit">(kW)</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-row row2">
+        <div class="kpi-group">
+          <div class="kpi-group-head">Plant Total</div>
+          <div class="kpi-metrics">
+            <div class="kpi-metric"><div class="lbl">Total (ไม่รวม SCHP)</div><div class="val"><span id="kpi-totalkw">—</span><span class="unit">(kW)</span></div></div>
+            <div class="kpi-metric"><div class="lbl">Total Plant<span class="kpi-trend" id="trend-totalkwplant"></span></div><div class="val"><span id="kpi-totalkwplant">—</span><span class="unit">(kW)</span></div></div>
+            <div class="kpi-metric"><div class="lbl">Efficiency<span class="kpi-trend" id="trend-eff"></span></div><div class="val"><span id="kpi-eff">—</span><span class="unit">(kW/TR)</span></div></div>
+          </div>
+        </div>
+        <div class="kpi-group">
+          <div class="kpi-group-head">Outdoor Conditions</div>
+          <div class="kpi-metrics">
+            <div class="kpi-metric"><div class="lbl">Temp</div><div class="val"><span id="kpi-oat">—</span><span class="unit">(C)</span></div></div>
+            <div class="kpi-metric"><div class="lbl">RH</div><div class="val"><span id="kpi-rh">—</span><span class="unit">(%)</span></div></div>
+            <div class="kpi-metric"><div class="lbl">Wet Bulb</div><div class="val"><span id="kpi-wetbulb">—</span><span class="unit">(F)</span></div></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="circuit-area glass" style="flex-direction:row;">
@@ -246,6 +298,11 @@
           <div class="hz" data-key="sale" style="left:80.75%; top:66.67%; width:7.52%; height:8.33%;"></div>
           <div class="hz" data-key="exhibition" style="left:89.47%; top:66.67%; width:7.52%; height:8.33%;"></div>
         </div>
+      </div>
+      <div class="loczone-panel">
+        <div class="loczone-head"><span>TR / kW ต่อ ตร.ม.</span><span class="sync-note" id="loczone-sync-status" style="font-size:8px;">ยังไม่ได้ sync</span></div>
+        <div class="loczone-scroll" id="loczoneBody"></div>
+        <div id="loczone-footnote" style="font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-faint); margin-top:6px; flex-shrink:0; line-height:1.4;"></div>
       </div>
       <div class="side-panel" id="sidePanel">
         <div class="sp-inner">
@@ -524,11 +581,13 @@ function smallNode(n,title,kwText,color,rgb,id){
   frag.d+='<text x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2-2)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9.5" fill="#fff">'+title+'</text>';
   frag.d+='<text'+(id?' id="'+id+'"':'')+' x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2+14)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="12" fill="rgb('+rgb+')">'+(kwText||'—')+'</text>';
 }
-// [ข้อ2-3] 23/7/69 — ป้ายอุณหภูมิน้ำลอยกลางเส้นท่อ (Option A ที่เลือก) วาดทับบนเส้นตอนท้ายสุดให้อยู่บนสุด
+// [ข้อ2-3, แก้ 23/7/69] ป้ายอุณหภูมิ — โชว์ 2 หน่วย (F เด่น, C รอง) + 3 สถานะ (ร้อน/ปกติ/หนาว) แบบ solid fill badge
+// เก็บสีเส้นเดิมไว้ที่ data-color บน bg rect เพื่อคืนค่าตอนกลับเป็นสถานะปกติ
 function tempChip(cx,cy,id,color){
-  var w=68,h=18;
-  frag.d+='<rect x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" rx="9" fill="#0d1017" stroke="'+color+'" stroke-width="1.3" opacity="0.96"/>';
-  frag.d+='<text id="'+id+'" x="'+cx+'" y="'+(cy+3.5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9" fill="'+color+'">—</text>';
+  var w=78,h=30;
+  frag.d+='<rect id="'+id+'-bg" data-color="'+color+'" x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" rx="8" fill="#0d1017" stroke="'+color+'" stroke-width="1.4"/>';
+  frag.d+='<text id="'+id+'" x="'+cx+'" y="'+(cy-2)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="11" fill="'+color+'">—</text>';
+  frag.d+='<text id="'+id+'-sub" x="'+cx+'" y="'+(cy+11)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="600" font-size="6.8" fill="rgba(255,255,255,.5)">—</text>';
 }
 // [ตัดออก 23/7/69] วงแหวน % โหลด Main Chiller (gaugeRing) — ผู้ใช้ขอตัดออก
 // [Mock] จำนวน AHU เปิด/ทั้งหมด ต่อโซน — ยังไม่มี endpoint real-time ให้ผูก จึงใช้ mock ไว้ก่อนตามที่ตกลง
@@ -657,10 +716,38 @@ document.getElementById('svgMain').innerHTML = frag.d;
     if(!el) return;
     el.textContent = (val===null||val===undefined) ? '—' : (fmtNum(val,2)+' (kW)');
   }
-  function setTemp(id, val){
-    var el = document.getElementById(id);
-    if(!el) return;
-    el.textContent = (val===null||val===undefined) ? '— (C)' : (fmtNum(val,2)+' (C)');
+  // [แก้ 23/7/69] ป้ายอุณหภูมิ 2 หน่วย (F เด่น, C รอง) + 3 สถานะ ร้อน/ปกติ/หนาว ตาม threshold จาก Config
+  function setTemp(idPrefix, cVal, fVal, hotThresholdF, coldBandF){
+    var bg = document.getElementById(idPrefix+'-bg');
+    var mainEl = document.getElementById(idPrefix);
+    var subEl = document.getElementById(idPrefix+'-sub');
+    if(!bg || !mainEl || !subEl) return;
+    var origColor = bg.getAttribute('data-color') || '#38bdf8';
+    if(fVal===null || fVal===undefined || cVal===null || cVal===undefined || typeof hotThresholdF!=='number'){
+      mainEl.textContent = '—'; subEl.textContent = '—';
+      bg.setAttribute('fill','#0d1017'); bg.setAttribute('stroke', origColor);
+      mainEl.setAttribute('fill', origColor); subEl.setAttribute('fill', 'rgba(255,255,255,.5)');
+      return;
+    }
+    var band = (typeof coldBandF==='number') ? coldBandF : 5;
+    var coldThreshold = hotThresholdF - band;
+    var status = 'normal';
+    if(fVal > hotThresholdF) status = 'hot';
+    else if(fVal < coldThreshold) status = 'cold';
+
+    mainEl.textContent = fmtNum(fVal,1) + '°F';
+    subEl.textContent = '(' + fmtNum(cVal,1) + '°C)' + (status==='hot' ? ' ร้อนไป' : status==='cold' ? ' หนาวไป' : '');
+
+    if(status === 'hot'){
+      bg.setAttribute('fill', '#f2867a'); bg.setAttribute('stroke', '#f2867a');
+      mainEl.setAttribute('fill', '#4a1b0c'); subEl.setAttribute('fill', '#4a1b0c');
+    } else if(status === 'cold'){
+      bg.setAttribute('fill', '#7dd3fc'); bg.setAttribute('stroke', '#7dd3fc');
+      mainEl.setAttribute('fill', '#042c53'); subEl.setAttribute('fill', '#042c53');
+    } else {
+      bg.setAttribute('fill', '#0d1017'); bg.setAttribute('stroke', origColor);
+      mainEl.setAttribute('fill', origColor); subEl.setAttribute('fill', 'rgba(255,255,255,.5)');
+    }
   }
 
   async function fetchSummary(dateStr){
@@ -736,12 +823,16 @@ document.getElementById('svgMain').innerHTML = frag.d;
       setText('kpi-ct', totals.ctTotal);
       setText('kpi-chl', totals.mainChillerKw);
       setText('kpi-tr', totals.chillerCapacityTr);
+      setText('kpi-cdp', totals.cdpTotal); // [ใหม่] Condenser Pump KPI (มีค่าอยู่แล้วใน totals แค่ไม่เคยขึ้น KPI card)
       setText('kpi-schp1', totals.schpPhase1Total);
       setText('kpi-schp2', totals.schpPhase2Total);
       setText('kpi-totalkw', totals.totalKwAll);
       setText('kpi-totalkwplant', totals.totalKwPlant);
       setText('kpi-eff', averages.plantEfficiency);
       setText('kpi-oat', averages.outdoorTemp); // [ใหม่] ข้อ6 — Outdoor Temp KPI
+      setText('kpi-thermaleff', averages.thermalEfficiency); // [ใหม่]
+      setText('kpi-rh', averages.outdoorRh); // [ใหม่]
+      setText('kpi-wetbulb', averages.outdoorWetBulbF); // [ใหม่] ไม่แปลงหน่วย โชว์ F ตรงๆ
 
       var chlSub = document.getElementById('kpi-chl-sub');
       if(chlSub) chlSub.textContent = latest.chillerRunning ? ('เครื่องที่วิ่งอยู่ล่าสุด: ' + latest.chillerRunning) : 'ไม่มีข้อมูลของวันนี้';
@@ -753,12 +844,13 @@ document.getElementById('svgMain').innerHTML = frag.d;
       setHdr('hdrval-SCHP2', totals.schpPhase2Total);
       setHdr('hdrval-MainChiller', totals.mainChillerKw);
 
-      // [ใหม่] ข้อ2-3 — ป้ายอุณหภูมิน้ำ 4 เส้น (เฉลี่ยของวัน แปลง F->C จาก backend แล้ว)
+      // [แก้ 23/7/69] ป้ายอุณหภูมิน้ำ 4 เส้น — โชว์ 2 หน่วย + เช็ค threshold ร้อน/หนาว จาก Config
       var temps = summary.temps || {};
-      setTemp('temp-condToCT', temps.condToCT);
-      setTemp('temp-cdpToCond', temps.cdpToCond);
-      setTemp('temp-evapToHsup', temps.evapToHsup);
-      setTemp('temp-pchpToEvap', temps.pchpToEvap);
+      var th = summary.tempThresholds || {};
+      setTemp('temp-condToCT', temps.condToCT, temps.condToCT_F, th.condToCT_hotF, th.coldBandF);
+      setTemp('temp-cdpToCond', temps.cdpToCond, temps.cdpToCond_F, th.cdpToCond_hotF, th.coldBandF);
+      setTemp('temp-evapToHsup', temps.evapToHsup, temps.evapToHsup_F, th.evapToHsup_hotF, th.coldBandF);
+      setTemp('temp-pchpToEvap', temps.pchpToEvap, temps.pchpToEvap_F, th.pchpToEvap_hotF, th.coldBandF);
 
       // [ใหม่] ถ้า side panel เปิดอยู่ ให้ re-render ด้วยข้อมูลใหม่ (ไม่ต้องปิดแล้วเปิดใหม่)
       if(currentPanelKey) renderPanel(currentPanelKey);
@@ -788,6 +880,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       syncNow();
       window.__currentDateStr = currentDateStr; // ให้แท็บ AHU floor plan อ่านวันที่เดียวกันได้ (kW/m² + event)
       if(window.__loadAhuData) window.__loadAhuData();
+      if(window.__loadLocationZone) window.__loadLocationZone();
     });
   });
   dateInput.addEventListener('change', function(){
@@ -796,6 +889,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
     syncNow();
     window.__currentDateStr = currentDateStr;
     if(window.__loadAhuData) window.__loadAhuData();
+    if(window.__loadLocationZone) window.__loadLocationZone();
   });
 
   syncNow();
@@ -803,6 +897,73 @@ document.getElementById('svgMain').innerHTML = frag.d;
   setInterval(syncNow, 600000); // [แก้ตามที่ confirm] auto-refresh ทุก 10 นาที (ลดจาก 60 วิ เพื่อลดการเรียก API)
   setInterval(syncDailyTrend, 600000); // [ข้อ C] 23/7/69 — sparkline/เทรนด์ ไม่ต้องขึ้นบ่อยเท่า ใช้รอบเดียวกันพอ
   window.__syncCircuitNow = syncNow;
+})();
+
+// [ใหม่ 23/7/69] Location Zone table — TR/kW ต่อ ตร.ม. ข้างผัง Chiller Circuit
+(function(){
+  var API_URL = "https://script.google.com/macros/s/AKfycbyo5K0OCRcehxNfZxxaPOg6gDMVv6zD4eIQ2LvRnqpTJuivMjcVFQtLSvPV_m36PiF3aA/exec";
+  var statusEl = document.getElementById('loczone-sync-status');
+
+  async function loadLocationZone(){
+    if(statusEl) statusEl.textContent = 'กำลัง sync...';
+    try {
+      var dateParam = window.__currentDateStr ? ('&date=' + window.__currentDateStr) : '';
+      var res = await fetch(API_URL + '?action=locationzone' + dateParam);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      var byLocation = Array.isArray(data.byLocation) ? data.byLocation : [];
+      var byLocationZone = Array.isArray(data.byLocationZone) ? data.byLocationZone : [];
+      var missingZones = Array.isArray(data.missingAreaZones) ? data.missingAreaZones : [];
+
+      if(byLocationZone.length === 0 && missingZones.length === 0){
+        document.getElementById('loczoneBody').innerHTML = '<div style="color:var(--text-faint); padding:10px 2px;">ไม่มีข้อมูลของวันที่เลือก</div>';
+        if(statusEl) statusEl.textContent = '⚠️ ไม่มีข้อมูล';
+        return;
+      }
+
+      // จัดกลุ่ม location (ห้อง) ตาม schpZone เพื่อวางใต้หัวข้อโซนเดียวกับ byLocationZone
+      var locBySchpZone = {};
+      byLocation.forEach(function(l){
+        if(!locBySchpZone[l.schpZone]) locBySchpZone[l.schpZone] = [];
+        locBySchpZone[l.schpZone].push(l);
+      });
+      var lzBySchpZone = {};
+      byLocationZone.forEach(function(z){
+        if(!lzBySchpZone[z.schpZone]) lzBySchpZone[z.schpZone] = [];
+        lzBySchpZone[z.schpZone].push(z);
+      });
+
+      var schpZonesInOrder = Object.keys(lzBySchpZone).sort(function(a,b){
+        var maxA = Math.max.apply(null, lzBySchpZone[a].map(function(z){return z.trPerSqm||0;}));
+        var maxB = Math.max.apply(null, lzBySchpZone[b].map(function(z){return z.trPerSqm||0;}));
+        return maxB - maxA;
+      });
+
+      var html = '';
+      schpZonesInOrder.forEach(function(schpZone){
+        var lzList = lzBySchpZone[schpZone].sort(function(a,b){ return (b.trPerSqm||0)-(a.trPerSqm||0); });
+        var zoneAvgTr = lzList.length ? (lzList.reduce(function(s,z){return s+(z.trPerSqm||0);},0)/lzList.length) : null;
+        html += '<div class="lz-zone-row"><span>'+schpZone.toUpperCase()+'</span><span class="avg">'+(zoneAvgTr!==null?('เฉลี่ย '+fmtNum(zoneAvgTr)):'—')+'</span></div>';
+        lzList.forEach(function(lz){
+          html += '<div class="lz-loc-row" title="'+lz.locationZone+': '+(lz.trPerSqm!==null?fmtNum(lz.trPerSqm):'—')+' TR/m\u00b2 \u00b7 '+(lz.kwPerSqm!==null?fmtNum(lz.kwPerSqm):'—')+' kW/m\u00b2"><span class="name">'+lz.locationZone+'</span><span class="val">'+(lz.trPerSqm!==null?fmtNum(lz.trPerSqm):'—')+'</span></div>';
+        });
+      });
+      missingZones.forEach(function(schpZone){
+        html += '<div class="lz-zone-row no-data"><span>'+schpZone.toUpperCase()+'</span><span class="avg">รอข้อมูลพื้นที่</span></div>';
+      });
+      document.getElementById('loczoneBody').innerHTML = html;
+
+      var footEl = document.getElementById('loczone-footnote');
+      if(footEl) footEl.textContent = '* ' + (data.assumption || '') + (data.date ? (' · ' + data.date) : '');
+
+      if(statusEl) statusEl.textContent = '✅ sync ล่าสุด' + (data.date ? (' · ' + data.date) : '');
+    } catch(err){
+      if(statusEl) statusEl.textContent = '❌ sync ล้มเหลว: ' + err.message;
+    }
+  }
+
+  window.__loadLocationZone = loadLocationZone;
+  loadLocationZone();
 })();
 
 // [ใหม่ 23/7/69] Monthly Report — Executive Summary (แทนที่ตารางเดิมทั้งหมด)
