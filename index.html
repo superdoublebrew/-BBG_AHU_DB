@@ -286,14 +286,14 @@
           <div class="legend-item" style="margin-left:auto;">คลิกกล่องเพื่อดูรายเครื่อง · พิมพ์ค้นหาด้านบนเพื่อไฮไลต์เครื่อง</div>
         </div>
         <div class="svg-wrap">
-          <svg id="svgMain" viewBox="0 0 980 660" xmlns="http://www.w3.org/2000/svg"></svg>
+          <svg id="svgMain" viewBox="0 0 955 739" xmlns="http://www.w3.org/2000/svg"></svg>
 
-          <div class="hz" data-key="ct" style="left:2.04%; top:3.03%; width:18.37%; height:10.61%;"></div>
-          <div class="hz" data-key="cdp" style="left:40.82%; top:3.03%; width:18.37%; height:10.61%;"></div>
-          <div class="hz" data-key="chl" style="left:40.82%; top:30.30%; width:18.37%; height:7.58%;"></div>
-          <div class="hz" data-key="pchp" style="left:40.82%; top:84.85%; width:18.37%; height:9.09%;"></div>
-          <div class="hz" data-key="schp1" style="left:72.45%; top:52.27%; width:12.24%; height:4.85%;"></div>
-          <div class="hz" data-key="schp2" style="left:72.45%; top:73.48%; width:12.24%; height:4.85%;"></div>
+          <div class="hz" data-key="ct" style="left:2.09%; top:0.68%; width:15.71%; height:7.44%;"></div>
+          <div class="hz" data-key="cdp" style="left:36.65%; top:0.68%; width:15.71%; height:7.44%;"></div>
+          <div class="hz" data-key="chl" style="left:36.65%; top:25.71%; width:15.71%; height:4.74%;"></div>
+          <div class="hz" data-key="pchp" style="left:36.65%; top:90.53%; width:15.71%; height:6.77%;"></div>
+          <div class="hz" data-key="schp1" style="left:71.20%; top:42.49%; width:9.95%; height:3.79%;"></div>
+          <div class="hz" data-key="schp2" style="left:71.20%; top:66.71%; width:9.95%; height:3.79%;"></div>
         </div>
       </div>
       <div class="loczone-panel">
@@ -571,15 +571,15 @@ function rightPt(n,f){ f=f===undefined?0.5:f; return {x:n.x+n.w,y:n.y+n.h*f}; }
 var frag = {d:'<defs>'+['h','c','r'].map(k=>{var c=k==='h'?HOT:(k==='c'?COLD:RET);return '<marker id="M-'+k+'" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M1 1L8 5L1 9" fill="none" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>';}).join('')+'</defs>'};
 function stroke(pts,color,key,w,noFlow){ frag.d+='<path d="'+sp(pts)+'" class="'+(noFlow?'':'flow-line')+'" stroke="'+color+'" stroke-width="'+(w||1.8)+'" fill="none" stroke-linecap="round" stroke-linejoin="round"'+(key?' marker-end="url(#M-'+key+')"':'')+'/>'; }
 function industrialShell(n,color){
-  frag.d+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="6" fill="rgba(255,255,255,.03)" stroke="'+color+'" stroke-width="2.2"/>';
-  frag.d+='<rect x="'+(n.x+4)+'" y="'+(n.y+4)+'" width="'+(n.w-8)+'" height="'+(n.h-8)+'" rx="4" fill="none" stroke="'+color+'" stroke-width="0.8" opacity=".45"/>';
-  frag.d+='<circle cx="'+(n.x+12)+'" cy="'+(n.y+12)+'" r="3" fill="'+color+'"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle>';
-  frag.d+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="18" rx="6" fill="'+color+'" opacity=".15"/>';
+  frag.d+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="6" fill="rgba(255,255,255,.03)" stroke="'+color+'" stroke-width="2"/>';
+  frag.d+='<rect x="'+(n.x+3)+'" y="'+(n.y+3)+'" width="'+(n.w-6)+'" height="'+(n.h-6)+'" rx="4" fill="none" stroke="'+color+'" stroke-width="0.7" opacity=".45"/>';
+  frag.d+='<circle cx="'+(n.x+10)+'" cy="'+(n.y+10)+'" r="2.5" fill="'+color+'"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle>';
+  frag.d+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="14" rx="6" fill="'+color+'" opacity=".15"/>';
 }
 function smallNode(n,title,kwText,color,rgb,id){
   industrialShell(n,color);
-  frag.d+='<text x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2-2)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9.5" fill="#fff">'+title+'</text>';
-  frag.d+='<text'+(id?' id="'+id+'"':'')+' x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2+14)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="12" fill="rgb('+rgb+')">'+(kwText||'—')+'</text>';
+  frag.d+='<text x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2-4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="8" fill="#fff">'+title+'</text>';
+  frag.d+='<text'+(id?' id="'+id+'"':'')+' x="'+(n.x+n.w/2)+'" y="'+(n.y+n.h/2+10)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="10.5" fill="rgb('+rgb+')">'+(kwText||'—')+'</text>';
 }
 // [ข้อ2-3, แก้ 23/7/69] ป้ายอุณหภูมิ — โชว์ 2 หน่วย (F เด่น, C รอง) + 3 สถานะ (ร้อน/ปกติ/หนาว) แบบ solid fill badge
 // เก็บสีเส้นเดิมไว้ที่ data-color บน bg rect เพื่อคืนค่าตอนกลับเป็นสถานะปกติ
@@ -595,37 +595,43 @@ function tempChip(cx,cy,id,color){
 // SCHP_ZONE -> Phase ยังต้องคงไว้เป็น mapping คงที่ (ไม่มีคอลัมน์นี้ในชีตไหนเลย เหมือนกรณี Wing เดิม)
 var SCHP_ZONE_PHASE = { 'Front':'p1', 'Back':'p1', 'EH105-106':'p1', 'Exhibition Area':'p2', 'Sale Area':'p2', 'Support Area':'p2' };
 
-var ct=box(20,20,180,70), cdp=box(400,20,180,70);
-var chlCond=box(400,140,180,60), chlMid=box(400,200,180,50), chlEvap=box(400,250,180,70); // [ข้อ6] ขยับลง 30px จากเดิม (110/170/220) ให้เส้น CDP->Condenser ยาวขึ้น
+var TOP_Y = 5;                                      // [แก้ 23/7/69 รอบ 6] ขยับขึ้นอีกจาก 10 -> 5
+var ct=box(20,TOP_Y,150,55);
+// [แก้ 23/7/69 รอบ 4] ยืดช่องว่างออกอีกตามที่ขอ (Evaporator -> Header Supply มีที่ว่างเหลือ)
+// ทุกอย่างอิง GAP_COL/RAIL_GAP ตัวเดียว เปลี่ยนค่านี้แล้วทั้งผังขยับตามกันหมดอัตโนมัติ
+var GAP_COL = 180, RAIL_GAP = 55;
+var col2X = ct.x + ct.w + GAP_COL;                  // คอลัมน์ CDP / Chiller stack / Primary Water Pump
+var cdp=box(col2X,TOP_Y,150,55);
+var CHLCOND_OFFSET = 140;                           // [แก้ 23/7/69 รอบ 6] เพิ่มจาก 105 -> 140 ให้เส้น Condenser->Cooling Tower ยาวขึ้นตามที่ขอ
+var chlCond=box(col2X,TOP_Y+CHLCOND_OFFSET,150,45), chlMid=box(col2X,TOP_Y+CHLCOND_OFFSET+45,150,35), chlEvap=box(col2X,TOP_Y+CHLCOND_OFFSET+80,150,55);
 var evapCenterY = chlEvap.y + chlEvap.h/2;
-var hsup=box(710,evapCenterY-20,120,40);
-
-// [แก้ 23/7/69] SCHP Phase I อยู่บน Phase II อยู่ล่างแบบแนวตั้ง (ตามที่ยืนยันในแชท)
-// เส้น Supply เดินรางซ้าย (railX) หักซ้ายทางเดียวจาก Header Supply ไม่มีเส้นขวา
-// เส้น Return เดินรางขวา (railXRight) แยกฝั่งจาก Supply ตลอด ไม่ชนกันเลย
-var railX = 660, railXRight = 905;
-var schp1=box(710,345,120,32);                    // กล่องคลิกดูรายละเอียดปั๊ม SCHP Phase I (เหมือนเดิม)
-var lz1 = box(655,382,230,95);                     // grid Location Zone ใต้ Phase I (ไม่คลิกได้ แค่โชว์ kW/m²)
-var schp2=box(710,485,120,32);                    // กล่องคลิกดูรายละเอียดปั๊ม SCHP Phase II
-var lz2 = box(655,522,230,65);                     // grid Location Zone ใต้ Phase II
-var hret=box(710,572,120,36);                      // [แก้] จัดกึ่งกลาง y ให้ตรงกับ pchp เพื่อให้เส้นตรง ไม่ต้องหักมุม
-var pchp=box(400,560,180,60);                     // [แก้ 23/7/69] ขยับใหม่ให้ center-y ตรงกับ hret พอดี (560+30=590=572+18)
+var col3X = col2X + 150 + GAP_COL;                  // คอลัมน์ Header Supply / SCHP Phase / Header Return
+var hsup=box(col3X,evapCenterY-16,95,32);
+var GAP = 28;
+var schp1=box(col3X,hsup.y+hsup.h+45.5,95,28);      // รักษา gap เดิม 45.5px จาก hsup แม้ hsup จะขยับตาม evapCenterY
+var lz1 = box(col3X,schp1.y+schp1.h+GAP,195,95);    // ชิดซ้ายเท่า schp1 (ไม่ centered กันชนคอลัมน์ซ้าย)
+var schp2=box(col3X,lz1.y+lz1.h+GAP,95,28);
+var lz2 = box(col3X,schp2.y+schp2.h+GAP,195,65);
+var pchp=box(col2X,lz2.y+lz2.h+55,150,50);
+var hretCenterY = pchp.y + pchp.h/2;
+var hret=box(col3X,hretCenterY-15,95,30);
+var railX = col3X - RAIL_GAP, railXRight = col3X + 195 + RAIL_GAP;
 
 stroke([rightPt(ct),leftPt(cdp)],HOT,'h');
 stroke([botPt(cdp),topPt(chlCond)],HOT,'h');
-stroke([leftPt(chlCond,0.5),{x:110,y:leftPt(chlCond,0.5).y},{x:110,y:botPt(ct).y}],HOT,'h');
+stroke([leftPt(chlCond,0.5),{x:ct.x+ct.w/2,y:leftPt(chlCond,0.5).y},{x:ct.x+ct.w/2,y:botPt(ct).y}],HOT,'h');
 stroke([rightPt(chlEvap,0.5),leftPt(hsup,0.5)],COLD,'c');
 
 // Header Supply -> รางซ้าย (หักซ้ายทางเดียว) -> แตะกล่อง SCHP Phase I / II ทั้งสอง
-stroke([botPt(hsup),{x:botPt(hsup).x,y:botPt(hsup).y+20}],COLD,0);
-stroke([{x:botPt(hsup).x,y:botPt(hsup).y+20},{x:railX,y:botPt(hsup).y+20}],COLD,0);
-stroke([{x:railX,y:botPt(hsup).y+20},{x:railX,y:leftPt(schp2,0.5).y}],COLD,0);
+stroke([botPt(hsup),{x:botPt(hsup).x,y:botPt(hsup).y+18}],COLD,0);
+stroke([{x:botPt(hsup).x,y:botPt(hsup).y+18},{x:railX,y:botPt(hsup).y+18}],COLD,0);
+stroke([{x:railX,y:botPt(hsup).y+18},{x:railX,y:leftPt(schp2,0.5).y}],COLD,0);
 stroke([{x:railX,y:leftPt(schp1,0.5).y},leftPt(schp1)],COLD,'c');
 stroke([{x:railX,y:leftPt(schp2,0.5).y},leftPt(schp2)],COLD,'c');
 
-// SCHP Phase box -> grid Location Zone ใต้มันเอง (ก้านสั้นๆ ตรงกลาง)
-stroke([botPt(schp1),topPt(lz1)],COLD,0,1.3);
-stroke([botPt(schp2),topPt(lz2)],COLD,0,1.3);
+// SCHP Phase box -> grid Location Zone ใต้มันเอง (เส้นตรงแนวตั้ง — ใช้ x เดียวกันเพราะกล่องชิดซ้ายเท่ากัน)
+stroke([{x:col3X+15,y:botPt(schp1).y},{x:col3X+15,y:topPt(lz1).y}],COLD,0,1.3);
+stroke([{x:col3X+15,y:botPt(schp2).y},{x:col3X+15,y:topPt(lz2).y}],COLD,0,1.3);
 
 // grid Location Zone -> รางขวา (Return) -> ลงมารวมที่ Header Return
 stroke([rightPt(lz1,0.5),{x:railXRight,y:rightPt(lz1,0.5).y}],RET,0,1.3);
@@ -638,17 +644,17 @@ stroke([leftPt(hret),rightPt(pchp)],RET,'r',2.2);
 stroke([topPt(pchp),botPt(chlEvap)],RET,'r',2.2);
 
 industrialShell(ct,HOT);
-frag.d+='<text x="'+(ct.x+ct.w/2)+'" y="'+(ct.y+ct.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10.5" fill="#fff">Cooling Tower</text><text id="hdrval-CoolingTower" x="'+(ct.x+ct.w/2)+'" y="'+(ct.y+ct.h/2+18)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="15" fill="rgb(242,134,122)">—</text>';
+frag.d+='<text x="'+(ct.x+ct.w/2)+'" y="'+(ct.y+ct.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9" fill="#fff">Cooling Tower</text><text id="hdrval-CoolingTower" x="'+(ct.x+ct.w/2)+'" y="'+(ct.y+ct.h/2+15)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="12.5" fill="rgb(242,134,122)">—</text>';
 industrialShell(cdp,HOT);
-frag.d+='<text x="'+(cdp.x+cdp.w/2)+'" y="'+(cdp.y+cdp.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10.5" fill="#fff">Condenser Pump</text><text id="hdrval-CondenserPump" x="'+(cdp.x+cdp.w/2)+'" y="'+(cdp.y+cdp.h/2+18)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="15" fill="rgb(242,134,122)">—</text>';
+frag.d+='<text x="'+(cdp.x+cdp.w/2)+'" y="'+(cdp.y+cdp.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9" fill="#fff">Condenser Pump</text><text id="hdrval-CondenserPump" x="'+(cdp.x+cdp.w/2)+'" y="'+(cdp.y+cdp.h/2+15)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="12.5" fill="rgb(242,134,122)">—</text>';
 industrialShell(chlCond,HOT);
-frag.d+='<text x="'+(chlCond.x+chlCond.w/2)+'" y="'+(chlCond.y+chlCond.h/2+3)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10" fill="#fff">Condenser · น้ำร้อน</text>';
+frag.d+='<text x="'+(chlCond.x+chlCond.w/2)+'" y="'+(chlCond.y+chlCond.h/2+3)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="8.5" fill="#fff">Condenser · น้ำร้อน</text>';
 industrialShell(chlMid,'#8892a8');
-frag.d+='<text x="'+(chlMid.x+chlMid.w/2)+'" y="'+(chlMid.y+chlMid.h/2-8)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10.5" fill="#fff">Main Chiller</text><text id="hdrval-MainChiller" x="'+(chlMid.x+chlMid.w/2)+'" y="'+(chlMid.y+chlMid.h/2+11)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="14" fill="'+'#34d399'+'">—</text><text x="'+(chlMid.x+chlMid.w/2)+'" y="'+(chlMid.y+chlMid.h-4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="600" font-size="7" fill="rgba(255,255,255,.5)">คลิกดูรายเครื่อง ›</text>';
+frag.d+='<text x="'+(chlMid.x+chlMid.w/2)+'" y="'+(chlMid.y+chlMid.h/2-6)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9" fill="#fff">Main Chiller</text><text id="hdrval-MainChiller" x="'+(chlMid.x+chlMid.w/2)+'" y="'+(chlMid.y+chlMid.h/2+9)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="12" fill="'+'#34d399'+'">—</text>';
 industrialShell(chlEvap,COLD);
-frag.d+='<text x="'+(chlEvap.x+chlEvap.w/2)+'" y="'+(chlEvap.y+chlEvap.h/2+4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10" fill="#fff">Evaporator · น้ำเย็น</text>';
+frag.d+='<text x="'+(chlEvap.x+chlEvap.w/2)+'" y="'+(chlEvap.y+chlEvap.h/2+4)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="8.5" fill="#fff">Evaporator · น้ำเย็น</text>';
 industrialShell(pchp,RET);
-frag.d+='<text x="'+(pchp.x+pchp.w/2)+'" y="'+(pchp.y+pchp.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="10.5" fill="#fff">Primary Water Pump</text><text id="hdrval-PrimaryWaterPump" x="'+(pchp.x+pchp.w/2)+'" y="'+(pchp.y+pchp.h/2+18)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="15" fill="rgb(242,184,79)">—</text>';
+frag.d+='<text x="'+(pchp.x+pchp.w/2)+'" y="'+(pchp.y+pchp.h/2-5)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="9" fill="#fff">Primary Water Pump</text><text id="hdrval-PrimaryWaterPump" x="'+(pchp.x+pchp.w/2)+'" y="'+(pchp.y+pchp.h/2+15)+'" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="12.5" fill="rgb(242,184,79)">—</text>';
 smallNode(hsup,'Header Supply',null,COLD,'56,189,248');
 smallNode(hret,'Header Return',null,RET,'242,184,79');
 smallNode(schp1,'SCHP Phase I',null,COLD,'56,189,248','hdrval-SCHP1');
@@ -656,11 +662,12 @@ smallNode(schp2,'SCHP Phase II',null,COLD,'56,189,248','hdrval-SCHP2');
 
 // [แก้ 23/7/69] grid Location Zone ใต้ Phase I/II — เป็น foreignObject ว่างเปล่าไว้ก่อน
 // เติมเนื้อหาจริง (ชื่อ + kW/m²) หลัง fetch ?action=locationzone เสร็จ ผ่าน renderLocZonePills()
-frag.d+='<foreignObject x="'+lz1.x+'" y="'+lz1.y+'" width="'+lz1.w+'" height="'+lz1.h+'"><div xmlns="http://www.w3.org/1999/xhtml" id="lz-grid-p1" style="font-family:JetBrains Mono,monospace; background:rgba(255,255,255,.025); border:1px solid '+COLD+'; border-radius:8px; padding:5px; height:100%; box-sizing:border-box; display:grid; grid-template-columns:repeat(4,1fr); gap:3px; align-content:center;"></div></foreignObject>';
-frag.d+='<foreignObject x="'+lz2.x+'" y="'+lz2.y+'" width="'+lz2.w+'" height="'+lz2.h+'"><div xmlns="http://www.w3.org/1999/xhtml" id="lz-grid-p2" style="font-family:JetBrains Mono,monospace; background:rgba(255,255,255,.025); border:1px solid '+RET+'; border-radius:8px; padding:5px; height:100%; box-sizing:border-box; display:grid; grid-template-columns:repeat(4,1fr); gap:3px; align-content:center;"></div></foreignObject>';
+// [ข้อ3] เพิ่ม padding/gap ให้กว้างขึ้น ไม่อัดแน่นเกินไป
+frag.d+='<foreignObject x="'+lz1.x+'" y="'+lz1.y+'" width="'+lz1.w+'" height="'+lz1.h+'"><div xmlns="http://www.w3.org/1999/xhtml" id="lz-grid-p1" style="font-family:JetBrains Mono,monospace; background:rgba(255,255,255,.025); border:1px solid '+COLD+'; border-radius:8px; padding:8px; height:100%; box-sizing:border-box; display:grid; grid-template-columns:repeat(4,1fr); gap:6px; align-content:center;"></div></foreignObject>';
+frag.d+='<foreignObject x="'+lz2.x+'" y="'+lz2.y+'" width="'+lz2.w+'" height="'+lz2.h+'"><div xmlns="http://www.w3.org/1999/xhtml" id="lz-grid-p2" style="font-family:JetBrains Mono,monospace; background:rgba(255,255,255,.025); border:1px solid '+RET+'; border-radius:8px; padding:8px; height:100%; box-sizing:border-box; display:grid; grid-template-columns:repeat(4,1fr); gap:6px; align-content:center;"></div></foreignObject>';
 
 // [ข้อ2-3] 23/7/69 — ป้ายอุณหภูมิ 4 เส้น คำนวณตำแหน่งกลางเส้นจากพิกัดกล่องจริง (ไม่ hardcode ตัวเลข)
-tempChip(110, (leftPt(chlCond,0.5).y+botPt(ct).y)/2, 'temp-condToCT', HOT);                                   // Condenser -> Cooling Tower
+tempChip(ct.x+ct.w/2, (leftPt(chlCond,0.5).y+botPt(ct).y)/2, 'temp-condToCT', HOT);                           // Condenser -> Cooling Tower
 tempChip(botPt(cdp).x, (botPt(cdp).y+topPt(chlCond).y)/2, 'temp-cdpToCond', HOT);                             // Condenser Pump -> Condenser
 tempChip((rightPt(chlEvap,0.5).x+leftPt(hsup,0.5).x)/2, rightPt(chlEvap,0.5).y, 'temp-evapToHsup', COLD);     // Evaporator -> Header Supply
 tempChip(topPt(pchp).x, (topPt(pchp).y+botPt(chlEvap).y)/2, 'temp-pchpToEvap', RET);                          // Primary Water Pump -> Evaporator
@@ -908,10 +915,10 @@ document.getElementById('svgMain').innerHTML = frag.d;
 
   function pillHtml(lz, color){
     var hasVal = typeof lz.kwPerSqm === 'number';
-    return '<div title="'+lz.locationZone+' ('+lz.schpZone+'): '+(hasVal?fmtNum(lz.kwPerSqm,3):'—')+' kW/m\u00b2" style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:3px 2px; text-align:center; font-size:5.5px; color:#fff; line-height:1.3;">'+lz.locationZone+'<br><b style="color:'+(hasVal?color:'#7c8aa3')+'; font-size:7px;">'+(hasVal?fmtNum(lz.kwPerSqm,3):'—')+'</b></div>';
+    return '<div title="'+lz.locationZone+' ('+lz.schpZone+'): '+(hasVal?fmtNum(lz.kwPerSqm,3):'—')+' kW/m\u00b2" style="background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:5px 3px; text-align:center; font-size:6.5px; color:#fff; line-height:1.35;">'+lz.locationZone+'<br><b style="color:'+(hasVal?color:'#7c8aa3')+'; font-size:8px;">'+(hasVal?fmtNum(lz.kwPerSqm,3):'—')+'</b></div>';
   }
   function missingPillHtml(schpZone){
-    return '<div style="background:rgba(255,255,255,.02); border:1px dashed rgba(255,255,255,.2); border-radius:8px; padding:3px 2px; text-align:center; font-size:5.5px; color:#7c8aa3; line-height:1.3;">'+schpZone+'<br><b style="font-size:6px;">รอข้อมูล</b></div>';
+    return '<div style="background:rgba(255,255,255,.02); border:1px dashed rgba(255,255,255,.2); border-radius:8px; padding:5px 3px; text-align:center; font-size:6.5px; color:#7c8aa3; line-height:1.35;">'+schpZone+'<br><b style="font-size:7px;">รอข้อมูล</b></div>';
   }
 
   async function loadLocationZone(){
