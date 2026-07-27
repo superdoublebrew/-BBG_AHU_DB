@@ -932,6 +932,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       var res = await fetch(API_URL + '?action=locationzone' + dateParam);
       if(!res.ok) throw new Error('HTTP ' + res.status);
       var data = await res.json();
+      var bySchpZone = Array.isArray(data.bySchpZone) ? data.bySchpZone : [];
       var byLocationZone = Array.isArray(data.byLocationZone) ? data.byLocationZone : [];
       var missingZones = Array.isArray(data.missingAreaZones) ? data.missingAreaZones : [];
 
@@ -939,40 +940,40 @@ document.getElementById('svgMain').innerHTML = frag.d;
       if(trTotalEl) trTotalEl.textContent = (typeof data.trPerSqmTotal === 'number') ? fmtNum(data.trPerSqmTotal,3) : '—';
 
       var accEl = document.getElementById('loczoneAccordion');
-      if(byLocationZone.length === 0 && missingZones.length === 0){
+      if(bySchpZone.length === 0 && missingZones.length === 0){
         if(accEl) accEl.innerHTML = '<div style="color:var(--text-faint); padding:10px 2px; font-family:JetBrains Mono,monospace; font-size:9px;">ไม่มีข้อมูลของวันที่เลือก</div>';
         if(statusEl) statusEl.textContent = '⚠️ ไม่มีข้อมูล';
         return;
       }
 
-      var ranked = byLocationZone.filter(function(z){ return typeof z.kwPerSqm === 'number'; }).sort(function(a,b){ return b.kwPerSqm-a.kwPerSqm; });
+      // จัดกลุ่ม Location Zone ตาม SCHP_ZONE พ่อของมัน
+      var locsBySchpZone = {};
+      byLocationZone.forEach(function(lz){
+        if(!locsBySchpZone[lz.schpZone]) locsBySchpZone[lz.schpZone] = [];
+        locsBySchpZone[lz.schpZone].push(lz);
+      });
+
+      // ไล่สีการ์ด Location Zone ตามอันดับ kW สัมบูรณ์ (ทั่วทั้งอาคาร ไม่ใช่แค่ในโซนตัวเอง)
+      var ranked = byLocationZone.slice().sort(function(a,b){ return b.kw-a.kw; });
       var rankIndex = {};
       ranked.forEach(function(z,i){ rankIndex[z.locationZone] = i; });
 
-      // จัดกลุ่มตาม SCHP_ZONE
-      var bySchpZone = {};
-      byLocationZone.forEach(function(lz){
-        if(!bySchpZone[lz.schpZone]) bySchpZone[lz.schpZone] = [];
-        bySchpZone[lz.schpZone].push(lz);
-      });
-      var zoneAvg = {};
-      Object.keys(bySchpZone).forEach(function(z){
-        var list = bySchpZone[z].filter(function(l){ return typeof l.kwPerSqm==='number'; });
-        zoneAvg[z] = list.length ? list.reduce(function(s,l){return s+l.kwPerSqm;},0)/list.length : null;
-      });
-      var schpZonesInOrder = Object.keys(bySchpZone).sort(function(a,b){ return (zoneAvg[b]||0)-(zoneAvg[a]||0); });
-      var heaviestZone = schpZonesInOrder.length ? schpZonesInOrder[0] : null; // กางอันนี้อัตโนมัติ
+      var schpZonesInOrder = bySchpZone.slice(); // bySchpZone มาเรียงจาก backend แล้ว (ตาม kW/m² มากไปน้อย)
+      var heaviestZone = schpZonesInOrder.length ? schpZonesInOrder[0].schpZone : null; // กางอันนี้อัตโนมัติ
 
       var html = '';
-      schpZonesInOrder.forEach(function(schpZone){
+      schpZonesInOrder.forEach(function(zoneInfo){
+        var schpZone = zoneInfo.schpZone;
         var accId = schpZone.replace(/[^a-zA-Z0-9]/g,'');
         var isOpen = (schpZone === heaviestZone);
-        html += '<div class="lz-acc-head has-data" onclick="window.__toggleLzAccordion(\''+accId+'\')"><span class="name">'+(isOpen?'▾ ':'▸ ')+schpZone.toUpperCase()+'</span><span class="avg">'+(zoneAvg[schpZone]!==null?('เฉลี่ย '+fmtNum(zoneAvg[schpZone],3)):'—')+'</span></div>';
+        var kwPerSqmTxt = (typeof zoneInfo.kwPerSqm === 'number') ? (fmtNum(zoneInfo.kwPerSqm,3)+' kW/m\u00b2') : '—';
+        var trTxt = (typeof zoneInfo.trApprox === 'number') ? ('\u2248'+fmtNum(zoneInfo.trApprox,0)+' TR') : '';
+        html += '<div class="lz-acc-head has-data" onclick="window.__toggleLzAccordion(\''+accId+'\')"><span class="name">'+(isOpen?'▾ ':'▸ ')+schpZone.toUpperCase()+'</span><span class="avg">'+kwPerSqmTxt+(trTxt?(' \u00b7 '+trTxt):'')+'</span></div>';
         html += '<div class="lz-acc-body'+(isOpen?'':' collapsed')+'" id="lzbody-'+accId+'">';
-        bySchpZone[schpZone].forEach(function(lz){
-          var hasVal = typeof lz.kwPerSqm === 'number';
-          var color = hasVal ? colorForRank_(rankIndex[lz.locationZone], ranked.length) : '#7c8aa3';
-          html += '<div class="lz-card" title="'+lz.locationZone+': '+(hasVal?fmtNum(lz.kwPerSqm,3):'—')+' kW/m\u00b2"><div class="n">'+lz.locationZone+'</div><div class="v" style="color:'+color+';">'+(hasVal?fmtNum(lz.kwPerSqm,3):'—')+'</div></div>';
+        (locsBySchpZone[schpZone] || []).forEach(function(lz){
+          var color = colorForRank_(rankIndex[lz.locationZone], ranked.length);
+          var trCardTxt = (typeof lz.trApprox === 'number') ? ('\u2248'+fmtNum(lz.trApprox,0)+' TR') : '—';
+          html += '<div class="lz-card" title="'+lz.locationZone+': '+fmtNum(lz.kw,1)+' kW \u00b7 '+trCardTxt+'"><div class="n">'+lz.locationZone+'</div><div class="v" style="color:'+color+';">'+fmtNum(lz.kw,1)+'<span style="font-size:6px; color:var(--text-faint);"> kW</span></div><div style="font-family:JetBrains Mono,monospace; font-size:6px; color:#c9a3f7;">'+trCardTxt+'</div></div>';
         });
         html += '</div>';
       });
@@ -982,7 +983,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       if(accEl) accEl.innerHTML = html;
 
       var footEl = document.getElementById('loczone-footnote');
-      if(footEl) footEl.textContent = 'TR/m\u00b2 = TR รวมทั้งแผน \u00f7 พื้นที่รวมทั้งอาคาร (ไม่แยกโซน)' + (data.date ? (' \u00b7 ' + data.date) : '');
+      if(footEl) footEl.textContent = 'TR/m\u00b2 รวม = TR รวมทั้งแผน \u00f7 พื้นที่รวมทั้งอาคาร \u00b7 TR\u2248 = ประมาณตามสัดส่วน kW' + (data.date ? (' \u00b7 ' + data.date) : '');
 
       if(statusEl) statusEl.textContent = '✅ sync ล่าสุด' + (data.date ? (' · ' + data.date) : '');
     } catch(err){
