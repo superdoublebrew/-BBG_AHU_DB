@@ -66,6 +66,10 @@
   .search-box input{ background:none; border:none; outline:none; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:11px; width:130px; }
   .search-box input::placeholder{ color:var(--text-faint); }
   .date-filter{ display:flex; align-items:center; gap:6px; margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-muted); }
+  .dm-toggle{ display:flex; background:rgba(255,255,255,0.04); border-radius:8px; padding:2px; gap:2px; }
+  .dm-btn{ padding:5px 10px; border-radius:6px; font-size:10.5px; font-weight:700; font-family:'Space Grotesk',sans-serif; color:var(--text-muted); cursor:pointer; }
+  .dm-btn.active{ color:#0a0612; background:linear-gradient(120deg,var(--p1-1),var(--p2-1)); }
+  .date-filter select{ background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:7px; color:var(--text); padding:5px 8px; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; }
   .date-filter input[type=date]{ background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:7px; color:var(--text); padding:5px 8px; font-family:'JetBrains Mono',monospace; font-size:11px; }
   .date-filter .f-btn{ padding:5px 10px; border-radius:7px; font-size:10.5px; font-weight:600; font-family:'Space Grotesk',sans-serif; color:var(--text-muted); border:1px solid var(--glass-border); cursor:pointer; background:rgba(255,255,255,0.02); }
   .date-filter .f-btn.active{ color:#0a0612; background:linear-gradient(120deg,var(--p1-1),var(--p2-1)); border-color:transparent; }
@@ -200,6 +204,7 @@
   .mr-summary-banner{ background:rgba(242,134,122,0.08); border:1px solid rgba(242,134,122,0.25); border-radius:7px; padding:6px 12px; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text); margin-top:8px; flex-shrink:0; }
   .mr-summary-banner.down{ background:rgba(52,211,153,0.08); border-color:rgba(52,211,153,0.25); }
   .mr-charts{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; flex-shrink:0; }
+  .mr-charts.mr-charts-3{ grid-template-columns:1fr 1fr 1fr; }
   .mr-chart-card{ background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); border-radius:9px; padding:10px 12px; }
   .mr-chart-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10.5px; margin-bottom:6px; color:var(--text); }
   .mr-bar-chart{ display:flex; align-items:flex-end; gap:6px; height:64px; }
@@ -241,9 +246,21 @@
       <input type="text" id="unitSearch" placeholder="ค้นหา unit id เช่น H-SCHP-04">
     </div>
     <div class="date-filter">
-      <span class="f-btn active" data-range="today">วันนี้</span>
-      <span class="f-btn" data-range="yesterday">เมื่อวาน</span>
-      <input type="date" id="dateFilter">
+      <div class="dm-toggle">
+        <span class="dm-btn active" data-mode="day">รายวัน</span>
+        <span class="dm-btn" data-mode="month">รายเดือน</span>
+      </div>
+      <span style="color:var(--glass-border);">|</span>
+      <div id="dayModeControls" style="display:flex; align-items:center; gap:6px;">
+        <span class="f-btn active" data-range="today">วันนี้</span>
+        <span class="f-btn" data-range="yesterday">เมื่อวาน</span>
+        <input type="date" id="dateFilter" title="จากวันที่">
+        <span style="font-size:9.5px; color:var(--text-faint);">ถึง</span>
+        <input type="date" id="dateFilterEnd" title="ถึงวันที่ (เว้นว่าง = วันเดียว)">
+      </div>
+      <div id="monthModeControls" style="display:none; align-items:center; gap:6px;">
+        <select id="monthFilter"></select>
+      </div>
       <span id="sync-status" class="sync-note"><span class="live-dot" id="liveDot" style="display:none;"></span><span id="syncText">ยังไม่ได้ sync</span></span>
     </div>
   </div>
@@ -311,24 +328,24 @@
   </div>
 
   <div class="panel" id="panel-ahu">
+    <div class="kpi-tiles" style="margin-bottom:8px;">
+      <div class="kpi-tile c-chiller"><div class="lbl">Total AHU</div><div class="val"><span id="ahu-total-count">—</span></div></div>
+      <div class="kpi-tile c-pump"><div class="lbl">Phase 1</div><div class="val"><span id="ahu-p1-count">—</span><span class="unit">หน่วย</span></div></div>
+      <div class="kpi-tile c-plant"><div class="lbl">Phase 2</div><div class="val"><span id="ahu-p2-count">—</span><span class="unit">หน่วย</span></div></div>
+      <div class="kpi-tile c-outdoor"><div class="lbl">kW/m² เฉลี่ย</div><div class="val"><span id="ahu-avgkwm2">—</span></div></div>
+      <div class="kpi-tile c-tower"><div class="lbl">Event วันนี้</div><div class="val"><span id="ahu-event-count">—</span><span class="unit">hall</span></div></div>
+    </div>
     <div class="ahu-shell">
       <div class="ahu-side">
-        <div class="side-card glass"><div class="side-title">LEGEND</div>
-          <div class="legend-row2"><span class="legend-dot" style="background:var(--p1-1)"></span>Phase 1 · <span id="ahu-p1-count">—</span> หน่วย</div>
-          <div class="legend-row2"><span class="legend-dot" style="background:var(--p2-1)"></span>Phase 2 · <span id="ahu-p2-count">—</span> หน่วย</div>
-        </div>
-        <div class="side-card glass"><div class="side-title">QUICK VIEW</div>
-          <div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px;"><span id="ahu-total-count">—</span><span style="font-size:10px; color:var(--text-faint); font-weight:500;"> AHU</span></div>
-          <div style="font-size:9.5px; color:var(--text-faint);" id="ahu-hall-count">— hall</div>
+        <div class="side-card glass"><div class="side-title">FILTER</div>
+          <div class="filter-row" style="flex-wrap:wrap;">
+            <div class="f-btn active" data-phase="all">ทั้งหมด</div>
+            <div class="f-btn" data-phase="p1">Phase 1</div>
+            <div class="f-btn" data-phase="p2">Phase 2</div>
+          </div>
         </div>
       </div>
       <div class="ahu-main glass" style="padding:12px;">
-        <div class="filter-row">
-          <span class="f-label">Filter:</span>
-          <div class="f-btn active" data-phase="all">ทั้งหมด</div>
-          <div class="f-btn" data-phase="p1">Phase 1</div>
-          <div class="f-btn" data-phase="p2">Phase 2</div>
-        </div>
         <div class="hall-scroll" id="hallScroll"></div>
       </div>
     </div>
@@ -336,33 +353,20 @@
 
   <div class="panel" id="panel-report">
     <div class="monthly-shell glass">
-      <div class="kpi-strip" style="padding:0;">
-        <div class="kpi-chip" style="border-left-color:#38bdf8;">
-          <div class="lbl">Total (kWh)</div>
-          <div class="val"><span id="mr-kwh">—</span></div>
-          <div class="sub" id="mr-kwh-sub">—</div>
-        </div>
-        <div class="kpi-chip green">
-          <div class="lbl">kW/TR เฉลี่ย</div>
-          <div class="val"><span id="mr-kwtr">—</span><span class="unit">(kW/TR)</span></div>
-        </div>
-        <div class="kpi-chip" style="border-left-color:#a855f7;">
-          <div class="lbl">TR ต่อ ตร.ม.</div>
-          <div class="val"><span id="mr-trsqm">—</span></div>
-        </div>
-        <div class="kpi-chip hot">
-          <div class="lbl">เทียบเดือนก่อน</div>
-          <div class="val" id="mr-trend">—</div>
-          <div class="sub" id="mr-trend-sub">—</div>
-        </div>
-        <div class="kpi-chip" style="border-left-color:#f2b84f;">
-          <div class="lbl">ค่าไฟประมาณการ</div>
-          <div class="val"><span id="mr-cost">—</span><span class="unit">(บาท)</span></div>
-        </div>
+      <div class="kpi-tiles" style="padding:0; margin-bottom:8px;">
+        <div class="kpi-tile c-chiller"><div class="lbl">Total Energy</div><div class="val"><span id="mr-kwh">—</span><span class="unit">kWh</span></div></div>
+        <div class="kpi-tile c-outdoor"><div class="lbl">kW/TR เฉลี่ย</div><div class="val"><span id="mr-kwtr">—</span></div></div>
+        <div class="kpi-tile c-plant"><div class="lbl">TR ต่อ ตร.ม.</div><div class="val"><span id="mr-trsqm">—</span></div></div>
+        <div class="kpi-tile c-plant"><div class="lbl">kW ต่อ ตร.ม.</div><div class="val"><span id="mr-kwsqm">—</span></div></div>
+      </div>
+      <div class="kpi-tiles" style="padding:0; margin-bottom:8px;">
+        <div class="kpi-tile c-pump"><div class="lbl">พื้นที่ใช้งานเฉลี่ย/วัน</div><div class="val"><span id="mr-areaused">—</span><span class="unit">ตร.ม.</span></div></div>
+        <div class="kpi-tile c-chiller"><div class="lbl">เทียบเดือนก่อน</div><div class="val" id="mr-trend">—</div></div>
+        <div class="kpi-tile c-tower"><div class="lbl">ค่าไฟประมาณการ</div><div class="val"><span id="mr-cost">—</span><span class="unit">บาท</span></div></div>
       </div>
       <div id="mr-summary" class="mr-summary-banner">—</div>
       <div id="monthly-sync-status" class="sync-note" style="margin-top:4px;">ยังไม่ได้ sync</div>
-      <div class="mr-charts">
+      <div class="mr-charts mr-charts-3">
         <div class="mr-chart-card">
           <div class="mr-chart-title">Total kWh ย้อนหลัง 6 เดือน</div>
           <div class="mr-bar-chart" id="mr-bar-chart"></div>
@@ -373,6 +377,12 @@
           <svg id="mr-line-chart" viewBox="0 0 220 56" preserveAspectRatio="none"></svg>
           <div class="mr-chart-labels" id="mr-line-labels"></div>
         </div>
+        <div class="mr-chart-card">
+          <div class="mr-chart-title">TR/kW ต่อ ตร.ม.</div>
+          <svg id="mr-sqm-line-chart" viewBox="0 0 220 56" preserveAspectRatio="none"></svg>
+          <div class="mr-chart-labels" id="mr-sqm-line-labels"></div>
+          <div style="display:flex; gap:8px; margin-top:3px; font-family:'JetBrains Mono',monospace; font-size:7px;"><span style="color:#a855f7;">● TR/m²</span><span style="color:#38bdf8;">● kW/m²</span></div>
+        </div>
       </div>
       <div class="table-scroll">
         <table>
@@ -380,7 +390,7 @@
           <tbody id="monthly-tbody"></tbody>
         </table>
       </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-faint); margin-top:4px; flex-shrink:0;">* เดือนล่าสุดยังไม่จบเดือน (ข้อมูลสะสมถึงวันล่าสุดที่มี) · TR/ตร.ม. ใช้พื้นที่รวมทั้งอาคารจากชีต Location · ค่าไฟประมาณการ @ 4.26 บาท/kWh</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-faint); margin-top:4px; flex-shrink:0;">* เดือนล่าสุดยังไม่จบเดือน (ข้อมูลสะสมถึงวันล่าสุดที่มี) · TR/kW ต่อ ตร.ม. คำนวณแบบ sum/sum (ผลรวม ÷ ผลรวมพื้นที่ใช้งานรายวัน จากชีต Config_DailyAreaUsed) · ค่าไฟประมาณการ @ 4.26 บาท/kWh</div>
     </div>
   </div>
 </div>
@@ -734,8 +744,8 @@ document.getElementById('svgMain').innerHTML = frag.d;
     }
   }
 
-  async function fetchSummary(dateStr){
-    var url = API_URL + '?action=summary' + (dateStr ? ('&date=' + dateStr) : '');
+  async function fetchSummary(dateStr, endDateStr){
+    var url = API_URL + '?action=summary' + (dateStr ? ('&date=' + dateStr) : '') + (endDateStr ? ('&end=' + endDateStr) : '');
     var res = await fetch(url);
     if(!res.ok) throw new Error('HTTP ' + res.status);
     return await res.json();
@@ -797,7 +807,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
     var syncTextInit = document.getElementById('syncText');
     if(syncTextInit) syncTextInit.textContent = 'กำลัง sync...';
     try {
-      var summary = await fetchSummary(currentDateStr);
+      var summary = await fetchSummary(currentDateStr, window.__currentEndDateStr);
       window.__latestPowerSummary = summary;
       var totals = summary.totals || {};
       var averages = summary.averages || {};
@@ -840,11 +850,13 @@ document.getElementById('svgMain').innerHTML = frag.d;
       if(currentPanelKey) renderPanel(currentPanelKey);
 
       var dateStr = summary.date || '';
+      var dateEndStr = summary.dateEnd || null; // [ใหม่ 23/7/69] มีค่าเฉพาะตอนเลือกช่วงวันที่
       var timeStr = latest.time || '';
       var liveDot = document.getElementById('liveDot');
       var syncText = document.getElementById('syncText');
       if(liveDot) liveDot.style.display = dateStr ? 'inline-block' : 'none';
-      if(syncText) syncText.textContent = (dateStr ? ('✅ ' + dateStr + ' ') : '⚠️ ไม่มีข้อมูล ') + timeStr;
+      var dateLabel = dateEndStr ? (dateStr + ' \u2192 ' + dateEndStr) : dateStr;
+      if(syncText) syncText.textContent = (dateStr ? ('✅ ' + dateLabel + ' ') : '⚠️ ไม่มีข้อมูล ') + (dateEndStr ? '' : timeStr);
       var sbFoot = document.getElementById('sbFoot');
       if(sbFoot) sbFoot.textContent = 'Last sync ' + (timeStr || dateStr || '-');
     } catch(err){
@@ -855,26 +867,98 @@ document.getElementById('svgMain').innerHTML = frag.d;
     }
   }
 
+  var dateEndInput = document.getElementById('dateFilterEnd');
+  var monthSelect = document.getElementById('monthFilter');
+  var dayControls = document.getElementById('dayModeControls');
+  var monthControls = document.getElementById('monthModeControls');
+
+  // [แก้ 23/7/69 รอบ 9] รวม logic "รีเฟรชทุกอย่างที่ผูกกับวันที่" ไว้จุดเดียว กันลืมเรียกจุดใดจุดหนึ่ง
+  function refreshAllDateDependent(){
+    window.__currentDateStr = currentDateStr;
+    window.__currentEndDateStr = window.__currentEndDateStr || null;
+    syncNow();
+    if(window.__loadAhuData) window.__loadAhuData();
+    if(window.__loadLocationZone) window.__loadLocationZone();
+  }
+
   document.querySelectorAll('.date-filter [data-range]').forEach(function(b){
     b.addEventListener('click', function(){
       document.querySelectorAll('.date-filter [data-range]').forEach(x=>x.classList.remove('active'));
       b.classList.add('active');
       currentDateStr = b.dataset.range === 'yesterday' ? yesterdayStr() : null;
       dateInput.value = b.dataset.range === 'yesterday' ? yesterdayStr() : todayStr();
-      syncNow();
-      window.__currentDateStr = currentDateStr; // ให้แท็บ AHU floor plan อ่านวันที่เดียวกันได้ (kW/m² + event)
-      if(window.__loadAhuData) window.__loadAhuData();
-      if(window.__loadLocationZone) window.__loadLocationZone();
+      dateEndInput.value = ''; // ปุ่มด่วนวันนี้/เมื่อวาน = วันเดียวเสมอ เคลียร์ช่วงทิ้ง
+      window.__currentEndDateStr = null;
+      refreshAllDateDependent();
     });
   });
   dateInput.addEventListener('change', function(){
     document.querySelectorAll('.date-filter [data-range]').forEach(x=>x.classList.remove('active'));
     currentDateStr = dateInput.value || null;
-    syncNow();
-    window.__currentDateStr = currentDateStr;
-    if(window.__loadAhuData) window.__loadAhuData();
-    if(window.__loadLocationZone) window.__loadLocationZone();
+    // [ใหม่] ถ้าวันเริ่มมากกว่าวันสิ้นสุดที่ตั้งไว้ เคลียร์วันสิ้นสุดทิ้งกันเลือกช่วงกลับด้าน
+    if(dateEndInput.value && dateEndInput.value < dateInput.value) dateEndInput.value = '';
+    window.__currentEndDateStr = dateEndInput.value || null;
+    refreshAllDateDependent();
   });
+  dateEndInput.addEventListener('change', function(){
+    document.querySelectorAll('.date-filter [data-range]').forEach(x=>x.classList.remove('active'));
+    window.__currentEndDateStr = dateEndInput.value || null;
+    refreshAllDateDependent();
+  });
+
+  // [ใหม่ 23/7/69] Toggle รายวัน/รายเดือน — สลับชุดควบคุมที่โชว์ ไม่ได้เปลี่ยนวิธีคำนวณ (ยังยิง summary/locationzone เดิม)
+  document.querySelectorAll('.dm-toggle .dm-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.dm-toggle .dm-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      var isMonth = btn.dataset.mode === 'month';
+      dayControls.style.display = isMonth ? 'none' : 'flex';
+      monthControls.style.display = isMonth ? 'flex' : 'none';
+      if(isMonth && monthSelect.options.length && monthSelect.value){
+        monthSelect.dispatchEvent(new Event('change')); // โหลดช่วงของเดือนที่ select ค้างอยู่ทันที
+      }
+    });
+  });
+
+  // [ใหม่ 23/7/69] เติม dropdown เดือนที่มีข้อมูลจริง จาก endpoint เดียวกับ Monthly Report
+  async function populateMonthFilter(){
+    try {
+      var res = await fetch(API_URL + '?action=monthlytrend&months=12');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      if(!Array.isArray(data) || data.length === 0) return;
+      monthSelect.innerHTML = data.slice().reverse().map(function(d){
+        return '<option value="'+d.month+'">'+monthLabelFull(d.month)+(d.isCurrent?' (ล่าสุด)':'')+'</option>';
+      }).join('');
+    } catch(err){ /* เงียบไว้ — dropdown ว่างแค่นั้น ไม่ต้องพังทั้งหน้า */ }
+  }
+  function monthLabelFull(mk){
+    var th = {'01':'มกราคม','02':'กุมภาพันธ์','03':'มีนาคม','04':'เมษายน','05':'พฤษภาคม','06':'มิถุนายน','07':'กรกฎาคม','08':'สิงหาคม','09':'กันยายน','10':'ตุลาคม','11':'พฤศจิกายน','12':'ธันวาคม'};
+    var parts = mk.split('-'); // 'yyyy-MM' ปี พ.ศ.
+    return (th[parts[1]]||parts[1]) + ' ' + parts[0];
+  }
+  // แปลงเดือน พ.ศ. (จาก backend) -> ช่วงวันที่ ค.ศ. (ที่ frontend ใช้คุยกับ API เสมอ)
+  function monthKeyToCeRange(mk){
+    var parts = mk.split('-');
+    var yBE = Number(parts[0]), m = Number(parts[1]);
+    var yCE = yBE - 543;
+    var first = new Date(yCE, m-1, 1);
+    var last = new Date(yCE, m, 0); // วันสุดท้ายของเดือน
+    var todayCE = new Date();
+    if(last > todayCE) last = todayCE; // กันเลือกเดือนปัจจุบันแล้ววิ่งไปวันในอนาคตที่ยังไม่มีข้อมูล
+    function iso(d){ return d.toISOString().slice(0,10); }
+    return { start: iso(first), end: iso(last) };
+  }
+  monthSelect.addEventListener('change', function(){
+    if(!monthSelect.value) return;
+    var range = monthKeyToCeRange(monthSelect.value);
+    currentDateStr = range.start;
+    dateInput.value = range.start;
+    dateEndInput.value = range.end;
+    window.__currentEndDateStr = range.end;
+    refreshAllDateDependent();
+  });
+  populateMonthFilter();
 
   syncNow();
   syncDailyTrend();
@@ -906,6 +990,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
     if(statusEl) statusEl.textContent = 'กำลัง sync...';
     try {
       var dateParam = window.__currentDateStr ? ('&date=' + window.__currentDateStr) : '';
+      if(window.__currentEndDateStr) dateParam += '&end=' + window.__currentEndDateStr;
       var res = await fetch(API_URL + '?action=locationzone' + dateParam);
       if(!res.ok) throw new Error('HTTP ' + res.status);
       var data = await res.json();
@@ -992,27 +1077,26 @@ document.getElementById('svgMain').innerHTML = frag.d;
       var current = data[n-1];
       var prev = n >= 2 ? data[n-2] : null;
 
-      // KPI cards
+      // KPI tiles
       document.getElementById('mr-kwh').textContent = fmtNum(current.totalKwh);
-      document.getElementById('mr-kwh-sub').textContent = 'สะสมถึงล่าสุด (เดือนยังไม่จบ)';
       document.getElementById('mr-kwtr').textContent = current.avgKwPerTr !== null ? fmtNum(current.avgKwPerTr) : '—';
       document.getElementById('mr-trsqm').textContent = current.trPerSqm !== null ? fmtNum(current.trPerSqm) : '—';
+      document.getElementById('mr-kwsqm').textContent = current.kwPerSqm !== null ? fmtNum(current.kwPerSqm) : '—'; // [ใหม่]
+      document.getElementById('mr-areaused').textContent = current.areaUsedAvgSqm !== null ? fmtNum(current.areaUsedAvgSqm,0) : '—'; // [ใหม่]
       document.getElementById('mr-cost').textContent = current.costEstimateThb !== null ? fmtNum(current.costEstimateThb) : '—';
 
       var trendEl = document.getElementById('mr-trend');
-      var trendSubEl = document.getElementById('mr-trend-sub');
       var bannerEl = document.getElementById('mr-summary');
       if(prev && typeof prev.totalKwh === 'number' && prev.totalKwh !== 0 && typeof current.totalKwh === 'number'){
         var diffPct = ((current.totalKwh - prev.totalKwh) / Math.abs(prev.totalKwh)) * 100;
         var up = diffPct >= 0;
         trendEl.textContent = (up ? '▲ ' : '▼ ') + fmtNum(Math.abs(diffPct),1) + '%';
         trendEl.style.color = up ? '#f2867a' : '#34d399';
-        trendSubEl.textContent = monthLabel(prev.month) + ' ' + fmtNum(prev.totalKwh) + ' kWh';
         bannerEl.textContent = 'เดือนนี้ใช้ไฟสะสม ' + fmtNum(current.totalKwh) + ' kWh ' + (up ? 'สูงกว่า' : 'ต่ำกว่า') +
           'เดือนก่อน (' + fmtNum(prev.totalKwh) + ' kWh) อยู่ ' + fmtNum(Math.abs(diffPct),1) + '%';
         bannerEl.className = 'mr-summary-banner' + (up ? '' : ' down');
       } else {
-        trendEl.textContent = '—'; trendSubEl.textContent = 'ไม่มีข้อมูลเดือนก่อน';
+        trendEl.textContent = '—';
         bannerEl.textContent = 'ยังไม่มีข้อมูลเดือนก่อนหน้าสำหรับเทียบ';
         bannerEl.className = 'mr-summary-banner';
       }
@@ -1029,27 +1113,51 @@ document.getElementById('svgMain').innerHTML = frag.d;
       }).join('');
 
       // กราฟเส้น kW/TR เฉลี่ย
-      var effVals = data.map(function(d){ return d.avgKwPerTr; }).filter(function(v){ return typeof v === 'number'; });
-      var minEff = effVals.length ? Math.min.apply(null, effVals) : 0;
-      var maxEff = effVals.length ? Math.max.apply(null, effVals) : 1;
-      var rangeEff = (maxEff - minEff) || 1;
+      function buildLine(getVal, color, w, h, pad){
+        var vals = data.map(getVal).filter(function(v){ return typeof v === 'number'; });
+        var minV = vals.length ? Math.min.apply(null, vals) : 0;
+        var maxV = vals.length ? Math.max.apply(null, vals) : 1;
+        var range = (maxV - minV) || 1;
+        var stepX = (w - pad*2) / (Math.max(data.length - 1, 1));
+        var pts = [];
+        data.forEach(function(d, i){
+          var v = getVal(d);
+          if(typeof v !== 'number') return;
+          var x = pad + i*stepX;
+          var y = h - pad - ((v - minV) / range) * (h - pad*2);
+          pts.push({x:x, y:y, isCurrent:d.isCurrent});
+        });
+        return pts;
+      }
       var w = 220, h = 56, pad = 6;
-      var stepX = (w - pad*2) / (Math.max(data.length - 1, 1));
-      var pts = [];
-      data.forEach(function(d, i){
-        if(typeof d.avgKwPerTr !== 'number') return;
-        var x = pad + i*stepX;
-        var y = h - pad - ((d.avgKwPerTr - minEff) / rangeEff) * (h - pad*2);
-        pts.push({x:x, y:y, isCurrent:d.isCurrent});
-      });
+      var effPts = buildLine(function(d){ return d.avgKwPerTr; }, '#34d399', w, h, pad);
       var lineSvg = '';
-      if(pts.length >= 2){
-        lineSvg += '<polyline points="'+pts.map(function(p){ return p.x.toFixed(1)+','+p.y.toFixed(1); }).join(' ')+'" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
-        var last = pts[pts.length-1];
+      if(effPts.length >= 2){
+        lineSvg += '<polyline points="'+effPts.map(function(p){ return p.x.toFixed(1)+','+p.y.toFixed(1); }).join(' ')+'" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        var last = effPts[effPts.length-1];
         lineSvg += '<circle cx="'+last.x.toFixed(1)+'" cy="'+last.y.toFixed(1)+'" r="3" fill="'+(last.isCurrent?'#22d3ee':'#34d399')+'"/>';
       }
       document.getElementById('mr-line-chart').innerHTML = lineSvg;
       document.getElementById('mr-line-labels').innerHTML = data.map(function(d){
+        return '<span'+(d.isCurrent?' class="current"':'')+'>'+monthLabel(d.month)+(d.isCurrent?'*':'')+'</span>';
+      }).join('');
+
+      // [ใหม่] กราฟเส้นคู่ TR/m² (ม่วง) + kW/m² (ฟ้า)
+      var trSqmPts = buildLine(function(d){ return d.trPerSqm; }, '#a855f7', w, h, pad);
+      var kwSqmPts = buildLine(function(d){ return d.kwPerSqm; }, '#38bdf8', w, h, pad);
+      var sqmSvg = '';
+      if(trSqmPts.length >= 2){
+        sqmSvg += '<polyline points="'+trSqmPts.map(function(p){ return p.x.toFixed(1)+','+p.y.toFixed(1); }).join(' ')+'" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        var lastTr = trSqmPts[trSqmPts.length-1];
+        sqmSvg += '<circle cx="'+lastTr.x.toFixed(1)+'" cy="'+lastTr.y.toFixed(1)+'" r="3" fill="#a855f7"/>';
+      }
+      if(kwSqmPts.length >= 2){
+        sqmSvg += '<polyline points="'+kwSqmPts.map(function(p){ return p.x.toFixed(1)+','+p.y.toFixed(1); }).join(' ')+'" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 2" stroke-linecap="round" stroke-linejoin="round"/>';
+        var lastKw = kwSqmPts[kwSqmPts.length-1];
+        sqmSvg += '<circle cx="'+lastKw.x.toFixed(1)+'" cy="'+lastKw.y.toFixed(1)+'" r="3" fill="#38bdf8"/>';
+      }
+      document.getElementById('mr-sqm-line-chart').innerHTML = sqmSvg;
+      document.getElementById('mr-sqm-line-labels').innerHTML = data.map(function(d){
         return '<span'+(d.isCurrent?' class="current"':'')+'>'+monthLabel(d.month)+(d.isCurrent?'*':'')+'</span>';
       }).join('');
 
@@ -1072,6 +1180,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
         row('Total (TR)', function(d){ return d.totalTr; }) +
         row('kW/TR เฉลี่ย', function(d){ return d.avgKwPerTr; }) +
         row('TR ต่อ ตร.ม.', function(d){ return d.trPerSqm; }) +
+        row('kW ต่อ ตร.ม.', function(d){ return d.kwPerSqm; }) + // [ใหม่]
         row('ค่าไฟประมาณการ (บาท)', function(d){ return d.costEstimateThb; });
 
       if(statusEl) statusEl.textContent = '✅ sync ล่าสุด · ' + n + ' เดือน';
@@ -1211,6 +1320,22 @@ function hallCard(h){
           }
         }
       });
+
+      // [ใหม่ 23/7/69] KPI tile ด้านบน — คำนวณจากข้อมูลที่ fetch มาแล้ว ไม่ต้องยิง API เพิ่ม
+      var avgKwEl = document.getElementById('ahu-avgkwm2');
+      if(avgKwEl){
+        avgKwEl.textContent = ranked.length ? fmtNum(ranked.reduce(function(s,l){return s+l.kwPerSqm;},0) / ranked.length) : '—';
+      }
+      var eventCountEl = document.getElementById('ahu-event-count');
+      if(eventCountEl){
+        var hallsWithEvent = new Set();
+        ALL_HALLS.forEach(function(h){
+          var loc = hallLocationKey(h.hall);
+          var ev = eventLocations[loc];
+          if(Array.isArray(ev) && ev.length) hallsWithEvent.add(loc);
+        });
+        eventCountEl.textContent = hallsWithEvent.size;
+      }
     } catch(err){
       // เงียบไว้ — ถ้าดึงไม่ได้ การ์ดยังโชว์ roster ปกติ แค่ไม่มี kW/m²/event badge
       console.error('loadAhuData failed:', err.message);
