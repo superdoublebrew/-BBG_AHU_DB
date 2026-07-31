@@ -151,6 +151,29 @@
   .lz-tr-total-lbl{ font-family:'JetBrains Mono',monospace; font-size:clamp(7.5px, 0.55vw, 9.5px); color:#c9a3f7; text-transform:uppercase; }
   .lz-tr-total-val{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(18px, 1.35vw, 24px); color:#a855f7; }
 
+  /* [ใหม่ 31/7/69] ข้อ2 — คอลัมน์ gap ระหว่างผังกับ Location Zone: System status + Alerts + Top zones */
+  .gap-col{ width:170px; flex-shrink:0; display:flex; flex-direction:column; gap:8px; overflow-y:auto; margin-left:8px; }
+  .gc-card{ background:#0d1017; border:1px solid var(--glass-border); border-radius:10px; padding:9px; flex-shrink:0; }
+  .gc-card.alert{ border-color:rgba(242,134,122,.3); }
+  .gc-card .t{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:9.5px; color:#fff; margin-bottom:7px; }
+  .gc-stat-row{ display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid rgba(255,255,255,.05); font-family:'JetBrains Mono',monospace; }
+  .gc-stat-row:last-child{ border-bottom:none; }
+  .gc-stat-row .grp{ font-size:8px; color:var(--text-faint); }
+  .gc-stat-row .cnt{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11px; }
+  .gc-stat-row .cnt .on{ color:var(--green); }
+  .gc-stat-row .cnt .off{ color:var(--text-faint); }
+  .gc-alert-row{ background:rgba(242,134,122,.08); border-left:2px solid var(--hot); border-radius:0 5px 5px 0; padding:5px 6px; margin-bottom:5px; font-family:'JetBrains Mono',monospace; }
+  .gc-alert-row:last-child{ margin-bottom:0; }
+  .gc-alert-row.ok{ background:rgba(52,211,153,.08); border-left-color:var(--green); }
+  .gc-alert-row .name{ color:#fff; font-weight:700; font-size:8px; }
+  .gc-alert-row .msg{ color:var(--hot); font-size:7px; margin-top:2px; }
+  .gc-alert-row.ok .msg{ color:var(--green); }
+  .gc-trend-row{ margin-bottom:7px; font-family:'JetBrains Mono',monospace; }
+  .gc-trend-row:last-child{ margin-bottom:0; }
+  .gc-trend-row .lbl{ display:flex; justify-content:space-between; font-size:7.5px; color:var(--text-faint); margin-bottom:3px; }
+  .gc-trend-bar{ height:5px; background:rgba(255,255,255,.06); border-radius:3px; overflow:hidden; }
+  .gc-trend-bar i{ display:block; height:100%; border-radius:3px; }
+
   /* [แก้ 31/7/69] ข้อ7 — เปลี่ยนจาก overlay มุมขวา เป็น popup กลางจอ + backdrop มืดลง
      ไม่ต้องเผื่อ gutter อีกต่อไป เพราะ backdrop dim ผังไปเลยตอนเปิด ไม่ต้องกังวลเรื่องบังผัง */
   .diagram-col{ flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; }
@@ -336,6 +359,20 @@
           <div class="hz" data-key="support" style="left:72.88%; top:73.41%; width:7.54%; height:7.97%;"></div>
           <div class="hz" data-key="sale" style="left:81.57%; top:73.41%; width:7.54%; height:7.97%;"></div>
           <div class="hz" data-key="exhibition" style="left:90.37%; top:73.41%; width:7.54%; height:7.97%;"></div>
+        </div>
+      </div>
+      <div class="gap-col">
+        <div class="gc-card alert" id="gcAlerts">
+          <div class="t">Alerts วันนี้</div>
+          <div id="gcAlertsBody"><div class="gc-alert-row ok"><div class="name">กำลังโหลด...</div></div></div>
+        </div>
+        <div class="gc-card" id="gcStatus">
+          <div class="t">System status</div>
+          <div id="gcStatusBody"></div>
+        </div>
+        <div class="gc-card" id="gcTopZones">
+          <div class="t">Top zone · kW/m²</div>
+          <div id="gcTopZonesBody"></div>
         </div>
       </div>
       <div class="loczone-panel">
@@ -584,7 +621,10 @@ function openPanel(key){
   document.querySelectorAll('.hz').forEach(h=>h.classList.remove('active'));
   var hz = document.querySelector('.hz[data-key="'+key+'"]');
   if(hz) hz.classList.add('active');
+  var def = PANEL_DEFS[key];
   renderPanel(key);
+  // [ใหม่ 31/7/69] ข้อ1 — คลิกกล่องโซน (front/back/eh105/support/sale/exhibition) sync Location Zone panel ให้เปิดตรงโซนนั้น
+  if(def && def.zoneName && window.__syncLzAccordion) window.__syncLzAccordion(def.zoneName);
   document.getElementById('popupBackdrop').classList.add('open');
   document.getElementById('popupModal').classList.add('open');
 }
@@ -784,6 +824,15 @@ document.getElementById('svgMain').innerHTML = frag.d;
   }
   // [แก้ 23/7/69] ป้ายอุณหภูมิ 2 หน่วย (F เด่น, C รอง) + 3 สถานะ ร้อน/ปกติ/หนาว ตาม threshold จาก Config
   // [แก้ 31/7/69] ข้อ7 — ไม่มี bg rect แล้ว สถานะร้อน/ปกติ/หนาว แสดงผ่าน "สีตัวเลข" แทนสีพื้นหลัง
+  // [ใหม่ 31/7/69] ข้อ2 — ชื่อเรียกมิตรของเส้นอุณหภูมิแต่ละเส้น สำหรับการ์ด Alerts
+  var TEMP_LABELS = {
+    'temp-condToCT': 'Condenser → CT',
+    'temp-cdpToCond': 'CDP → Condenser',
+    'temp-evapToHsup': 'Evaporator → Hsup',
+    'temp-pchpToEvap': 'PCHP → Evaporator'
+  };
+  window.__tempAlerts = window.__tempAlerts || {};
+
   function setTemp(idPrefix, cVal, fVal, hotThresholdF, coldBandF){
     var mainEl = document.getElementById(idPrefix);
     var subEl = document.getElementById(idPrefix+'-sub');
@@ -794,6 +843,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       mainEl.textContent = '—'; subEl.textContent = '—';
       mainEl.setAttribute('fill', origColor); subEl.setAttribute('fill', 'rgba(255,255,255,.5)');
       if(lineEl) lineEl.classList.remove('flow-line'); // ไม่มีข้อมูล = เส้นนิ่ง
+      window.__tempAlerts[idPrefix] = { label: TEMP_LABELS[idPrefix]||idPrefix, status:'nodata', text:'ไม่มีข้อมูล' };
       return;
     }
     var band = (typeof coldBandF==='number') ? coldBandF : 5;
@@ -801,6 +851,8 @@ document.getElementById('svgMain').innerHTML = frag.d;
     var status = 'normal';
     if(fVal > hotThresholdF) status = 'hot';
     else if(fVal < coldThreshold) status = 'cold';
+    window.__tempAlerts[idPrefix] = { label: TEMP_LABELS[idPrefix]||idPrefix, status:status,
+      text: (status==='hot' ? ('ร้อนไป '+fmtNum(fVal,1)+'°F') : status==='cold' ? ('หนาวไป '+fmtNum(fVal,1)+'°F') : ('ปกติ '+fmtNum(fVal,1)+'°F')) };
 
     mainEl.textContent = fmtNum(fVal,1) + '°F';
     subEl.textContent = '(' + fmtNum(cVal,1) + '°C)' + (status==='hot' ? ' ร้อนไป' : status==='cold' ? ' หนาวไป' : '');
@@ -816,6 +868,65 @@ document.getElementById('svgMain').innerHTML = frag.d;
       mainEl.setAttribute('fill', origColor); subEl.setAttribute('fill', 'rgba(255,255,255,.5)');
     }
   }
+
+  // [ใหม่ 31/7/69] ข้อ2 — การ์ด Alerts: ดึงสถานะเส้นอุณหภูมิ 4 เส้น โชว์เฉพาะจุดที่ร้อน/หนาวเกินเกณฑ์
+  function renderAlerts(){
+    var body = document.getElementById('gcAlertsBody');
+    if(!body) return;
+    var order = ['temp-condToCT','temp-cdpToCond','temp-evapToHsup','temp-pchpToEvap'];
+    var abnormal = [];
+    order.forEach(function(k){
+      var a = window.__tempAlerts[k];
+      if(a && (a.status === 'hot' || a.status === 'cold')) abnormal.push(a);
+    });
+    if(abnormal.length === 0){
+      body.innerHTML = '<div class="gc-alert-row ok"><div class="name">ทุกจุดปกติ</div><div class="msg">ไม่มีจุดร้อน/หนาวเกินเกณฑ์</div></div>';
+    } else {
+      body.innerHTML = abnormal.map(function(a){
+        return '<div class="gc-alert-row"><div class="name">'+a.label+'</div><div class="msg">'+a.text+'</div></div>';
+      }).join('');
+    }
+  }
+
+  // [ใหม่ 31/7/69] ข้อ2 — การ์ด System status: นับจำนวนเครื่อง ON (มีค่า)/ทั้งหมด แยกตามกลุ่ม
+  function renderSystemStatus(perUnit){
+    var body = document.getElementById('gcStatusBody');
+    if(!body) return;
+    perUnit = perUnit || {};
+    function count(ids, groupObj){
+      groupObj = groupObj || {};
+      var on = 0;
+      ids.forEach(function(id){ if(groupObj[id] !== undefined && groupObj[id] !== null) on++; });
+      return { on: on, total: ids.length };
+    }
+    var rows = [
+      { label:'Cooling Tower', c: count(CT_IDS, perUnit.CT) },
+      { label:'Condenser Pump', c: count(CDP_IDS, perUnit.CDP) },
+      { label:'Primary Pump', c: count(PCHP_IDS, perUnit.PCHP) },
+      { label:'SCHP I', c: count(SCHP1_IDS, perUnit.SCHP) },
+      { label:'SCHP II', c: count(SCHP2_IDS, perUnit.SCHP) }
+    ];
+    body.innerHTML = rows.map(function(r){
+      return '<div class="gc-stat-row"><span class="grp">'+r.label+'</span><span class="cnt"><span class="on">'+r.c.on+'</span>/<span class="off">'+r.c.total+'</span></span></div>';
+    }).join('');
+  }
+
+  // [ใหม่ 31/7/69] ข้อ2 — การ์ด Top zone: เรียง kW/m² มากสุด 4 อันดับแรก จาก bySchpZone (ข้อมูลวันนี้ ไม่ใช่ trend ย้อนหลัง
+  // เพราะ backend ยังไม่มี history ระดับโซน — ถ้าต้องการ trend จริงต้องเพิ่ม endpoint ใหม่)
+  function renderTopZones(){
+    var body = document.getElementById('gcTopZonesBody');
+    if(!body) return;
+    var data = (window.__bySchpZoneData || []).filter(function(z){ return typeof z.kwPerSqm === 'number'; });
+    if(data.length === 0){ body.innerHTML = '<div style="font-family:\'JetBrains Mono\',monospace;font-size:8px;color:var(--text-faint);">ไม่มีข้อมูล</div>'; return; }
+    data = data.slice().sort(function(a,b){ return b.kwPerSqm - a.kwPerSqm; }).slice(0,4);
+    var max = data[0].kwPerSqm || 1;
+    var colors = ['#f2867a','#f2b84f','#34d399','#38bdf8'];
+    body.innerHTML = data.map(function(z, i){
+      var pct = max ? Math.round((z.kwPerSqm/max)*100) : 0;
+      return '<div class="gc-trend-row"><div class="lbl"><span>'+z.schpZone+'</span><span>'+fmtNum(z.kwPerSqm,3)+'</span></div><div class="gc-trend-bar"><i style="width:'+pct+'%;background:'+colors[i%colors.length]+';"></i></div></div>';
+    }).join('');
+  }
+  window.__renderTopZones = renderTopZones; // [ใหม่ 31/7/69] ข้อ2 — expose ให้ loadLocationZone() (คนละ IIFE) เรียกใช้ได้
 
   async function fetchSummary(dateStr, endDateStr){
     var url = API_URL + '?action=summary' + (dateStr ? ('&date=' + dateStr) : '') + (endDateStr ? ('&end=' + endDateStr) : '');
@@ -926,6 +1037,8 @@ document.getElementById('svgMain').innerHTML = frag.d;
       setTemp('temp-cdpToCond', temps.cdpToCond, temps.cdpToCond_F, th.cdpToCond_hotF, th.coldBandF);
       setTemp('temp-evapToHsup', temps.evapToHsup, temps.evapToHsup_F, th.evapToHsup_hotF, th.coldBandF);
       setTemp('temp-pchpToEvap', temps.pchpToEvap, temps.pchpToEvap_F, th.pchpToEvap_hotF, th.coldBandF);
+      renderAlerts(); // [ใหม่ 31/7/69] ข้อ2
+      renderSystemStatus(perUnit); // [ใหม่ 31/7/69] ข้อ2
 
       // [ใหม่] ถ้า side panel เปิดอยู่ ให้ re-render ด้วยข้อมูลใหม่ (ไม่ต้องปิดแล้วเปิดใหม่)
       if(currentPanelKey) renderPanel(currentPanelKey);
@@ -1067,6 +1180,25 @@ document.getElementById('svgMain').innerHTML = frag.d;
     if(body) body.classList.toggle('collapsed');
   };
 
+  // [ใหม่ 31/7/69] ข้อ1 — คลิกกล่องโซนในผัง (front/back/eh105/support/sale/exhibition) แล้ว sync
+  // ให้ Location Zone panel เปิดตรงโซนนั้นอัตโนมัติ + เลื่อนไปให้เห็น (แทนที่จะค้างที่โซนหนักสุดตลอด)
+  window.__syncLzAccordion = function(zoneName){
+    var accId = zoneName.replace(/[^a-zA-Z0-9]/g,'');
+    var container = document.getElementById('loczoneAccordion');
+    if(!container) return;
+    container.querySelectorAll('.lz-acc-head.has-data').forEach(function(head){
+      var body = head.nextElementSibling;
+      var isTarget = body && body.id === 'lzbody-'+accId;
+      if(body) body.classList.toggle('collapsed', !isTarget);
+      var nameEl = head.querySelector('.name');
+      if(nameEl) nameEl.textContent = (isTarget?'▾ ':'▸ ') + nameEl.textContent.replace(/^[▾▸]\s*/,'');
+    });
+    var targetBody = document.getElementById('lzbody-'+accId);
+    if(targetBody && targetBody.previousElementSibling){
+      targetBody.previousElementSibling.scrollIntoView({block:'center', behavior:'smooth'});
+    }
+  };
+
   async function loadLocationZone(){
     if(statusEl) statusEl.textContent = 'กำลัง sync...';
     try {
@@ -1077,6 +1209,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       var data = await res.json();
       var bySchpZone = Array.isArray(data.bySchpZone) ? data.bySchpZone : [];
       window.__bySchpZoneData = bySchpZone; // [ใหม่ 31/7/69] ข้อ9 — expose ให้ popup renderer (renderPanel) ใช้ได้
+      if(window.__renderTopZones) window.__renderTopZones(); // [ใหม่ 31/7/69] ข้อ2 (คนละ IIFE จึงเรียกผ่าน window)
       var byLocationZone = Array.isArray(data.byLocationZone) ? data.byLocationZone : [];
       var missingZones = Array.isArray(data.missingAreaZones) ? data.missingAreaZones : [];
 
