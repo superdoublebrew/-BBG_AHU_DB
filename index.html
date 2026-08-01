@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BITEC Chiller &amp; AHU Dashboard</title>
+<title>BITEC Chiller &amp; AHU Management Plant</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -43,8 +43,10 @@
   .sidebar.collapsed{ width:var(--sidebar-w-collapsed); }
   .sb-head{ display:flex; align-items:center; gap:8px; padding:12px; border-bottom:1px solid rgba(255,255,255,0.06); min-height:48px; }
   .sb-mark{ width:26px; height:26px; flex-shrink:0; border-radius:8px; background:linear-gradient(135deg,var(--p1-1),var(--p2-1)); display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11px; color:#05070d; }
-  .sb-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11.5px; white-space:nowrap; overflow:hidden; }
-  .sidebar.collapsed .sb-title{ display:none; }
+  .sb-title-wrap{ min-width:0; overflow:hidden; }
+  .sb-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sb-version{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:8.5px; color:var(--p2-1); margin-top:1px; }
+  .sidebar.collapsed .sb-title-wrap{ display:none; }
   .sb-toggle{ position:absolute; top:16px; right:-11px; width:22px; height:22px; border-radius:50%; background:#11151f; border:1px solid rgba(255,255,255,.14); color:var(--text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:10px; z-index:5; }
   .sidebar.collapsed .sb-toggle{ transform:rotate(180deg); }
   .sb-nav{ padding:8px 6px; display:flex; flex-direction:column; gap:3px; }
@@ -164,7 +166,7 @@
   /* [ใหม่ 31/7/69] ข้อ2 — คอลัมน์ gap ระหว่างผังกับ Location Zone: System status + Alerts + Top zones */
   .gap-col{ width:170px; flex-shrink:0; display:flex; flex-direction:column; gap:8px; overflow-y:auto; margin-left:8px; }
   .gc-card{ background:#0d1017; border:1px solid var(--glass-border); border-radius:10px; padding:9px; flex-shrink:0; }
-  .gc-card.alert{ border-color:rgba(242,134,122,.3); }
+  .gc-card.alert{ border-color:rgba(251,146,60,.3); }
   .gc-card .t{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:9.5px; color:#fff; margin-bottom:7px; }
   .gc-stat-row{ display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid rgba(255,255,255,.05); font-family:'JetBrains Mono',monospace; }
   .gc-stat-row:last-child{ border-bottom:none; }
@@ -172,11 +174,11 @@
   .gc-stat-row .cnt{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:11px; }
   .gc-stat-row .cnt .on{ color:var(--green); }
   .gc-stat-row .cnt .off{ color:var(--text-faint); }
-  .gc-alert-row{ background:rgba(242,134,122,.08); border-left:2px solid var(--hot); border-radius:0 5px 5px 0; padding:5px 6px; margin-bottom:5px; font-family:'JetBrains Mono',monospace; }
+  .gc-alert-row{ background:rgba(251,146,60,.08); border-left:2px solid #fb923c; border-radius:0 5px 5px 0; padding:5px 6px; margin-bottom:5px; font-family:'JetBrains Mono',monospace; }
   .gc-alert-row:last-child{ margin-bottom:0; }
   .gc-alert-row.ok{ background:rgba(52,211,153,.08); border-left-color:var(--green); }
   .gc-alert-row .name{ color:#fff; font-weight:700; font-size:8px; }
-  .gc-alert-row .msg{ color:var(--hot); font-size:7px; margin-top:2px; }
+  .gc-alert-row .msg{ color:#fb923c; font-size:7px; margin-top:2px; }
   .gc-alert-row.ok .msg{ color:var(--green); }
   .gc-trend-row{ margin-bottom:7px; font-family:'JetBrains Mono',monospace; }
   .gc-trend-row:last-child{ margin-bottom:0; }
@@ -191,7 +193,7 @@
   .popup-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0); pointer-events:none;
     transition:background .22s ease, backdrop-filter .22s ease; z-index:40; }
   .popup-backdrop.open{ background:rgba(0,0,0,.6); backdrop-filter:blur(2px); pointer-events:auto; }
-  .popup-modal{ position:absolute; top:50%; left:50%; width:320px; background:#0d1017; border:1px solid var(--glass-border);
+  .popup-modal{ position:absolute; top:50%; left:50%; width:360px; background:#0d1017; border:1px solid var(--glass-border);
     border-radius:16px; padding:20px; opacity:0; transform:translate(-50%,-46%) scale(.94);
     transition:opacity .2s cubic-bezier(.2,.8,.3,1), transform .2s cubic-bezier(.2,.8,.3,1), width .2s ease;
     pointer-events:none; z-index:41; box-shadow:0 24px 60px -14px rgba(0,0,0,.65); display:flex; gap:20px;
@@ -214,18 +216,21 @@
   .pm-close{ cursor:pointer; color:var(--text-faint); font-size:14px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:50%; flex-shrink:0; }
   .pm-close:hover{ background:rgba(255,255,255,.06); }
   .pm-sec-t{ font-family:'Inter',sans-serif; font-weight:600; font-size:11px; color:var(--text-muted); margin-bottom:6px; flex-shrink:0; }
-  .pm-head-row{ display:flex; justify-content:space-between; padding:0 0 6px; font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; letter-spacing:.3px; color:var(--text-label); text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,.14); margin-bottom:2px; flex-shrink:0; }
+  .pm-head-row{ display:flex; align-items:center; padding:0 0 6px; font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; letter-spacing:.3px; color:var(--text-label); text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,.14); margin-bottom:2px; flex-shrink:0; gap:8px; }
+  .pm-head-row .hc-unit{ flex:1; min-width:0; }
+  .pm-head-row .hc-status{ width:34px; flex-shrink:0; text-align:center; }
+  .pm-head-row .hc-num{ width:52px; flex-shrink:0; text-align:right; }
   .pm-unit-rows{ flex:1; min-height:0; overflow-y:auto; }
-  .pm-unit-row{ display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.04); font-family:'Inter',sans-serif; font-size:12px; gap:8px; }
+  .pm-unit-row{ display:flex; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.04); font-family:'Inter',sans-serif; font-size:12px; gap:8px; }
   .pm-unit-row:last-child{ border-bottom:none; }
   .pm-unit-row.row-hit{ background:rgba(250,199,117,0.14); border-radius:6px; }
   .pm-unit-row .id{ color:#fff; font-weight:500; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .pm-unit-row .r{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .pm-unit-row .c-status{ width:34px; flex-shrink:0; display:flex; justify-content:center; }
   .pm-pill{ font-family:'JetBrains Mono',monospace; font-size:7.5px; font-weight:700; padding:2px 7px; border-radius:20px; flex-shrink:0; }
   .pm-pill.on{ background:rgba(52,211,153,.15); color:var(--green); }
   .pm-pill.off{ background:rgba(255,255,255,.06); color:var(--text-faint); }
-  .pm-unit-row .v{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12.5px; color:#fff; white-space:nowrap; }
-  .pm-unit-row .v .sub{ font-family:'JetBrains Mono',monospace; font-weight:600; font-size:9px; color:var(--text-faint); }
+  .pm-unit-row .c-num{ width:52px; flex-shrink:0; text-align:right; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12.5px; color:#fff; white-space:nowrap; }
+  .pm-unit-row .c-num.dim{ color:var(--text-faint); font-weight:600; font-size:10px; }
 
   .ahu-shell{ flex:1; min-height:0; display:flex; gap:10px; padding:0 16px 14px; }
   .ahu-side{ width:170px; flex-shrink:0; display:flex; flex-direction:column; gap:8px; }
@@ -285,7 +290,7 @@
 <body>
 
 <div class="sidebar" id="sidebar">
-  <div class="sb-head"><div class="sb-mark">B</div><div class="sb-title">BITEC Plant</div></div>
+  <div class="sb-head"><div class="sb-mark">B</div><div class="sb-title-wrap"><div class="sb-title">BITEC Chiller &amp; AHU Management Plant</div><div class="sb-version">V1.1</div></div></div>
   <div class="sb-toggle" id="sbToggle">‹</div>
   <div class="sb-nav">
     <div class="side-tab sb-item active" data-tab="plant"><div class="sb-icon"></div><div class="sb-label">Chiller circuit</div></div>
@@ -350,9 +355,9 @@
     <div class="circuit-area glass" style="flex-direction:row;">
       <div class="diagram-col">
         <div class="circuit-legend">
-          <div class="legend-item"><span class="legend-swatch" style="background:var(--hot);"></span>Condenser Water Loop (น้ำร้อน)</div>
-          <div class="legend-item"><span class="legend-swatch" style="background:var(--cold);"></span>Chilled Water Supply (น้ำเย็น)</div>
-          <div class="legend-item"><span class="legend-swatch" style="background:var(--return);"></span>Chilled Water Return</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--hot);"></span>Condenser Water Loop</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--cold);"></span>Chill Evaporator Water Supply Loop</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:var(--return);"></span>Chilled Water Return Loop</div>
           <div class="legend-item" style="margin-left:auto;">คลิกกล่องเพื่อดูรายเครื่อง · พิมพ์ค้นหาด้านบนเพื่อไฮไลต์เครื่อง</div>
         </div>
         <div class="svg-wrap">
@@ -590,13 +595,14 @@ function renderPanel(key){
     var chlPct = perUnit.CHL_PCT || {};
     onCount = def.ids.filter(function(id){ return chlSums[id] !== undefined && chlSums[id] !== null; }).length;
     document.getElementById('pmUnitSecT').textContent = def.ids.length+' หน่วย · sum สะสมของวัน';
-    document.getElementById('pmHeadRow').innerHTML = '<span>Unit</span><span>kW / TR / %</span>';
+    document.getElementById('pmHeadRow').innerHTML = '<span class="hc-unit">Unit</span><span class="hc-status">สถานะ</span><span class="hc-num">kW</span><span class="hc-num">TR</span><span class="hc-num">%</span>';
     document.getElementById('pmUnitRows').innerHTML = def.ids.map(function(id){
       var v = chlSums[id], tr = chlTr[id], pct = chlPct[id];
       var hasVal = (v !== undefined && v !== null);
-      return '<div class="pm-unit-row" data-unit="'+id+'"><span class="id">'+id+'</span><span class="r">'+statusPill_(hasVal)+
-        '<span class="v">'+(hasVal?fmtNum(v,1):'—')+'<span class="sub"> kW'+
-        (tr!==undefined&&tr!==null?(' · '+fmtNum(tr,1)+' TR'):'')+(pct!==undefined&&pct!==null?(' · '+fmtNum(pct,1)+'%'):'')+'</span></span></span></div>';
+      return '<div class="pm-unit-row" data-unit="'+id+'"><span class="id">'+id+'</span><span class="c-status">'+statusPill_(hasVal)+'</span>'+
+        '<span class="c-num">'+(hasVal?fmtNum(v,1):'—')+'</span>'+
+        '<span class="c-num dim">'+((tr!==undefined&&tr!==null)?fmtNum(tr,1):'—')+'</span>'+
+        '<span class="c-num dim">'+((pct!==undefined&&pct!==null)?(fmtNum(pct,1)+'%'):'—')+'</span></div>';
     }).join('');
   } else {
     var groupObj = (perUnit[def.group]) || {};
@@ -604,12 +610,12 @@ function renderPanel(key){
     onCount = def.ids.filter(function(id){ return groupObj[id] !== undefined && groupObj[id] !== null; }).length;
     document.getElementById('pmUnitSecT').textContent = def.ids.length+' หน่วย · average ของวัน' +
       ((typeof totalVal==='number') ? (' · รวม '+fmtNum(totalVal,1)+' kW') : '');
-    document.getElementById('pmHeadRow').innerHTML = '<span>Unit</span><span>kW avg</span>';
+    document.getElementById('pmHeadRow').innerHTML = '<span class="hc-unit">Unit</span><span class="hc-status">สถานะ</span><span class="hc-num">kW avg</span>';
     document.getElementById('pmUnitRows').innerHTML = def.ids.map(function(id){
       var v = groupObj[id];
       var hasVal = (v !== undefined && v !== null);
-      return '<div class="pm-unit-row" data-unit="'+id+'"><span class="id">'+id+'</span><span class="r">'+statusPill_(hasVal)+
-        '<span class="v">'+(hasVal?fmtNum(v,1):'—')+'</span></span></div>';
+      return '<div class="pm-unit-row" data-unit="'+id+'"><span class="id">'+id+'</span><span class="c-status">'+statusPill_(hasVal)+'</span>'+
+        '<span class="c-num">'+(hasVal?fmtNum(v,1):'—')+'</span></div>';
     }).join('');
   }
 
@@ -875,12 +881,11 @@ document.getElementById('svgMain').innerHTML = frag.d;
     // [แก้ 23/7/69] เส้นท่อ "หยุดนิ่ง" ตามปกติ วิ่ง (flow-line) เฉพาะตอนร้อน/หนาวเกิน threshold เท่านั้น
     if(lineEl) lineEl.classList.toggle('flow-line', status === 'hot' || status === 'cold');
 
-    if(status === 'hot'){
-      mainEl.setAttribute('fill', '#f2867a'); subEl.setAttribute('fill', '#f2867a');
-    } else if(status === 'cold'){
-      mainEl.setAttribute('fill', '#7dd3fc'); subEl.setAttribute('fill', '#7dd3fc');
+    // [แก้ 31/7/69] req5 Option A — ปกติ=เขียว, ผิดปกติ(ร้อนหรือหนาว)=ส้ม ทั้งคู่ (เดิมแยกแดง/ฟ้า)
+    if(status === 'hot' || status === 'cold'){
+      mainEl.setAttribute('fill', '#fb923c'); subEl.setAttribute('fill', '#fb923c');
     } else {
-      mainEl.setAttribute('fill', origColor); subEl.setAttribute('fill', 'rgba(255,255,255,.5)');
+      mainEl.setAttribute('fill', '#34d399'); subEl.setAttribute('fill', 'rgba(255,255,255,.5)');
     }
   }
 
@@ -1049,10 +1054,10 @@ document.getElementById('svgMain').innerHTML = frag.d;
       // [แก้ 23/7/69] ป้ายอุณหภูมิน้ำ 4 เส้น — โชว์ 2 หน่วย + เช็ค threshold ร้อน/หนาว จาก Config
       var temps = summary.temps || {};
       var th = summary.tempThresholds || {};
-      setTemp('temp-condToCT', temps.condToCT, temps.condToCT_F, th.condToCT_hotF, th.coldBandF);
-      setTemp('temp-cdpToCond', temps.cdpToCond, temps.cdpToCond_F, th.cdpToCond_hotF, th.coldBandF);
-      setTemp('temp-evapToHsup', temps.evapToHsup, temps.evapToHsup_F, th.evapToHsup_hotF, th.coldBandF);
-      setTemp('temp-pchpToEvap', temps.pchpToEvap, temps.pchpToEvap_F, th.pchpToEvap_hotF, th.coldBandF);
+      setTemp('temp-condToCT', temps.condToCT, temps.condToCT_F, th.condToCT_hotF, th.condToCT_coldBandF);
+      setTemp('temp-cdpToCond', temps.cdpToCond, temps.cdpToCond_F, th.cdpToCond_hotF, th.cdpToCond_coldBandF);
+      setTemp('temp-evapToHsup', temps.evapToHsup, temps.evapToHsup_F, th.evapToHsup_hotF, th.evapToHsup_coldBandF);
+      setTemp('temp-pchpToEvap', temps.pchpToEvap, temps.pchpToEvap_F, th.pchpToEvap_hotF, th.pchpToEvap_coldBandF);
       renderAlerts(); // [ใหม่ 31/7/69] ข้อ2
       renderSystemStatus(perUnit); // [ใหม่ 31/7/69] ข้อ2
 
@@ -1536,15 +1541,15 @@ function hallCard(h){
         var kwEl = document.getElementById('hckw-'+loc);
         var cardEl = document.getElementById('hc-'+loc);
         var kwPerSqm = kwByLoc[loc];
+        // [แก้ 31/7/69] req8 — ใช้หลักเดียวกับ Location Zone panel: โซนไม่ active (ไม่มี kwPerSqm เพราะไม่มี SCHP รันวันนั้น) ซ่อนการ์ดไปเลย ไม่ใช่แค่จาง
+        if(cardEl) cardEl.style.display = (typeof kwPerSqm === 'number') ? '' : 'none';
         if(kwEl){
           if(typeof kwPerSqm === 'number'){
             kwEl.textContent = fmtNum(kwPerSqm);
             kwEl.style.color = colorForRank_(rankIndex[loc], ranked.length);
-            if(cardEl) cardEl.classList.remove('no-area');
           } else {
             kwEl.textContent = '—';
             kwEl.style.color = 'var(--text-faint)';
-            if(cardEl) cardEl.classList.add('no-area');
           }
         }
         var evEl = document.getElementById('hcevent-'+loc);
