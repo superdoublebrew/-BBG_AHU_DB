@@ -437,7 +437,7 @@
       <div class="kpi-tile c-chiller"><div class="lbl">Total AHU</div><div class="val"><span id="ahu-total-count">—</span></div></div>
       <div class="kpi-tile c-pump"><div class="lbl">Phase 1</div><div class="val"><span id="ahu-p1-count">—</span><span class="unit">หน่วย</span></div></div>
       <div class="kpi-tile c-plant"><div class="lbl">Phase 2</div><div class="val"><span id="ahu-p2-count">—</span><span class="unit">หน่วย</span></div></div>
-      <div class="kpi-tile c-outdoor"><div class="lbl">kW/m² เฉลี่ย</div><div class="val"><span id="ahu-avgkwm2">—</span></div></div>
+      <div class="kpi-tile c-outdoor"><div class="lbl">kWh/m² รวมอาคาร</div><div class="val"><span id="ahu-avgkwm2">—</span></div></div>
       <div class="kpi-tile c-tower"><div class="lbl">Event วันนี้</div><div class="val"><span id="ahu-event-count">—</span><span class="unit">hall</span></div></div>
     </div>
     <div class="ahu-shell">
@@ -1453,7 +1453,7 @@ function hallCard(h){
         '<span class="hc-event-badge" id="hcevent-'+loc+'" style="display:none;">EVENT</span>'+
       '</div>'+
     '</div>'+
-    '<div class="hc-kwm2"><span class="val" id="hckw-'+loc+'" style="color:var(--text-faint);">—</span><span class="unit">(kW/m²)</span></div>'+
+    '<div class="hc-kwm2"><span class="val" id="hckw-'+loc+'" style="color:var(--text-faint);">—</span><span class="unit">(kWh)</span></div>'+
     '<div class="hc-count">'+h.ahus.length+' หน่วย</div><div class="pill-row">'+pills+'</div></div>';
 }
 
@@ -1529,10 +1529,10 @@ function hallCard(h){
       var byLocation = Array.isArray(zoneData.byLocation) ? zoneData.byLocation : [];
       var eventLocations = eventData.locations || {};
 
-      var kwByLoc = {};
-      byLocation.forEach(function(l){ kwByLoc[l.location] = l.kwPerSqm; });
-      var ranked = byLocation.filter(function(l){ return typeof l.kwPerSqm === 'number'; })
-        .sort(function(a,b){ return b.kwPerSqm - a.kwPerSqm; });
+      var kwhByLoc = {};
+      byLocation.forEach(function(l){ kwhByLoc[l.location] = l.kwh; });
+      var ranked = byLocation.filter(function(l){ return typeof l.kwh === 'number'; })
+        .sort(function(a,b){ return b.kwh - a.kwh; });
       var rankIndex = {};
       ranked.forEach(function(l, i){ rankIndex[l.location] = i; });
 
@@ -1540,12 +1540,12 @@ function hallCard(h){
         var loc = hallLocationKey(h.hall);
         var kwEl = document.getElementById('hckw-'+loc);
         var cardEl = document.getElementById('hc-'+loc);
-        var kwPerSqm = kwByLoc[loc];
-        // [แก้ 31/7/69] req8 — ใช้หลักเดียวกับ Location Zone panel: โซนไม่ active (ไม่มี kwPerSqm เพราะไม่มี SCHP รันวันนั้น) ซ่อนการ์ดไปเลย ไม่ใช่แค่จาง
-        if(cardEl) cardEl.style.display = (typeof kwPerSqm === 'number') ? '' : 'none';
+        var kwh = kwhByLoc[loc];
+        // [แก้ 31/7/69] req8 — ใช้หลักเดียวกับ Location Zone panel: โซนไม่ active (ไม่มี kwh เพราะไม่มี SCHP รันวันนั้น) ซ่อนการ์ดไปเลย ไม่ใช่แค่จาง
+        if(cardEl) cardEl.style.display = (typeof kwh === 'number') ? '' : 'none';
         if(kwEl){
-          if(typeof kwPerSqm === 'number'){
-            kwEl.textContent = fmtNum(kwPerSqm);
+          if(typeof kwh === 'number'){
+            kwEl.textContent = fmtNum(kwh,1);
             kwEl.style.color = colorForRank_(rankIndex[loc], ranked.length);
           } else {
             kwEl.textContent = '—';
@@ -1565,10 +1565,10 @@ function hallCard(h){
         }
       });
 
-      // [ใหม่ 23/7/69] KPI tile ด้านบน — คำนวณจากข้อมูลที่ fetch มาแล้ว ไม่ต้องยิง API เพิ่ม
+      // [แก้ 31/7/69] KPI tile ด้านบน — ใช้ kwhPerSqmTotal (ค่าคงที่รวมทั้งอาคาร) ตรงๆ จาก backend ไม่ต้องเฉลี่ยเอง
       var avgKwEl = document.getElementById('ahu-avgkwm2');
       if(avgKwEl){
-        avgKwEl.textContent = ranked.length ? fmtNum(ranked.reduce(function(s,l){return s+l.kwPerSqm;},0) / ranked.length) : '—';
+        avgKwEl.textContent = (typeof zoneData.kwhPerSqmTotal === 'number') ? fmtNum(zoneData.kwhPerSqmTotal,3) : '—';
       }
       var eventCountEl = document.getElementById('ahu-event-count');
       if(eventCountEl){
