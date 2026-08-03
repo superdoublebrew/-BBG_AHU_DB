@@ -462,7 +462,7 @@
         <div class="kpi-tile c-chiller"><div class="lbl">Total Energy</div><div class="val"><span id="mr-kwh">—</span><span class="unit">kWh</span></div></div>
         <div class="kpi-tile c-outdoor"><div class="lbl">kW/TR เฉลี่ย</div><div class="val"><span id="mr-kwtr">—</span></div></div>
         <div class="kpi-tile c-plant"><div class="lbl">TR ต่อ ตร.ม.</div><div class="val"><span id="mr-trsqm">—</span></div></div>
-        <div class="kpi-tile c-plant"><div class="lbl">kW ต่อ ตร.ม.</div><div class="val"><span id="mr-kwsqm">—</span></div></div>
+        <div class="kpi-tile c-plant"><div class="lbl">kWh ต่อ ตร.ม.</div><div class="val"><span id="mr-kwsqm">—</span></div></div>
       </div>
       <div class="kpi-tiles" style="padding:0; margin-bottom:8px;">
         <div class="kpi-tile c-pump"><div class="lbl">พื้นที่ใช้งานเฉลี่ย/วัน</div><div class="val"><span id="mr-areaused">—</span><span class="unit">ตร.ม.</span></div></div>
@@ -483,10 +483,10 @@
           <div class="mr-chart-labels" id="mr-line-labels"></div>
         </div>
         <div class="mr-chart-card">
-          <div class="mr-chart-title">TR/kW ต่อ ตร.ม.</div>
+          <div class="mr-chart-title">TR/kWh ต่อ ตร.ม.</div>
           <svg id="mr-sqm-line-chart" viewBox="0 0 220 56" preserveAspectRatio="none"></svg>
           <div class="mr-chart-labels" id="mr-sqm-line-labels"></div>
-          <div style="display:flex; gap:8px; margin-top:3px; font-family:'JetBrains Mono',monospace; font-size:7px;"><span style="color:#a855f7;">● TR/m²</span><span style="color:#38bdf8;">● kW/m²</span></div>
+          <div style="display:flex; gap:8px; margin-top:3px; font-family:'JetBrains Mono',monospace; font-size:7px;"><span style="color:#a855f7;">● TR/m²</span><span style="color:#38bdf8;">● kWh/m²</span></div>
         </div>
       </div>
       <div class="table-scroll">
@@ -495,7 +495,7 @@
           <tbody id="monthly-tbody"></tbody>
         </table>
       </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-faint); margin-top:4px; flex-shrink:0;">* เดือนล่าสุดยังไม่จบเดือน (ข้อมูลสะสมถึงวันล่าสุดที่มี) · TR/kW ต่อ ตร.ม. คำนวณแบบ sum/sum (ผลรวม ÷ ผลรวมพื้นที่ใช้งานรายวัน จากชีต Config_DailyAreaUsed) · ค่าไฟประมาณการ @ 4.26 บาท/kWh</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-faint); margin-top:4px; flex-shrink:0;">* เดือนล่าสุดยังไม่จบเดือน (ข้อมูลสะสมถึงวันล่าสุดที่มี) · TR/kWh ต่อ ตร.ม. คำนวณแบบ sum/sum (ผลรวม ÷ ผลรวมพื้นที่ใช้งานรายวัน จากชีต Config_DailyAreaUsed) · ค่าไฟประมาณการ @ 4.26 บาท/kWh</div>
     </div>
   </div>
 </div>
@@ -1433,7 +1433,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
         row('Total (TR)', function(d){ return d.totalTr; }) +
         row('kW/TR เฉลี่ย', function(d){ return d.avgKwPerTr; }) +
         row('TR ต่อ ตร.ม.', function(d){ return d.trPerSqm; }) +
-        row('kW ต่อ ตร.ม.', function(d){ return d.kwPerSqm; }) + // [ใหม่]
+        row('kWh ต่อ ตร.ม.', function(d){ return d.kwPerSqm; }) + // [แก้ 31/7/69]
         row('ค่าไฟประมาณการ (บาท)', function(d){ return d.costEstimateThb; });
 
       if(statusEl) statusEl.textContent = '✅ sync ล่าสุด · ' + n + ' เดือน';
