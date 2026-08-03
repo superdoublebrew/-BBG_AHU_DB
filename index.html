@@ -807,8 +807,16 @@ document.getElementById('svgMain').innerHTML = frag.d;
   var dateInput = document.getElementById('dateFilter');
   var currentDateStr = null;
 
-  function todayStr(){ return new Date().toISOString().slice(0,10); }
-  function yesterdayStr(){ var d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); }
+  // [แก้ 31/7/69] บั๊ก timezone — เดิมใช้ .toISOString() แปลงเป็น UTC ก่อนเสมอ ถ้าเปิดแดชบอร์ดช่วงเที่ยงคืน-7โมงเช้า (เวลาไทย)
+  // ปุ่ม "วันนี้" จะดึงข้อมูลของ "เมื่อวาน" มาแสดงแทนโดยไม่รู้ตัว (เพราะ UTC ยังเป็นวันก่อนหน้าอยู่) แก้ด้วย local date components ตรงๆ
+  function localDateStr_(d){
+    var y = d.getFullYear();
+    var mo = String(d.getMonth()+1).padStart(2,'0');
+    var da = String(d.getDate()).padStart(2,'0');
+    return y+'-'+mo+'-'+da;
+  }
+  function todayStr(){ return localDateStr_(new Date()); }
+  function yesterdayStr(){ var d=new Date(); d.setDate(d.getDate()-1); return localDateStr_(d); }
   dateInput.value = todayStr();
 
   var __kpiRAF = {};
@@ -1161,8 +1169,9 @@ document.getElementById('svgMain').innerHTML = frag.d;
     var last = new Date(yCE, m, 0); // วันสุดท้ายของเดือน
     var todayCE = new Date();
     if(last > todayCE) last = todayCE; // กันเลือกเดือนปัจจุบันแล้ววิ่งไปวันในอนาคตที่ยังไม่มีข้อมูล
-    function iso(d){ return d.toISOString().slice(0,10); }
-    return { start: iso(first), end: iso(last) };
+    // [แก้ 31/7/69] บั๊ก timezone — ห้ามใช้ .toISOString() เพราะแปลงเป็น UTC ก่อนเสมอ ทำให้วันที่เลื่อนไป 1 วัน
+    // (เที่ยงคืนไทย UTC+7 พอแปลง UTC จะกลายเป็นวันก่อนหน้า) ใช้ localDateStr_ ตัวเดียวกับ todayStr/yesterdayStr แทน
+    return { start: localDateStr_(first), end: localDateStr_(last) };
   }
   monthSelect.addEventListener('change', function(){
     if(!monthSelect.value) return;
