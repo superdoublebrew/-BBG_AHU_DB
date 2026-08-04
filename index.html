@@ -271,8 +271,8 @@
   .mr-chart-card{ background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); border-radius:9px; padding:10px 12px; }
   .mr-chart-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10.5px; margin-bottom:6px; color:var(--text); }
   .mr-bar-chart{ display:flex; align-items:flex-end; gap:6px; height:64px; }
-  .mr-bar-chart .bar{ flex:1; border-radius:2px 2px 0 0; background:#38bdf8; min-height:2px; }
-  .mr-bar-chart .bar.current{ background:#22d3ee; }
+  .mr-bar-chart .bar{ flex:1; border-radius:6px 6px 3px 3px; min-height:4px; background:linear-gradient(180deg,#38bdf8 0%,rgba(56,189,248,.35) 100%); }
+  .mr-bar-chart .bar.current{ background:linear-gradient(180deg,#22d3ee 0%,rgba(34,211,238,.4) 100%); }
   .mr-chart-labels{ display:flex; justify-content:space-between; margin-top:3px; }
   .mr-chart-labels span{ font-family:'JetBrains Mono',monospace; font-size:7.5px; color:var(--text-faint); }
   .mr-chart-labels span.current{ color:#22d3ee; }
@@ -280,6 +280,7 @@
   table{ width:100%; border-collapse:collapse; font-size:11px; }
   th{ text-align:left; font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; letter-spacing:.3px; color:var(--text-label); text-transform:uppercase; padding:8px 12px; position:sticky; top:0; background:#0c0f18; }
   td{ padding:8px 12px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'JetBrains Mono',monospace; }
+  #monthly-tbody tr:nth-child(even){ background:rgba(255,255,255,.015); }
   .hc-kwm2{ display:flex; align-items:baseline; gap:5px; padding:6px 10px 0; }
   .hc-kwm2 .val{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; }
   .hc-kwm2 .unit{ font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint); }
@@ -1382,59 +1383,79 @@ document.getElementById('svgMain').innerHTML = frag.d;
         });
         return pts;
       }
+      // [แก้ 31/7/69] เส้นโค้ง smooth (แทนเส้นตรง polyline เดิม) — Option 1 Soft & Rounded
+      function smoothPath_(pts){
+        if(pts.length < 2) return '';
+        var d = 'M'+pts[0].x.toFixed(1)+','+pts[0].y.toFixed(1);
+        for(var i=0;i<pts.length-1;i++){
+          var p0=pts[i], p1=pts[i+1];
+          var midX = (p0.x+p1.x)/2;
+          d += ' C '+midX.toFixed(1)+','+p0.y.toFixed(1)+' '+midX.toFixed(1)+','+p1.y.toFixed(1)+' '+p1.x.toFixed(1)+','+p1.y.toFixed(1);
+        }
+        return d;
+      }
+      function areaPath_(pts, baselineY){
+        var line = smoothPath_(pts);
+        if(!line) return '';
+        var last = pts[pts.length-1], first = pts[0];
+        return line + ' L'+last.x.toFixed(1)+','+baselineY.toFixed(1)+' L'+first.x.toFixed(1)+','+baselineY.toFixed(1)+' Z';
+      }
       var w = 220, h = 56, pad = 6;
       var effPts = buildLine(function(d){ return d.avgKwPerTr; }, '#34d399', w, h, pad);
       var lineSvg = '';
       if(effPts.length >= 2){
-        lineSvg += '<polyline points="'+effPts.map(function(p){ return p.x.toFixed(1)+','+p.y.toFixed(1); }).join(' ')+'" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        lineSvg += '<defs><linearGradient id="mrGradEff" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#34d399" stop-opacity="0.32"/><stop offset="100%" stop-color="#34d399" stop-opacity="0"/></linearGradient></defs>';
+        lineSvg += '<path d="'+areaPath_(effPts, h-pad)+'" fill="url(#mrGradEff)"/>';
+        lineSvg += '<path d="'+smoothPath_(effPts)+'" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round"/>';
         var last = effPts[effPts.length-1];
-        lineSvg += '<circle cx="'+last.x.toFixed(1)+'" cy="'+last.y.toFixed(1)+'" r="3" fill="'+(last.isCurrent?'#22d3ee':'#34d399')+'"/>';
+        lineSvg += '<circle cx="'+last.x.toFixed(1)+'" cy="'+last.y.toFixed(1)+'" r="4.5" fill="#0d1017" stroke="'+(last.isCurrent?'#22d3ee':'#34d399')+'" stroke-width="2.5"/>';
       }
       document.getElementById('mr-line-chart').innerHTML = lineSvg;
       document.getElementById('mr-line-labels').innerHTML = data.map(function(d){
         return '<span'+(d.isCurrent?' class="current"':'')+'>'+monthLabel(d.month)+(d.isCurrent?'*':'')+'</span>';
       }).join('');
 
-      // [ใหม่] กราฟเส้นคู่ TR/m² (ม่วง) + kW/m² (ฟ้า)
+      // [ใหม่] กราฟเส้นคู่ TR/m² (ม่วง) + kWh/m² (ฟ้า) — เส้นโค้ง smooth เหมือนกัน (ไม่มี area fill กันสีทับกันดูรก)
       var trSqmPts = buildLine(function(d){ return d.trPerSqm; }, '#a855f7', w, h, pad);
       var kwSqmPts = buildLine(function(d){ return d.kwPerSqm; }, '#38bdf8', w, h, pad);
       var sqmSvg = '';
       if(trSqmPts.length >= 2){
-        sqmSvg += '<polyline points="'+trSqmPts.map(function(p){ return p.x.toFixed(1)+','+p.y.toFixed(1); }).join(' ')+'" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        sqmSvg += '<path d="'+smoothPath_(trSqmPts)+'" fill="none" stroke="#a855f7" stroke-width="2.2" stroke-linecap="round"/>';
         var lastTr = trSqmPts[trSqmPts.length-1];
-        sqmSvg += '<circle cx="'+lastTr.x.toFixed(1)+'" cy="'+lastTr.y.toFixed(1)+'" r="3" fill="#a855f7"/>';
+        sqmSvg += '<circle cx="'+lastTr.x.toFixed(1)+'" cy="'+lastTr.y.toFixed(1)+'" r="4" fill="#0d1017" stroke="#a855f7" stroke-width="2.2"/>';
       }
       if(kwSqmPts.length >= 2){
-        sqmSvg += '<polyline points="'+kwSqmPts.map(function(p){ return p.x.toFixed(1)+','+p.y.toFixed(1); }).join(' ')+'" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 2" stroke-linecap="round" stroke-linejoin="round"/>';
+        sqmSvg += '<path d="'+smoothPath_(kwSqmPts)+'" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="1 5" stroke-linecap="round"/>';
         var lastKw = kwSqmPts[kwSqmPts.length-1];
-        sqmSvg += '<circle cx="'+lastKw.x.toFixed(1)+'" cy="'+lastKw.y.toFixed(1)+'" r="3" fill="#38bdf8"/>';
+        sqmSvg += '<circle cx="'+lastKw.x.toFixed(1)+'" cy="'+lastKw.y.toFixed(1)+'" r="4" fill="#0d1017" stroke="#38bdf8" stroke-width="2.2"/>';
       }
       document.getElementById('mr-sqm-line-chart').innerHTML = sqmSvg;
       document.getElementById('mr-sqm-line-labels').innerHTML = data.map(function(d){
         return '<span'+(d.isCurrent?' class="current"':'')+'>'+monthLabel(d.month)+(d.isCurrent?'*':'')+'</span>';
       }).join('');
 
-      // ตาราง
-      var headHtml = '<tr><th>รายการ</th>';
-      data.forEach(function(d){ headHtml += '<th style="text-align:right;'+(d.isCurrent?'color:#22d3ee;':'')+'">'+monthLabel(d.month)+(d.isCurrent?'*':'')+'</th>'; });
-      headHtml += '</tr>';
+      // [แก้ 31/7/69] สลับตาราง — เดือน=แถว, metric=คอลัมน์ (รองรับข้อมูลสะสมหลายเดือนได้ดีกว่า ไม่ต้องเบียดคอลัมน์)
+      var metricCols = [
+        { label:'Total (kWh)', getter:function(d){ return d.totalKwh; }, digits:2 },
+        { label:'Total (kW)', getter:function(d){ return d.totalKwAll; }, digits:2 }, // [ใหม่ 31/7/69]
+        { label:'Total (TR)', getter:function(d){ return d.totalTr; }, digits:2 },
+        { label:'kW/TR เฉลี่ย', getter:function(d){ return d.avgKwPerTr; }, digits:2 },
+        { label:'TR ต่อ ตร.ม.', getter:function(d){ return d.trPerSqm; }, digits:2 },
+        { label:'kWh ต่อ ตร.ม.', getter:function(d){ return d.kwPerSqm; }, digits:2 },
+        { label:'ค่าไฟประมาณการ (บาท)', getter:function(d){ return d.costEstimateThb; }, digits:2 }
+      ];
+      var headHtml = '<tr><th>เดือน</th>' + metricCols.map(function(c){ return '<th style="text-align:right;">'+c.label+'</th>'; }).join('') + '</tr>';
       document.getElementById('monthly-thead').innerHTML = headHtml;
 
-      function row(label, getter, digits){
-        var cells = data.map(function(d){
-          var v = getter(d);
-          var txt = (v===null||v===undefined) ? '—' : fmtNum(v, digits);
-          return '<td style="text-align:right;'+(d.isCurrent?'color:#22d3ee;font-weight:700;':'')+'">'+txt+'</td>';
+      document.getElementById('monthly-tbody').innerHTML = data.map(function(d){
+        var rowStyle = d.isCurrent ? ' style="color:#22d3ee;font-weight:700;"' : '';
+        var cells = metricCols.map(function(c){
+          var v = c.getter(d);
+          var txt = (v===null||v===undefined) ? '—' : fmtNum(v, c.digits);
+          return '<td style="text-align:right;">'+txt+'</td>';
         }).join('');
-        return '<tr><td>'+label+'</td>'+cells+'</tr>';
-      }
-      document.getElementById('monthly-tbody').innerHTML =
-        row('Total (kWh)', function(d){ return d.totalKwh; }) +
-        row('Total (TR)', function(d){ return d.totalTr; }) +
-        row('kW/TR เฉลี่ย', function(d){ return d.avgKwPerTr; }) +
-        row('TR ต่อ ตร.ม.', function(d){ return d.trPerSqm; }) +
-        row('kWh ต่อ ตร.ม.', function(d){ return d.kwPerSqm; }) + // [แก้ 31/7/69]
-        row('ค่าไฟประมาณการ (บาท)', function(d){ return d.costEstimateThb; });
+        return '<tr'+rowStyle+'><td>'+monthLabel(d.month)+(d.isCurrent?'*':'')+'</td>'+cells+'</tr>';
+      }).join('');
 
       if(statusEl) statusEl.textContent = '✅ sync ล่าสุด · ' + n + ' เดือน';
     } catch(err){
