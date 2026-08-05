@@ -162,6 +162,9 @@
   .lz-kwh-total{ background:rgba(56,189,248,0.10); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:7px 10px; margin-bottom:8px; flex-shrink:0; }
   .lz-kwh-total-lbl{ font-family:'JetBrains Mono',monospace; font-size:clamp(7.5px, 0.55vw, 9.5px); color:#7dd3fc; text-transform:uppercase; }
   .lz-kwh-total-val{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(18px, 1.35vw, 24px); color:#38bdf8; }
+  .lz-area-total{ background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); border-radius:8px; padding:7px 10px; margin-bottom:8px; flex-shrink:0; }
+  .lz-area-total-lbl{ font-family:'JetBrains Mono',monospace; font-size:clamp(7.5px, 0.55vw, 9.5px); color:var(--text-faint); text-transform:uppercase; }
+  .lz-area-total-val{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(18px, 1.35vw, 24px); color:#fff; }
 
   /* [ใหม่ 31/7/69] ข้อ2 — คอลัมน์ gap ระหว่างผังกับ Location Zone: System status + Alerts + Top zones */
   .gap-col{ width:170px; flex-shrink:0; display:flex; flex-direction:column; gap:8px; overflow-y:auto; margin-left:8px; }
@@ -406,6 +409,10 @@
         <div class="lz-kwh-total">
           <div class="lz-kwh-total-lbl">kWh/ตร.ม. รวมทั้งอาคาร</div>
           <div class="lz-kwh-total-val"><span id="lz-kwh-total-val">—</span></div>
+        </div>
+        <div class="lz-area-total">
+          <div class="lz-area-total-lbl">Total Area ของวันที่เลือก</div>
+          <div class="lz-area-total-val"><span id="lz-area-total-val">—</span><span style="font-size:11px; color:var(--text-faint); font-weight:600;"> ตร.ม.</span></div>
         </div>
         <div class="loczone-accordion" id="loczoneAccordion"></div>
         <div id="loczone-footnote" style="font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-faint); margin-top:6px; flex-shrink:0; line-height:1.4;"></div>
@@ -1263,6 +1270,8 @@ document.getElementById('svgMain').innerHTML = frag.d;
       if(trTotalEl) trTotalEl.textContent = (typeof data.trPerSqmTotal === 'number') ? fmtNum(data.trPerSqmTotal,3) : '—';
       var kwhTotalEl = document.getElementById('lz-kwh-total-val'); // [ใหม่ 31/7/69]
       if(kwhTotalEl) kwhTotalEl.textContent = (typeof data.kwhPerSqmTotal === 'number') ? fmtNum(data.kwhPerSqmTotal,3) : '—';
+      var areaTotalEl = document.getElementById('lz-area-total-val'); // [ใหม่ 31/7/69]
+      if(areaTotalEl) areaTotalEl.textContent = (typeof data.totalAreaSqm === 'number') ? fmtNum(data.totalAreaSqm,0) : '—';
 
       var accEl = document.getElementById('loczoneAccordion');
       if(bySchpZoneArea.length === 0 && missingZones.length === 0){
