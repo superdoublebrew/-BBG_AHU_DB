@@ -386,7 +386,7 @@
           <div id="gcStatusBody"></div>
         </div>
         <div class="gc-card" id="gcTopZones">
-          <div class="t">Top zone · kW/m²</div>
+          <div class="t">Top zone · kWh/m²</div>
           <div id="gcTopZonesBody"></div>
         </div>
       </div>
@@ -602,12 +602,13 @@ function renderPanel(key){
     var chlPct = perUnit.CHL_PCT || {};
     onCount = def.ids.filter(function(id){ return chlSums[id] !== undefined && chlSums[id] !== null; }).length;
     document.getElementById('pmUnitSecT').textContent = def.ids.length+' หน่วย · sum สะสมของวัน';
-    document.getElementById('pmHeadRow').innerHTML = '<span class="hc-unit">Unit</span><span class="hc-status">สถานะ</span><span class="hc-num">kW</span><span class="hc-num">TR</span><span class="hc-num">%</span>';
+    // [แก้ 31/7/69] คอลัมน์แรกเปลี่ยนเป็น kWh (=kW×2) ตามที่ confirm — TR กับ % คงเดิม ไม่แตะ
+    document.getElementById('pmHeadRow').innerHTML = '<span class="hc-unit">Unit</span><span class="hc-status">สถานะ</span><span class="hc-num">kWh</span><span class="hc-num">TR</span><span class="hc-num">%</span>';
     document.getElementById('pmUnitRows').innerHTML = def.ids.map(function(id){
       var v = chlSums[id], tr = chlTr[id], pct = chlPct[id];
       var hasVal = (v !== undefined && v !== null);
       return '<div class="pm-unit-row" data-unit="'+id+'"><span class="id">'+id+'</span><span class="c-status">'+statusPill_(hasVal)+'</span>'+
-        '<span class="c-num">'+(hasVal?fmtNum(v,1):'—')+'</span>'+
+        '<span class="c-num">'+(hasVal?fmtNum(v*2,1):'—')+'</span>'+
         '<span class="c-num dim">'+((tr!==undefined&&tr!==null)?fmtNum(tr,1):'—')+'</span>'+
         '<span class="c-num dim">'+((pct!==undefined&&pct!==null)?(fmtNum(pct,1)+'%'):'—')+'</span></div>';
     }).join('');
@@ -615,14 +616,15 @@ function renderPanel(key){
     var groupObj = (perUnit[def.group]) || {};
     var totalVal = def.totalKey ? totals[def.totalKey] : null;
     onCount = def.ids.filter(function(id){ return groupObj[id] !== undefined && groupObj[id] !== null; }).length;
+    // [แก้ 31/7/69] เปลี่ยนเป็น kWh (=kW×2) ตามที่ confirm
     document.getElementById('pmUnitSecT').textContent = def.ids.length+' หน่วย · average ของวัน' +
-      ((typeof totalVal==='number') ? (' · รวม '+fmtNum(totalVal,1)+' kW') : '');
-    document.getElementById('pmHeadRow').innerHTML = '<span class="hc-unit">Unit</span><span class="hc-status">สถานะ</span><span class="hc-num">kW avg</span>';
+      ((typeof totalVal==='number') ? (' · รวม '+fmtNum(totalVal*2,1)+' kWh') : '');
+    document.getElementById('pmHeadRow').innerHTML = '<span class="hc-unit">Unit</span><span class="hc-status">สถานะ</span><span class="hc-num">kWh</span>';
     document.getElementById('pmUnitRows').innerHTML = def.ids.map(function(id){
       var v = groupObj[id];
       var hasVal = (v !== undefined && v !== null);
       return '<div class="pm-unit-row" data-unit="'+id+'"><span class="id">'+id+'</span><span class="c-status">'+statusPill_(hasVal)+'</span>'+
-        '<span class="c-num">'+(hasVal?fmtNum(v,1):'—')+'</span></div>';
+        '<span class="c-num">'+(hasVal?fmtNum(v*2,1):'—')+'</span></div>';
     }).join('');
   }
 
@@ -855,10 +857,11 @@ document.getElementById('svgMain').innerHTML = frag.d;
     }
     __kpiRAF[id] = requestAnimationFrame(step);
   }
+  // [แก้ 31/7/69] ผังวงจร — เปลี่ยนจาก kW เป็น kWh (=kW×2) ตามที่ confirm ทุกกล่อง (CT/CDP/Chiller/PCHP/SCHP1/SCHP2)
   function setHdr(id, val){
     var el = document.getElementById(id);
     if(!el) return;
-    el.textContent = (val===null||val===undefined) ? '—' : (fmtNum(val,2)+' (kW)');
+    el.textContent = (val===null||val===undefined) ? '—' : (fmtNum(val*2,2)+' (kWh)');
   }
   // [แก้ 23/7/69] ป้ายอุณหภูมิ 2 หน่วย (F เด่น, C รอง) + 3 สถานะ ร้อน/ปกติ/หนาว ตาม threshold จาก Config
   // [แก้ 31/7/69] ข้อ7 — ไม่มี bg rect แล้ว สถานะร้อน/ปกติ/หนาว แสดงผ่าน "สีตัวเลข" แทนสีพื้นหลัง
@@ -950,6 +953,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
 
   // [ใหม่ 31/7/69] ข้อ2 — การ์ด Top zone: เรียง kW/m² มากสุด 4 อันดับแรก จาก bySchpZone (ข้อมูลวันนี้ ไม่ใช่ trend ย้อนหลัง
   // เพราะ backend ยังไม่มี history ระดับโซน — ถ้าต้องการ trend จริงต้องเพิ่ม endpoint ใหม่)
+  // [แก้ 31/7/69] เปลี่ยนเป็น kWh/m² (=kW/m²×2) ตามที่ confirm ให้ล้อไปทางเดียวกับกล่องในผัง
   function renderTopZones(){
     var body = document.getElementById('gcTopZonesBody');
     if(!body) return;
@@ -960,7 +964,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
     var colors = ['#f2867a','#f2b84f','#34d399','#38bdf8'];
     body.innerHTML = data.map(function(z, i){
       var pct = max ? Math.round((z.kwPerSqm/max)*100) : 0;
-      return '<div class="gc-trend-row"><div class="lbl"><span>'+z.schpZone+'</span><span>'+fmtNum(z.kwPerSqm,3)+'</span></div><div class="gc-trend-bar"><i style="width:'+pct+'%;background:'+colors[i%colors.length]+';"></i></div></div>';
+      return '<div class="gc-trend-row"><div class="lbl"><span>'+z.schpZone+'</span><span>'+fmtNum(z.kwPerSqm*2,3)+'</span></div><div class="gc-trend-bar"><i style="width:'+pct+'%;background:'+colors[i%colors.length]+';"></i></div></div>';
     }).join('');
   }
   window.__renderTopZones = renderTopZones; // [ใหม่ 31/7/69] ข้อ2 — expose ให้ loadLocationZone() (คนละ IIFE) เรียกใช้ได้
@@ -1477,6 +1481,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
         { label:'Total (kW)', getter:function(d){ return d.totalKwAll; }, digits:2 }, // [ใหม่ 31/7/69]
         { label:'Total (TR)', getter:function(d){ return d.totalTr; }, digits:2 },
         { label:'kW/TR เฉลี่ย', getter:function(d){ return d.avgKwPerTr; }, digits:2 },
+        { label:'พื้นที่ใช้งานรวม (ตร.ม.)', getter:function(d){ return d.areaUsedTotalSqm; }, digits:0 }, // [แก้ 31/7/69] เปลี่ยนเป็น sum ตรงกับตัวหารจริง
         { label:'TR ต่อ ตร.ม.', getter:function(d){ return d.trPerSqm; }, digits:2 },
         { label:'kWh ต่อ ตร.ม.', getter:function(d){ return d.kwPerSqm; }, digits:2 },
         { label:'ค่าไฟประมาณการ (บาท)', getter:function(d){ return d.costEstimateThb; }, digits:2 }
