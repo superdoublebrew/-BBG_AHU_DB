@@ -267,7 +267,7 @@
   .mr-summary-banner{ background:rgba(242,134,122,0.08); border:1px solid rgba(242,134,122,0.25); border-radius:7px; padding:6px 12px; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text); margin-top:8px; flex-shrink:0; }
   .mr-summary-banner.down{ background:rgba(52,211,153,0.08); border-color:rgba(52,211,153,0.25); }
   .mr-charts{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; flex-shrink:0; }
-  .mr-charts.mr-charts-3{ grid-template-columns:1fr 1fr 1fr; }
+  .mr-charts.mr-charts-3{ grid-template-columns:1fr 1fr; }
   .mr-chart-card{ background:#0d1017; border:1px solid var(--glass-border); border-radius:12px; padding:12px; margin-bottom:0; min-width:0; }
   .mr-chart-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px; }
   .mr-chart-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10px; color:#fff; }
@@ -484,16 +484,6 @@
             <div class="mr-legend"><div class="item"><span class="sw" style="background:#34d399;"></span>kW/TR</div></div>
           </div>
           <svg id="mr-line-chart" class="mr-axis-chart" viewBox="0 0 280 150" preserveAspectRatio="none"></svg>
-        </div>
-        <div class="mr-chart-card">
-          <div class="mr-chart-head">
-            <div class="mr-chart-title">Intensity ต่อ ตร.ม. — TR/m² vs kWh/m²</div>
-            <div class="mr-legend">
-              <div class="item"><span class="sw" style="background:#a855f7;"></span>TR/m²</div>
-              <div class="item"><span class="sw" style="background:#38bdf8; background-image:repeating-linear-gradient(90deg,#38bdf8 0 3px,transparent 3px 6px);"></span>kWh/m²</div>
-            </div>
-          </div>
-          <svg id="mr-sqm-line-chart" class="mr-axis-chart" viewBox="0 0 280 150" preserveAspectRatio="none"></svg>
         </div>
       </div>
       <div class="table-scroll">
@@ -1458,23 +1448,6 @@ document.getElementById('svgMain').innerHTML = frag.d;
       }
       document.getElementById('mr-line-chart').innerHTML = svg2;
 
-      // Chart 3 — TR/m² (ม่วง ทึบ) + kWh/m² (ฟ้า ประ) เส้นคู่ แกนร่วมกัน
-      var trSqmVals = data.map(function(d){ return d.trPerSqm; }).filter(function(v){ return typeof v === 'number'; });
-      var kwSqmVals = data.map(function(d){ return d.kwPerSqm; }).filter(function(v){ return typeof v === 'number'; });
-      var sqmMax = niceMax_(Math.max(trSqmVals.length?Math.max.apply(null,trSqmVals):1, kwSqmVals.length?Math.max.apply(null,kwSqmVals):1));
-      var trSqmPts = seriesPts_(function(d){ return d.trPerSqm; }, sqmMax);
-      var kwSqmPts = seriesPts_(function(d){ return d.kwPerSqm; }, sqmMax);
-      var svg3 = axisFrame_(sqmMax, 2);
-      if(trSqmPts.length >= 2){
-        svg3 += '<path d="'+smoothPath_(trSqmPts)+'" fill="none" stroke="#a855f7" stroke-width="2.4" stroke-linecap="round"/>';
-        trSqmPts.forEach(function(p){ svg3 += '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(p.isCurrent?5:3.2)+'" fill="'+(p.isCurrent?'#0d1017':'#a855f7')+'" stroke="'+(p.isCurrent?'#a855f7':'none')+'" stroke-width="2.4"/>'; });
-      }
-      if(kwSqmPts.length >= 2){
-        svg3 += '<path d="'+smoothPath_(kwSqmPts)+'" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/>';
-        kwSqmPts.forEach(function(p){ svg3 += '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(p.isCurrent?4.5:3)+'" fill="'+(p.isCurrent?'#0d1017':'#38bdf8')+'" stroke="'+(p.isCurrent?'#38bdf8':'none')+'" stroke-width="2.2"/>'; });
-      }
-      document.getElementById('mr-sqm-line-chart').innerHTML = svg3;
-
       // [แก้ 31/7/69] สลับตาราง — เดือน=แถว, metric=คอลัมน์ (รองรับข้อมูลสะสมหลายเดือนได้ดีกว่า ไม่ต้องเบียดคอลัมน์)
       var metricCols = [
         { label:'Total (kWh)', getter:function(d){ return d.totalKwh; }, digits:2 },
@@ -1484,7 +1457,13 @@ document.getElementById('svgMain').innerHTML = frag.d;
         { label:'พื้นที่ใช้งานรวม (ตร.ม.)', getter:function(d){ return d.areaUsedTotalSqm; }, digits:0 }, // [แก้ 31/7/69] เปลี่ยนเป็น sum ตรงกับตัวหารจริง
         { label:'TR ต่อ ตร.ม.', getter:function(d){ return d.trPerSqm; }, digits:2 },
         { label:'kWh ต่อ ตร.ม.', getter:function(d){ return d.kwPerSqm; }, digits:2 },
-        { label:'ค่าไฟประมาณการ (บาท)', getter:function(d){ return d.costEstimateThb; }, digits:2 }
+        { label:'ค่าไฟประมาณการ (บาท)', getter:function(d){ return d.costEstimateThb; }, digits:2,
+          extra:function(d){ // [ใหม่ 31/7/69] badge อัตราค่าไฟที่ใช้จริงของเดือนนั้น (ตัวเลขล้วน ไม่มี @ นำหน้า)
+            return (typeof d.electricityRateUsed === 'number')
+              ? ' <span style="font-family:\'JetBrains Mono\',monospace; font-size:8px; font-weight:700; padding:2px 6px; border-radius:20px; background:rgba(242,184,79,.15); color:#f2b84f; border:1px solid rgba(242,184,79,.35); margin-left:6px;">'+fmtNum(d.electricityRateUsed,2)+'</span>'
+              : '';
+          }
+        }
       ];
       var headHtml = '<tr><th>เดือน</th>' + metricCols.map(function(c){ return '<th style="text-align:right;">'+c.label+'</th>'; }).join('') + '</tr>';
       document.getElementById('monthly-thead').innerHTML = headHtml;
@@ -1494,7 +1473,8 @@ document.getElementById('svgMain').innerHTML = frag.d;
         var cells = metricCols.map(function(c){
           var v = c.getter(d);
           var txt = (v===null||v===undefined) ? '—' : fmtNum(v, c.digits);
-          return '<td style="text-align:right;">'+txt+'</td>';
+          var extraHtml = c.extra ? c.extra(d) : '';
+          return '<td style="text-align:right;">'+txt+extraHtml+'</td>';
         }).join('');
         return '<tr'+rowStyle+'><td>'+monthLabel(d.month)+(d.isCurrent?'*':'')+'</td>'+cells+'</tr>';
       }).join('');
