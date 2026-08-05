@@ -266,15 +266,15 @@
   .table-scroll{ flex:1; min-height:0; overflow-y:auto; margin-top:8px; }
   .mr-summary-banner{ background:rgba(242,134,122,0.08); border:1px solid rgba(242,134,122,0.25); border-radius:7px; padding:6px 12px; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text); margin-top:8px; flex-shrink:0; }
   .mr-summary-banner.down{ background:rgba(52,211,153,0.08); border-color:rgba(52,211,153,0.25); }
-  .mr-charts{ display:grid; grid-template-columns:1fr; gap:0; margin-top:8px; flex-shrink:0; }
-  .mr-charts.mr-charts-3{ grid-template-columns:1fr; }
-  .mr-chart-card{ background:#0d1017; border:1px solid var(--glass-border); border-radius:12px; padding:16px; margin-bottom:14px; }
+  .mr-charts{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px; flex-shrink:0; }
+  .mr-charts.mr-charts-3{ grid-template-columns:1fr 1fr 1fr; }
+  .mr-chart-card{ background:#0d1017; border:1px solid var(--glass-border); border-radius:12px; padding:12px; margin-bottom:0; min-width:0; }
   .mr-chart-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px; }
-  .mr-chart-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12px; color:#fff; }
-  .mr-legend{ display:flex; gap:14px; }
-  .mr-legend .item{ display:flex; align-items:center; gap:5px; font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--text-faint); }
+  .mr-chart-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10px; color:#fff; }
+  .mr-legend{ display:flex; gap:8px; }
+  .mr-legend .item{ display:flex; align-items:center; gap:3px; font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-faint); }
   .mr-legend .sw{ width:10px; height:2.5px; border-radius:2px; display:inline-block; }
-  .mr-axis-chart{ width:100%; height:200px; display:block; overflow:visible; }
+  .mr-axis-chart{ width:100%; height:150px; display:block; overflow:visible; }
   table{ width:100%; border-collapse:collapse; font-size:11px; }
   th{ text-align:left; font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; letter-spacing:.3px; color:var(--text-label); text-transform:uppercase; padding:8px 12px; position:sticky; top:0; background:#0c0f18; }
   td{ padding:8px 12px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'JetBrains Mono',monospace; }
@@ -476,14 +476,14 @@
             <div class="mr-chart-title">Total kWh — รายเดือน</div>
             <div class="mr-legend"><div class="item"><span class="sw" style="background:#38bdf8;"></span>kWh</div></div>
           </div>
-          <svg id="mr-bar-chart" class="mr-axis-chart" viewBox="0 0 640 200" preserveAspectRatio="none"></svg>
+          <svg id="mr-bar-chart" class="mr-axis-chart" viewBox="0 0 280 150" preserveAspectRatio="none"></svg>
         </div>
         <div class="mr-chart-card">
           <div class="mr-chart-head">
             <div class="mr-chart-title">kW/TR เฉลี่ย — รายเดือน</div>
             <div class="mr-legend"><div class="item"><span class="sw" style="background:#34d399;"></span>kW/TR</div></div>
           </div>
-          <svg id="mr-line-chart" class="mr-axis-chart" viewBox="0 0 640 200" preserveAspectRatio="none"></svg>
+          <svg id="mr-line-chart" class="mr-axis-chart" viewBox="0 0 280 150" preserveAspectRatio="none"></svg>
         </div>
         <div class="mr-chart-card">
           <div class="mr-chart-head">
@@ -493,7 +493,7 @@
               <div class="item"><span class="sw" style="background:#38bdf8; background-image:repeating-linear-gradient(90deg,#38bdf8 0 3px,transparent 3px 6px);"></span>kWh/m²</div>
             </div>
           </div>
-          <svg id="mr-sqm-line-chart" class="mr-axis-chart" viewBox="0 0 640 200" preserveAspectRatio="none"></svg>
+          <svg id="mr-sqm-line-chart" class="mr-axis-chart" viewBox="0 0 280 150" preserveAspectRatio="none"></svg>
         </div>
       </div>
       <div class="table-scroll">
@@ -1365,7 +1365,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       }
 
       // [แก้ 31/7/69] Axis chart ใหม่ — มีแกน Y/X, gridline, legend, ไฮไลต์เดือนปัจจุบัน (ตามภาพอ้างอิงที่เลือก)
-      var CW = 640, CH = 200, padL = 56, padR = 16, padT = 16, padB = 28;
+      var CW = 280, CH = 150, padL = 40, padR = 8, padT = 10, padB = 20;
       var plotW = CW - padL - padR, plotH = CH - padT - padB;
       var stepX = data.length > 1 ? plotW / (data.length - 1) : 0;
 
@@ -1409,17 +1409,21 @@ document.getElementById('svgMain').innerHTML = frag.d;
           var v = maxV * i/4;
           var y = yOf_(v, maxV);
           g += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(CW-padR)+'" y2="'+y.toFixed(1)+'" stroke="rgba(255,255,255,.06)" stroke-width="1"/>';
-          g += '<text x="'+(padL-8)+'" y="'+(y+3).toFixed(1)+'" font-family="JetBrains Mono,monospace" font-size="9" fill="#7c8aa3" text-anchor="end">'+fmtNum(v,digits)+'</text>';
+          g += '<text x="'+(padL-6)+'" y="'+(y+3).toFixed(1)+'" font-family="JetBrains Mono,monospace" font-size="7" fill="#7c8aa3" text-anchor="end">'+fmtNum(v,digits)+'</text>';
         }
         var curIdx = data.findIndex(function(d){ return d.isCurrent; });
         if(curIdx >= 0){
           var bandW = data.length > 1 ? stepX : 40;
           var bandX = padL + curIdx*stepX - bandW/2;
-          g += '<rect x="'+Math.max(padL,bandX).toFixed(1)+'" y="'+padT+'" width="'+bandW.toFixed(1)+'" height="'+plotH+'" fill="rgba(34,211,238,.06)"/>';
+          var plotRight = padL + plotW; // [แก้ 31/7/69] ขอบขวาจริงของพื้นที่กราฟ (เดือนปัจจุบันมักเป็นจุดสุดท้ายเสมอ แถบเลยยื่นล้นออกไปได้ถ้าไม่ clamp)
+          var clampedX = Math.max(padL, bandX);
+          var clampedRight = Math.min(plotRight, bandX + bandW);
+          var clampedW = Math.max(0, clampedRight - clampedX);
+          g += '<rect x="'+clampedX.toFixed(1)+'" y="'+padT+'" width="'+clampedW.toFixed(1)+'" height="'+plotH+'" fill="rgba(34,211,238,.06)"/>';
         }
         data.forEach(function(d,i){
           var x = padL + i*stepX;
-          g += '<text x="'+x.toFixed(1)+'" y="'+(CH-8)+'" font-family="JetBrains Mono,monospace" font-size="9" fill="'+(d.isCurrent?'#22d3ee':'#7c8aa3')+'" text-anchor="middle">'+monthLabel(d.month)+(d.isCurrent?'*':'')+'</text>';
+          g += '<text x="'+x.toFixed(1)+'" y="'+(CH-6)+'" font-family="JetBrains Mono,monospace" font-size="7" fill="'+(d.isCurrent?'#22d3ee':'#7c8aa3')+'" text-anchor="middle">'+monthLabel(d.month)+(d.isCurrent?'*':'')+'</text>';
         });
         return g;
       }
