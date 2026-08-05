@@ -333,17 +333,17 @@
 
   <div class="panel active" id="panel-plant">
     <div class="kpi-tiles">
-      <div class="kpi-tile c-chiller"><div class="lbl">Main Chiller<span class="kpi-trend" id="trend-chl"></span></div><div class="val"><span id="kpi-chl">—</span><span class="unit">kW</span></div></div>
+      <div class="kpi-tile c-chiller"><div class="lbl">Main Chiller<span class="kpi-trend" id="trend-chl"></span></div><div class="val"><span id="kpi-chl">—</span><span class="unit">kWh</span></div></div>
       <div class="kpi-tile c-chiller"><div class="lbl">Capacity<span class="kpi-trend" id="trend-tr"></span></div><div class="val"><span id="kpi-tr">—</span><span class="unit">TR</span></div></div>
-      <div class="kpi-tile c-tower"><div class="lbl">Cooling Tower<span class="kpi-trend" id="trend-ct"></span></div><div class="val"><span id="kpi-ct">—</span><span class="unit">kW</span></div></div>
+      <div class="kpi-tile c-tower"><div class="lbl">Cooling Tower<span class="kpi-trend" id="trend-ct"></span></div><div class="val"><span id="kpi-ct">—</span><span class="unit">kWh</span></div></div>
       <div class="kpi-tile c-tower"><div class="lbl">Thermal Eff.<span class="kpi-trend" id="trend-thermaleff"></span></div><div class="val"><span id="kpi-thermaleff">—</span><span class="unit">%</span></div></div>
-      <div class="kpi-tile c-cdp"><div class="lbl">Condenser Pump<span class="kpi-trend" id="trend-cdp"></span></div><div class="val"><span id="kpi-cdp">—</span><span class="unit">kW</span></div></div>
-      <div class="kpi-tile c-pump"><div class="lbl">SCHP I<span class="kpi-trend" id="trend-schp1"></span></div><div class="val"><span id="kpi-schp1">—</span><span class="unit">kW</span></div></div>
-      <div class="kpi-tile c-pump"><div class="lbl">SCHP II<span class="kpi-trend" id="trend-schp2"></span></div><div class="val"><span id="kpi-schp2">—</span><span class="unit">kW</span></div></div>
+      <div class="kpi-tile c-cdp"><div class="lbl">Condenser Pump<span class="kpi-trend" id="trend-cdp"></span></div><div class="val"><span id="kpi-cdp">—</span><span class="unit">kWh</span></div></div>
+      <div class="kpi-tile c-pump"><div class="lbl">SCHP I<span class="kpi-trend" id="trend-schp1"></span></div><div class="val"><span id="kpi-schp1">—</span><span class="unit">kWh</span></div></div>
+      <div class="kpi-tile c-pump"><div class="lbl">SCHP II<span class="kpi-trend" id="trend-schp2"></span></div><div class="val"><span id="kpi-schp2">—</span><span class="unit">kWh</span></div></div>
     </div>
     <div class="kpi-tiles">
-      <div class="kpi-tile c-plant"><div class="lbl">Total (ไม่รวม SCHP)<span class="kpi-trend" id="trend-totalkw"></span></div><div class="val"><span id="kpi-totalkw">—</span><span class="unit">kW</span></div></div>
-      <div class="kpi-tile c-plant"><div class="lbl">Total Plant<span class="kpi-trend" id="trend-totalkwplant"></span></div><div class="val"><span id="kpi-totalkwplant">—</span><span class="unit">kW</span></div></div>
+      <div class="kpi-tile c-plant"><div class="lbl">Total (ไม่รวม SCHP)<span class="kpi-trend" id="trend-totalkw"></span></div><div class="val"><span id="kpi-totalkw">—</span><span class="unit">kWh</span></div></div>
+      <div class="kpi-tile c-plant"><div class="lbl">Total Plant<span class="kpi-trend" id="trend-totalkwplant"></span></div><div class="val"><span id="kpi-totalkwplant">—</span><span class="unit">kWh</span></div></div>
       <div class="kpi-tile c-plant"><div class="lbl">Efficiency<span class="kpi-trend" id="trend-eff"></span></div><div class="val"><span id="kpi-eff">—</span><span class="unit">kW/TR</span></div></div>
       <div class="kpi-tile c-outdoor"><div class="lbl">Outdoor Temp</div><div class="val"><span id="kpi-oat">—</span><span class="unit">C</span></div></div>
       <div class="kpi-tile c-outdoor"><div class="lbl">Outdoor Humidity</div><div class="val"><span id="kpi-rh">—</span><span class="unit">%</span></div></div>
@@ -1036,14 +1036,17 @@ document.getElementById('svgMain').innerHTML = frag.d;
       var perUnit = summary.perUnit || {};
       var latest = summary.latest || {};
 
-      setText('kpi-ct', totals.ctTotal, 1);
-      setText('kpi-chl', totals.mainChillerKw, 1);
+      // [ใหม่ 31/7/69] helper คูณ 2 แบบปลอดภัย — null*2 จะได้ 0 ใน JS (ผิดความหมาย) ต้องกันไว้ให้ null ยังเป็น null
+      function x2safe_(v){ return (typeof v === 'number') ? v*2 : v; }
+      // [แก้ 31/7/69] KPI แถวบนสุด — เปลี่ยนเป็น kWh (=kW×2) ตามที่ confirm (CF)
+      setText('kpi-ct', x2safe_(totals.ctTotal), 1);
+      setText('kpi-chl', x2safe_(totals.mainChillerKw), 1);
       setText('kpi-tr', totals.chillerCapacityTr, 1);
-      setText('kpi-cdp', totals.cdpTotal, 1); // [ใหม่] Condenser Pump KPI (มีค่าอยู่แล้วใน totals แค่ไม่เคยขึ้น KPI card)
-      setText('kpi-schp1', totals.schpPhase1Total, 1);
-      setText('kpi-schp2', totals.schpPhase2Total, 1);
-      setText('kpi-totalkw', totals.totalKwAll, 1);
-      setText('kpi-totalkwplant', totals.totalKwPlant, 1);
+      setText('kpi-cdp', x2safe_(totals.cdpTotal), 1); // [ใหม่] Condenser Pump KPI (มีค่าอยู่แล้วใน totals แค่ไม่เคยขึ้น KPI card)
+      setText('kpi-schp1', x2safe_(totals.schpPhase1Total), 1);
+      setText('kpi-schp2', x2safe_(totals.schpPhase2Total), 1);
+      setText('kpi-totalkw', x2safe_(totals.totalKwAll), 1);
+      setText('kpi-totalkwplant', x2safe_(totals.totalKwPlant), 1);
       setText('kpi-eff', averages.plantEfficiency, 3); // [แก้] ทศนิยม 3 ตำแหน่งเฉพาะ Efficiency (kW/TR)
       setText('kpi-oat', averages.outdoorTemp, 1); // [ใหม่] ข้อ6 — Outdoor Temp KPI
       // [แก้ 31/7/69] ข้อมูลดิบเป็น fraction (0-1) จริง ต้อง ×100 ก่อนแสดงเป็น % (ยืนยันจากค่าจริงหน้าจอ 0.5%/0.7% ที่ผิดปกติ)
