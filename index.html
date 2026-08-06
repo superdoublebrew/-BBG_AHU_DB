@@ -196,13 +196,13 @@
   .popup-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0); pointer-events:none;
     transition:background .22s ease, backdrop-filter .22s ease; z-index:40; }
   .popup-backdrop.open{ background:rgba(0,0,0,.6); backdrop-filter:blur(2px); pointer-events:auto; }
-  .popup-modal{ position:absolute; top:50%; left:50%; width:360px; background:#0d1017; border:1px solid var(--glass-border);
+  .popup-modal{ position:absolute; top:50%; left:50%; width:420px; background:#0d1017; border:1px solid var(--glass-border);
     border-radius:16px; padding:20px; opacity:0; transform:translate(-50%,-46%) scale(.94);
     transition:opacity .2s cubic-bezier(.2,.8,.3,1), transform .2s cubic-bezier(.2,.8,.3,1), width .2s ease;
     pointer-events:none; z-index:41; box-shadow:0 24px 60px -14px rgba(0,0,0,.65); display:flex; gap:20px;
     max-height:calc(100% - 40px); }
   .popup-modal.open{ opacity:1; transform:translate(-50%,-50%) scale(1); pointer-events:auto; }
-  .popup-modal.combo{ width:640px; }
+  .popup-modal.combo{ width:700px; }
   .pm-section{ min-width:0; display:flex; flex-direction:column; min-height:0; }
   .pm-section.pm-zone{ flex:0 0 180px; }
   .pm-section.pm-unit{ flex:1 1 auto; }
@@ -222,7 +222,7 @@
   .pm-head-row{ display:flex; align-items:center; padding:0 0 6px; font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; letter-spacing:.3px; color:var(--text-label); text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,.14); margin-bottom:2px; flex-shrink:0; gap:8px; }
   .pm-head-row .hc-unit{ flex:1; min-width:0; }
   .pm-head-row .hc-status{ width:34px; flex-shrink:0; text-align:center; }
-  .pm-head-row .hc-num{ width:52px; flex-shrink:0; text-align:right; }
+  .pm-head-row .hc-num{ width:64px; flex-shrink:0; text-align:right; }
   .pm-unit-rows{ flex:1; min-height:0; overflow-y:auto; }
   .pm-unit-row{ display:flex; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.04); font-family:'Inter',sans-serif; font-size:12px; gap:8px; }
   .pm-unit-row:last-child{ border-bottom:none; }
@@ -232,13 +232,17 @@
   .pm-pill{ font-family:'JetBrains Mono',monospace; font-size:7.5px; font-weight:700; padding:2px 7px; border-radius:20px; flex-shrink:0; }
   .pm-pill.on{ background:rgba(52,211,153,.15); color:var(--green); }
   .pm-pill.off{ background:rgba(255,255,255,.06); color:var(--text-faint); }
-  .pm-unit-row .c-num{ width:52px; flex-shrink:0; text-align:right; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12.5px; color:#fff; white-space:nowrap; }
+  .pm-unit-row .c-num{ width:64px; flex-shrink:0; text-align:right; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:12.5px; color:#fff; white-space:nowrap; }
   .pm-unit-row .c-num.dim{ color:var(--text-faint); font-weight:600; font-size:10px; }
 
   .ahu-shell{ flex:1; min-height:0; display:flex; gap:10px; padding:0 16px 14px; }
   .ahu-side{ width:170px; flex-shrink:0; display:flex; flex-direction:column; gap:8px; }
   .side-card{ padding:12px; }
   .side-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10.5px; margin-bottom:8px; }
+  .month-summary-row{ display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+  .month-summary-row:last-child{ border-bottom:none; }
+  .month-summary-row .n{ font-family:'Inter',sans-serif; font-size:10px; color:#7dd3fc; font-weight:600; }
+  .month-summary-row .v{ font-family:'Space Grotesk',sans-serif; font-size:11.5px; font-weight:700; color:#fff; }
   .legend-row2{ display:flex; align-items:center; gap:7px; font-size:10px; color:var(--text-muted); margin-bottom:6px; }
   .legend-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
   .ahu-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; min-height:0; }
@@ -358,7 +362,8 @@
       <div class="kpi-tile c-outdoor"><div class="lbl">Outdoor Temp</div><div class="val"><span id="kpi-oat">—</span><span class="unit">C</span></div></div>
       <div class="kpi-tile c-outdoor"><div class="lbl">Outdoor Humidity</div><div class="val"><span id="kpi-rh">—</span><span class="unit">%</span></div></div>
       <div class="kpi-tile c-outdoor"><div class="lbl">Wet Bulb</div><div class="val"><span id="kpi-wetbulb">—</span><span class="unit">F</span></div></div>
-      <div class="kpi-tile c-plant"><div class="lbl">Electricity Consumption</div><div class="val"><span id="kpi-plantkwh">—</span><span class="unit">kWh</span></div></div>
+      <div class="kpi-tile c-plant"><div class="lbl">Electric Cost<span class="kpi-trend" id="trend-cost"></span></div><div class="val"><span id="kpi-cost">—</span><span class="unit">บาท</span></div></div>
+
     </div>
 
     <div class="circuit-area glass" style="flex-direction:row;">
@@ -415,7 +420,7 @@
           <div class="lz-area-total-val"><span id="lz-area-total-val">—</span><span style="font-size:11px; color:var(--text-faint); font-weight:600;"> ตร.ม.</span></div>
         </div>
         <div class="loczone-accordion" id="loczoneAccordion"></div>
-        <div id="loczone-footnote" style="font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-faint); margin-top:6px; flex-shrink:0; line-height:1.4;"></div>
+
       </div>
       <div class="popup-backdrop" id="popupBackdrop"></div>
       <div class="popup-modal" id="popupModal">
@@ -462,6 +467,11 @@
             <div class="f-btn" data-phase="p2">Phase 2</div>
           </div>
         </div>
+        <div class="side-card glass" style="margin-top:10px;">
+          <div class="side-title">สรุปเดือนนี้ · kWh</div>
+          <div id="ahuMonthSummary" style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-faint);">กำลังโหลด...</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:7px; color:var(--text-faint); margin-top:8px; line-height:1.5;">เรียงจากมากไปน้อย · สะสมตั้งแต่ต้นเดือนถึงวันล่าสุดที่มีข้อมูล</div>
+        </div>
       </div>
       <div class="ahu-main glass" style="padding:12px;">
         <div class="hall-scroll" id="hallScroll"></div>
@@ -506,7 +516,7 @@
           <tbody id="monthly-tbody"></tbody>
         </table>
       </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--text-faint); margin-top:4px; flex-shrink:0;">* เดือนล่าสุดยังไม่จบเดือน (ข้อมูลสะสมถึงวันล่าสุดที่มี) · TR/kWh ต่อ ตร.ม. คำนวณแบบ sum/sum (ผลรวม ÷ ผลรวมพื้นที่ใช้งานรายวัน จากชีต Config_DailyAreaUsed) · ค่าไฟประมาณการ @ 4.26 บาท/kWh</div>
+
     </div>
   </div>
 </div>
@@ -607,7 +617,7 @@ function renderPanel(key){
     onCount = def.ids.filter(function(id){ return chlSums[id] !== undefined && chlSums[id] !== null; }).length;
     document.getElementById('pmUnitSecT').textContent = def.ids.length+' หน่วย · sum สะสมของวัน';
     // [แก้ 31/7/69] คอลัมน์แรกเปลี่ยนเป็น kWh (=kW×2) ตามที่ confirm — TR กับ % คงเดิม ไม่แตะ
-    document.getElementById('pmHeadRow').innerHTML = '<span class="hc-unit">Unit</span><span class="hc-status">สถานะ</span><span class="hc-num">kWh</span><span class="hc-num">TR</span><span class="hc-num">%</span>';
+    document.getElementById('pmHeadRow').innerHTML = '<span class="hc-unit">Unit</span><span class="hc-status">สถานะ</span><span class="hc-num">kWh</span><span class="hc-num">TR</span><span class="hc-num">%load</span>';
     document.getElementById('pmUnitRows').innerHTML = def.ids.map(function(id){
       var v = chlSums[id], tr = chlTr[id], pct = chlPct[id];
       var hasVal = (v !== undefined && v !== null);
@@ -1014,29 +1024,74 @@ document.getElementById('svgMain').innerHTML = frag.d;
     el.className = 'kpi-trend ' + dir;
     el.textContent = (dir==='up'?'▲':(dir==='down'?'▼':'—')) + ' ' + fmtNum(Math.abs(diffPct),1) + '%';
   }
-  async function syncDailyTrend(){
+  // [แก้ 31/7/69] แปลง CE date string -> Buddhist yyyy-MM-dd (สำหรับหา entry ใน dailytrend/monthlytrend ที่ key เป็น พ.ศ.)
+  function toBuddhistKeyFE_(ceDateStr){
+    var d = new Date(ceDateStr);
+    d.setFullYear(d.getFullYear() + 543);
+    return localDateStr_(d);
+  }
+  var ALL_TREND_IDS = ['trend-chl','trend-tr','trend-ct','trend-cdp','trend-schp1','trend-schp2','trend-totalkw','trend-totalkwplant','trend-eff','trend-thermaleff','trend-cost'];
+  function clearAllTrends_(){
+    ALL_TREND_IDS.forEach(function(id){ var el = document.getElementById(id); if(el){ el.textContent=''; el.className='kpi-trend'; } });
+  }
+  // [แก้ 31/7/69] เปลี่ยนชื่อ+รื้อ logic ทั้งหมด — เดิมรันครั้งเดียวตอนโหลดหน้า ไม่ผูกกับ filter ที่เลือก (บั๊กที่เจอ)
+  // ตอนนี้: โหมดรายวัน เทียบ "วันที่เลือก vs วันก่อนหน้า" / โหมดรายเดือน เทียบ "เดือนที่เลือก vs เดือนก่อนหน้า"
+  async function syncTrends(){
     try {
-      var trend = await fetchDailyTrend();
-      if(!Array.isArray(trend) || trend.length === 0) return;
-      renderSparkline('spark-chl', trend.map(function(d){return d.mainChillerKw;}), '#34d399');
-      renderSparkline('spark-tr', trend.map(function(d){return d.chillerCapacityTr;}), '#34d399');
-      renderSparkline('spark-totalkwplant', trend.map(function(d){return d.totalKwPlant;}), '#38bdf8');
-      renderSparkline('spark-eff', trend.map(function(d){return d.plantEfficiency;}), '#38bdf8');
-      var n = trend.length;
-      if(n >= 2){
-        renderTrend('trend-chl', trend[n-1].mainChillerKw, trend[n-2].mainChillerKw);
-        renderTrend('trend-tr', trend[n-1].chillerCapacityTr, trend[n-2].chillerCapacityTr);
-        renderTrend('trend-totalkwplant', trend[n-1].totalKwPlant, trend[n-2].totalKwPlant);
-        renderTrend('trend-eff', trend[n-1].plantEfficiency, trend[n-2].plantEfficiency);
-        // [ใหม่] ข้อ2 — trend เพิ่มอีก 6 การ์ด (ต้องมีฟิลด์เหล่านี้ใน getDailyTrend() ฝั่ง powerdata.gs ด้วย)
-        renderTrend('trend-ct', trend[n-1].ctTotal, trend[n-2].ctTotal);
-        renderTrend('trend-cdp', trend[n-1].cdpTotal, trend[n-2].cdpTotal);
-        renderTrend('trend-schp1', trend[n-1].schpPhase1Total, trend[n-2].schpPhase1Total);
-        renderTrend('trend-schp2', trend[n-1].schpPhase2Total, trend[n-2].schpPhase2Total);
-        renderTrend('trend-totalkw', trend[n-1].totalKwAll, trend[n-2].totalKwAll);
-        renderTrend('trend-thermaleff', trend[n-1].thermalEfficiency, trend[n-2].thermalEfficiency);
+      var dmBtn = document.querySelector('.dm-toggle .dm-btn.active');
+      var isMonth = dmBtn && dmBtn.dataset.mode === 'month';
+
+      if(isMonth){
+        var res = await fetch(API_URL + '?action=monthlytrend&months=24');
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        var data = await res.json();
+        if(!Array.isArray(data) || data.length === 0){ clearAllTrends_(); return; }
+        var targetKey = monthSelect.value || (data[data.length-1] && data[data.length-1].month);
+        var idx = data.findIndex(function(d){ return d.month === targetKey; });
+        if(idx < 0) idx = data.length - 1;
+        var cur = data[idx], prev = idx > 0 ? data[idx-1] : null;
+        if(!prev){ clearAllTrends_(); return; }
+        // [หมายเหตุ] ชื่อฟิลด์ฝั่ง monthlytrend ต่างจาก dailytrend บางตัว (schp1Total ไม่ใช่ schpPhase1Total, totalTr ไม่ใช่ chillerCapacityTr)
+        renderTrend('trend-chl', cur.mainChillerKw, prev.mainChillerKw);
+        renderTrend('trend-tr', cur.totalTr, prev.totalTr);
+        renderTrend('trend-ct', cur.ctTotal, prev.ctTotal);
+        renderTrend('trend-cdp', cur.cdpTotal, prev.cdpTotal);
+        renderTrend('trend-schp1', cur.schp1Total, prev.schp1Total);
+        renderTrend('trend-schp2', cur.schp2Total, prev.schp2Total);
+        renderTrend('trend-totalkw', cur.totalKwAll, prev.totalKwAll);
+        renderTrend('trend-totalkwplant', cur.totalKwh, prev.totalKwh); // Total Plant ไม่มีในรายเดือน ใช้ totalKwh (kWh จริง) แทนที่ใกล้เคียงที่สุด
+        renderTrend('trend-eff', cur.avgKwPerTr, prev.avgKwPerTr);
+        renderTrend('trend-thermaleff', cur.thermalEfficiency, prev.thermalEfficiency);
+        renderTrend('trend-cost', cur.costEstimateThb, prev.costEstimateThb);
+      } else {
+        var trend = await fetchDailyTrend(); // days=7 เดิม (ใช้กับ sparkline ด้วย)
+        var res2 = await fetch(API_URL + '?action=dailytrend&days=45'); // ดึงช่วงกว้างกว่า กันวันที่เลือกเก่ากว่า 7 วันหาไม่เจอ
+        var trend45 = res2.ok ? await res2.json() : trend;
+        if(!Array.isArray(trend) || trend.length === 0){ clearAllTrends_(); return; }
+        renderSparkline('spark-chl', trend.map(function(d){return d.mainChillerKw;}), '#34d399');
+        renderSparkline('spark-tr', trend.map(function(d){return d.chillerCapacityTr;}), '#34d399');
+        renderSparkline('spark-totalkwplant', trend.map(function(d){return d.totalKwPlant;}), '#38bdf8');
+        renderSparkline('spark-eff', trend.map(function(d){return d.plantEfficiency;}), '#38bdf8');
+
+        var targetDay = toBuddhistKeyFE_(currentDateStr || todayStr());
+        var list = Array.isArray(trend45) ? trend45 : trend;
+        var idx2 = list.findIndex(function(d){ return d.date === targetDay; });
+        if(idx2 < 0) idx2 = list.length - 1; // หาไม่เจอ (เช่นวันนั้นไม่มีข้อมูล) fallback ไปวันล่าสุดที่มี
+        var cur2 = list[idx2], prev2 = idx2 > 0 ? list[idx2-1] : null;
+        if(!prev2){ clearAllTrends_(); return; }
+        renderTrend('trend-chl', cur2.mainChillerKw, prev2.mainChillerKw);
+        renderTrend('trend-tr', cur2.chillerCapacityTr, prev2.chillerCapacityTr);
+        renderTrend('trend-totalkwplant', cur2.totalKwPlant, prev2.totalKwPlant);
+        renderTrend('trend-eff', cur2.plantEfficiency, prev2.plantEfficiency);
+        renderTrend('trend-ct', cur2.ctTotal, prev2.ctTotal);
+        renderTrend('trend-cdp', cur2.cdpTotal, prev2.cdpTotal);
+        renderTrend('trend-schp1', cur2.schpPhase1Total, prev2.schpPhase1Total);
+        renderTrend('trend-schp2', cur2.schpPhase2Total, prev2.schpPhase2Total);
+        renderTrend('trend-totalkw', cur2.totalKwAll, prev2.totalKwAll);
+        renderTrend('trend-thermaleff', cur2.thermalEfficiency, prev2.thermalEfficiency);
+        renderTrend('trend-cost', cur2.electricCostThb, prev2.electricCostThb);
       }
-    } catch(err){ /* เงียบไว้ — sparkline พลาดไม่ควรทำให้ sync หลักพัง */ }
+    } catch(err){ console.error('syncTrends failed:', err.message); /* เงียบไว้ — trend พลาดไม่ควรทำให้ sync หลักพัง */ }
   }
 
   async function syncNow(){
@@ -1055,7 +1110,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       // [แก้ 31/7/69] KPI แถวบนสุด — เปลี่ยนเป็น kWh (=kW×2) ตามที่ confirm (CF)
       setText('kpi-ct', x2safe_(totals.ctTotal), 1);
       setText('kpi-chl', x2safe_(totals.mainChillerKw), 1);
-      setText('kpi-tr', totals.chillerCapacityTr, 1);
+      setText('kpi-tr', x2safe_(totals.chillerCapacityTr), 1); // [แก้ 31/7/69] คูณ 2 ตามคำสั่งหัวหน้า (หน่วยยังเป็น TR)
       setText('kpi-cdp', x2safe_(totals.cdpTotal), 1); // [ใหม่] Condenser Pump KPI (มีค่าอยู่แล้วใน totals แค่ไม่เคยขึ้น KPI card)
       setText('kpi-schp1', x2safe_(totals.schpPhase1Total), 1);
       setText('kpi-schp2', x2safe_(totals.schpPhase2Total), 1);
@@ -1067,7 +1122,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       setText('kpi-thermaleff', typeof averages.thermalEfficiency === 'number' ? averages.thermalEfficiency * 100 : averages.thermalEfficiency, 1);
       setText('kpi-rh', typeof averages.outdoorRh === 'number' ? averages.outdoorRh * 100 : averages.outdoorRh, 1);
       setText('kpi-wetbulb', averages.outdoorWetBulbF, 1); // [ใหม่] ไม่แปลงหน่วย โชว์ F ตรงๆ
-      setText('kpi-plantkwh', totals.plantKwhTotal, 1); // [ใหม่ 31/7/69] Electricity Consumption (kWh)
+      setText('kpi-cost', totals.electricCostThb, 2); // [ใหม่ 31/7/69] Electric Cost — kWh ของวัน/ช่วงที่เลือก × อัตราค่าไฟของเดือนนั้น
 
       var chlSub = document.getElementById('kpi-chl-sub');
       if(chlSub) chlSub.textContent = latest.chillerRunning ? ('เครื่องที่วิ่งอยู่ล่าสุด: ' + latest.chillerRunning) : 'ไม่มีข้อมูลของวันนี้';
@@ -1120,6 +1175,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
     window.__currentDateStr = currentDateStr;
     window.__currentEndDateStr = window.__currentEndDateStr || null;
     syncNow();
+    syncTrends(); // [แก้ 31/7/69] แก้บั๊ก — เดิมไม่เคยเรียกซ้ำตอนเปลี่ยนวันที่/โหมด ทำให้ trend % ค้างอยู่ค่าแรกที่โหลดตลอด
     if(window.__loadAhuData) window.__loadAhuData();
     if(window.__loadLocationZone) window.__loadLocationZone();
   }
@@ -1159,6 +1215,11 @@ document.getElementById('svgMain').innerHTML = frag.d;
       monthControls.style.display = isMonth ? 'flex' : 'none';
       if(isMonth && monthSelect.options.length && monthSelect.value){
         monthSelect.dispatchEvent(new Event('change')); // โหลดช่วงของเดือนที่ select ค้างอยู่ทันที
+      } else if(!isMonth){
+        // [แก้ 31/7/69] เดิมสลับกลับมา "รายวัน" ไม่มีการ refresh อะไรเลย (currentDateStr/trend ค้างจากโหมดเดือน)
+        window.__currentEndDateStr = null;
+        dateEndInput.value = '';
+        refreshAllDateDependent();
       }
     });
   });
@@ -1205,9 +1266,9 @@ document.getElementById('svgMain').innerHTML = frag.d;
   populateMonthFilter();
 
   syncNow();
-  syncDailyTrend();
+  syncTrends();
   setInterval(syncNow, 600000); // [แก้ตามที่ confirm] auto-refresh ทุก 10 นาที (ลดจาก 60 วิ เพื่อลดการเรียก API)
-  setInterval(syncDailyTrend, 600000); // [ข้อ C] 23/7/69 — sparkline/เทรนด์ ไม่ต้องขึ้นบ่อยเท่า ใช้รอบเดียวกันพอ
+  setInterval(syncTrends, 600000); // [ข้อ C] 23/7/69 — sparkline/เทรนด์ ไม่ต้องขึ้นบ่อยเท่า ใช้รอบเดียวกันพอ
   window.__syncCircuitNow = syncNow;
 })();
 
@@ -1320,8 +1381,7 @@ document.getElementById('svgMain').innerHTML = frag.d;
       });
       if(accEl) accEl.innerHTML = html;
 
-      var footEl = document.getElementById('loczone-footnote');
-      if(footEl) footEl.textContent = 'kWh = kWh/ตร.ม.รวมอาคาร \u00d7 พื้นที่โซน (ไม่พึ่งข้อมูล SCHP) \u00b7 kWh/TR = kWh(โซน) \u00f7 TR รวมทั้งแผน(คงที่)' + (data.date ? (' \u00b7 ' + data.date) : '');
+
 
       if(statusEl) statusEl.textContent = '✅ sync ล่าสุด' + (data.date ? (' · ' + data.date) : '');
     } catch(err){
@@ -1591,6 +1651,31 @@ function hallCard(h){
   }
 
   window.__loadAhuData = loadAhuData;
+
+  // [ใหม่ 31/7/69] สรุปเดือนนี้ (kWh สะสมต่อ location) — คงที่ "เดือนปัจจุบัน" เสมอ ไม่ผูกกับ date filter บนสุด
+  async function loadAhuMonthSummary(){
+    var el = document.getElementById('ahuMonthSummary');
+    if(!el) return;
+    try {
+      var now = new Date();
+      function localStr_(d){ var y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0'); return y+'-'+m+'-'+da; }
+      var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      var res = await fetch(API_URL + '?action=zonekw&date=' + localStr_(monthStart) + '&end=' + localStr_(now));
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      var data = await res.json();
+      var byLocation = Array.isArray(data.byLocation) ? data.byLocation : [];
+      var ranked = byLocation.filter(function(l){ return typeof l.kwh === 'number'; }).sort(function(a,b){ return b.kwh - a.kwh; });
+      if(ranked.length === 0){ el.textContent = 'ไม่มีข้อมูล'; return; }
+      el.innerHTML = ranked.map(function(l){
+        var name = String(l.location||'').replace('BITEC-','');
+        return '<div class="month-summary-row"><span class="n">'+name+'</span><span class="v">'+fmtNum(l.kwh,1)+'</span></div>';
+      }).join('');
+    } catch(err){
+      el.textContent = 'โหลดไม่สำเร็จ';
+      console.error('loadAhuMonthSummary failed:', err.message);
+    }
+  }
+  loadAhuMonthSummary();
 })();
 </script>
 </body>
